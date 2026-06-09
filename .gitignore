@@ -1,0 +1,32 @@
+# Godot generated files
+.godot/
+.import/
+*.import
+
+# C# / .NET build files
+bin/
+obj/
+.mono/
+.vs/
+
+# Godot exports
+.export/
+export/
+builds/
+
+# Large files
+*.hdr
+*.exr
+
+# Logs / temp
+*.log
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.idea/
+.vscode/

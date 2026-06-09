@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://4o402b3lci2o"]
+
+[ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
+[ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
+[ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
+[ext_resource type="Texture2D" uid="uid://boatuja02aqyp" path="res://assets/hdri/forest_slope_8k.hdr" id="4_rarhs"]
+[ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_vcsgt"]
+panorama = ExtResource("4_rarhs")
+energy_multiplier = 0.5
+
+[sub_resource type="Sky" id="Sky_0bbpv"]
+sky_material = SubResource("PanoramaSkyMaterial_vcsgt")
+
+[sub_resource type="Environment" id="Environment_0bbpv"]
+background_mode = 1
+background_color = Color(0.18431373, 0.20784314, 0.18431373, 1)
+sky = SubResource("Sky_0bbpv")
+ambient_light_color = Color(1, 1, 1, 1)
+ambient_light_energy = 0.4
+reflected_light_source = 2
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
+
+[sub_resource type="Compositor" id="Compositor_vcsgt"]
+
+[node name="Main" type="Node3D" unique_id=2056396165]
+
+[node name="BoardManager" type="Node3D" parent="." unique_id=986564341]
+script = ExtResource("1_0bbpv")
+Radius = 4
+HexSize = 1.01
+
+[node name="TurnManager" type="Node3D" parent="." unique_id=1470133694]
+script = ExtResource("1_elqb8")
+
+[node name="GameManager" type="Node3D" parent="." unique_id=463986510]
+script = ExtResource("3_rarhs")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=664851863]
+transform = Transform3D(0.81915206, 0.4055798, -0.4055798, 0, 0.70710677, 0.70710677, 0.57357645, -0.579228, 0.579228, 0, 1.2775217, 1.4064736)
+light_energy = 0.8
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]
+environment = SubResource("Environment_0bbpv")
+camera_attributes = SubResource("CameraAttributesPractical_rarhs")
+compositor = SubResource("Compositor_vcsgt")
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=484561498]
+script = ExtResource("5_vcsgt")
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=39283780]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 10, 10)
+projection = 1
+fov = 99.7

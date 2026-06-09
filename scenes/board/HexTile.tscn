@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://ctu42d50n62fa"]
+
+[ext_resource type="Script" uid="uid://dswtovmxx7vpi" path="res://scripts/board/HexTile.cs" id="1_r5n5e"]
+[ext_resource type="PackedScene" uid="uid://0ma46cqrqrh6" path="res://assets/models/hex_tile.glb" id="2_3nvyo"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r5n5e"]
+albedo_color = Color(0.64233804, 0.8063464, 0.19555005, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_3nvyo"]
+top_radius = 0.95
+bottom_radius = 0.95
+height = 0.15
+radial_segments = 6
+
+[node name="HexTile" type="Node3D" unique_id=1979443825]
+script = ExtResource("1_r5n5e")
+
+[node name="hex_tile" parent="." unique_id=1435906746 instance=ExtResource("2_3nvyo")]
+
+[node name="TileMesh" type="MeshInstance3D" parent="." unique_id=1096197669]
+material_override = SubResource("StandardMaterial3D_r5n5e")
+mesh = SubResource("CylinderMesh_3nvyo")
+
+[node name="PlantAnchor" type="Node3D" parent="." unique_id=1168317793]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)

@@ -1,0 +1,32 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="GameDesign-Prototyp"
+run/main_scene="uid://4o402b3lci2o"
+config/features=PackedStringArray("4.6", "C#", "Forward Plus")
+
+[display]
+
+window/size/mode=3
+window/size/borderless=true
+
+[dotnet]
+
+project/assembly_name="GameDesign-Prototyp"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
