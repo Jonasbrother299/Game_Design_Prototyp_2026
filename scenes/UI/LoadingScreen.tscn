@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://es3ylu5osnqc"]
+
+[ext_resource type="Script" uid="uid://detltfj3hgo8" path="res://scripts/UI/LoadingScreen.cs" id="1_74fen"]
+
+[node name="LoadingScreen" type="Control" unique_id=359494277]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_74fen")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1494913477]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(0.093800016, 0.16827518, 0, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=680110692]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=443069627]
+layout_mode = 2
+
+[node name="LoadingLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1128832063]
+layout_mode = 2
+text = "Biom wird vorbereitet..."
+
+[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer" unique_id=2098326548]
+layout_mode = 2

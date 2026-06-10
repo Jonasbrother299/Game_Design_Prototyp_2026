@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
 [ext_resource type="Texture2D" uid="uid://boatuja02aqyp" path="res://assets/hdri/forest_slope_8k.hdr" id="4_rarhs"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
+[ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="6_c01mt"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_vcsgt"]
 panorama = ExtResource("4_rarhs")
@@ -49,8 +50,22 @@ compositor = SubResource("Compositor_vcsgt")
 
 [node name="CameraRig" type="Node3D" parent="." unique_id=484561498]
 script = ExtResource("5_vcsgt")
+SmoothSpeed = 20.0
+MinPitchDegrees = 20.0
+MaxPitchDegrees = 75.0
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=39283780]
-transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 10, 10)
-projection = 1
-fov = 99.7
+transform = Transform3D(1, 0, 0, 0, 0.5735764, 0.819152, 0, -0.819152, 0.5735764, 0, 18, 18)
+fov = 35.0
+
+[node name="UI" type="Node3D" parent="." unique_id=576351862]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="UI" unique_id=102683355]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/CanvasLayer" unique_id=341335909]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("6_c01mt")
+CardSize = Vector2(400, 450)
+HoverLift = 75.0
+HoverScale = 1.18

@@ -11,8 +11,10 @@ config_version=5
 [application]
 
 config/name="GameDesign-Prototyp"
-run/main_scene="uid://4o402b3lci2o"
+run/main_scene="uid://ifs463km2wex"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
+boot_splash/bg_color=Color(0.09813399, 0.16490671, 0.0042184438, 1)
+boot_splash/show_image=false
 
 [display]
 

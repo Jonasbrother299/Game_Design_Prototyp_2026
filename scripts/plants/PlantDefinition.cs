@@ -1,23 +1,33 @@
+using Godot;
 using System.Collections.Generic;
 
-public class PlantDefinition
+[GlobalClass]
+public partial class PlantDefinition : Resource
 {
-	public PlantType Type { get; private set; }
+	[Export] public PlantType Type;
+	[Export] public string DisplayName = "";
 
-	public string DisplayName { get; private set; }
+	[Export] public int PlayCost = 1;
+	[Export] public int WaterProduction = 0;
+	[Export] public int GrowthRounds = 1;
+	[Export] public int SpreadChanceDenominator = 0;
 
-	public int PlayCost { get; private set; }
+	public List<LightLevel> AllowedLightLevels = new();
 
-	public int WaterProduction { get; private set; }
+	[Export] public PlantEffectType EffectType = PlantEffectType.None;
 
-	public int GrowthRounds { get; private set; }
+	[Export] public Texture2D CardImage;
+	[Export] public PackedScene PlantScene;
 
-	public int SpreadChanceDenominator { get; private set; }
+	[Export(PropertyHint.MultilineText)]
+	public string Description = "";
 
-	public List<LightLevel> AllowedLightLevels { get; private set; }
+	// Godot braucht einen leeren Konstruktor für Resources.
+	public PlantDefinition()
+	{
+	}
 
-	public PlantEffectType EffectType { get; private set; }
-
+	// Dieser Konstruktor passt exakt zu deinem PlantDatabase.cs.
 	public PlantDefinition(
 		PlantType type,
 		string displayName,

@@ -1,46 +1,29 @@
-public class CardData
+using Godot;
+
+[GlobalClass]
+public partial class CardData : Resource
 {
-	public string CardName { get; private set; }
+	[Export] public string CardName = "";
+	[Export] public Texture2D CardImage;
 
-	public CardType CardType { get; private set; }
+	// Nicht exportieren. Godot macht hier gerade Stress.
+	public CardType CardType = global::CardType.Plant;
 
-	public PlantType PlantType { get; private set; }
-	public GameEventType EventType { get; private set; }
-
-	private CardData(
-		string cardName,
-		CardType cardType,
-		PlantType plantType,
-		GameEventType eventType
-	)
-	{
-		CardName = cardName;
-		CardType = cardType;
-		PlantType = plantType;
-		EventType = eventType;
-	}
+	[Export] public PlantType PlantType;
+	[Export] public PlantDefinition PlantDefinition;
 
 	public static CardData CreatePlantCard(PlantType plantType)
 	{
 		PlantDefinition definition = PlantDatabase.Get(plantType);
 
-		return new CardData(
-			definition.DisplayName,
-			CardType.Plant,
-			plantType,
-			GameEventType.None
-		);
-	}
+		CardData card = new CardData();
 
-	public static CardData CreateEventCard(GameEventType eventType)
-	{
-		EventDefinition definition = EventDatabase.Get(eventType);
+		card.CardType = global::CardType.Plant;
+		card.PlantType = plantType;
+		card.PlantDefinition = definition;
+		card.CardName = definition.DisplayName;
+		card.CardImage = definition.CardImage;
 
-		return new CardData(
-			definition.DisplayName,
-			CardType.Event,
-			PlantType.None,
-			eventType
-		);
+		return card;
 	}
 }
