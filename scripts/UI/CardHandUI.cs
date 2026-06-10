@@ -14,8 +14,8 @@ public partial class CardHandUI : Control
 	[Export] public float FanRotationDegrees = 7.0f;
 	[Export] public float FanYOffset = 14.0f;
 
-	[Export] public float HandHeight = 260.0f;
-	[Export] public float HandBottomOffset = 90.0f;
+	[Export] public float HandHeight = 320.0f;
+	[Export] public float HandBottomOffset = 20.0f;
 
 	private readonly string[] _cardPaths =
 	{
@@ -96,10 +96,14 @@ public partial class CardHandUI : Control
 		float centerIndex = (totalCards - 1) / 2.0f;
 		float relativeIndex = index - centerIndex;
 
-		float centerX = Size.X / 2.0f - CardSize.X / 2.0f;
-		float baseX = centerX + relativeIndex * CardSpacing;
-		float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
+		Vector2 viewportSize = GetViewportRect().Size;
 
+		float centerX = viewportSize.X / 2.0f - CardSize.X / 2.0f;
+		float baseX = centerX + relativeIndex * CardSpacing;
+
+		// Erstmal bewusst relativ weit unten im CardHand-Bereich
+		float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
+	
 		Vector2 basePosition = new Vector2(baseX, baseY);
 		float baseRotation = relativeIndex * FanRotationDegrees;
 

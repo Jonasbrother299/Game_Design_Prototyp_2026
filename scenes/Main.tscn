@@ -5,7 +5,8 @@
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
 [ext_resource type="Texture2D" uid="uid://boatuja02aqyp" path="res://assets/hdri/forest_slope_8k.hdr" id="4_rarhs"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
-[ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="6_c01mt"]
+[ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
+[ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_vcsgt"]
 panorama = ExtResource("4_rarhs")
@@ -62,10 +63,9 @@ fov = 35.0
 
 [node name="CanvasLayer" type="CanvasLayer" parent="UI" unique_id=102683355]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/CanvasLayer" unique_id=341335909]
-offset_right = 40.0
-offset_bottom = 40.0
-script = ExtResource("6_c01mt")
+[node name="CardHand" parent="UI/CanvasLayer" unique_id=1779362432 instance=ExtResource("6_c01mt")]
+script = ExtResource("7_nxtc6")
 CardSize = Vector2(400, 450)
-HoverLift = 75.0
-HoverScale = 1.18
+HoverScale = 1.22
+FanYOffset = 17.0
+HandHeight = 350.0
