@@ -1,8 +1,12 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 public partial class CardHandUI : Control
 {
+	public event Action<PlantType> PlantCardSelected;
+	public event Action<PlantType, Vector2> PlantCardDragReleased;
+
 	[Export] public Vector2 CardSize = new Vector2(95, 140);
 	[Export] public int StartHandSize = 3;
 
@@ -17,12 +21,13 @@ public partial class CardHandUI : Control
 	[Export] public float HandHeight = 320.0f;
 	[Export] public float HandBottomOffset = 20.0f;
 
+	private const float DragScale = 0.45f;
 	private readonly string[] _cardPaths =
 	{
 		"res://assets/cards/card_baum.jpeg",
 		"res://assets/cards/card_flechte.jpeg",
 		"res://assets/cards/card_moos.png",
-        "res://assets/cards/card_pilz.jpeg"
+		"res://assets/cards/card_pilz.jpeg"
 	};
 
 	private readonly RandomNumberGenerator _rng = new();
@@ -31,12 +36,52 @@ public partial class CardHandUI : Control
 	private readonly Dictionary<TextureRect, Vector2> _basePositions = new();
 	private readonly Dictionary<TextureRect, float> _baseRotations = new();
 	private readonly Dictionary<TextureRect, int> _baseZIndexes = new();
+	private readonly Dictionary<TextureRect, string> _cardPathsByCard = new();
+
+	private TextureRect _selectedCard;
+	private PlantType? _selectedPlantType = null;
+
+	private TextureRect _draggedCard;
+	private PlantType? _draggedPlantType = null;
+	private Vector2 _dragOffset = Vector2.Zero;
+	private bool _isDragging = false;
 
 	public override void _Ready()
 	{
 		_rng.Randomize();
+
+		MouseFilter = MouseFilterEnum.Ignore;
+		ClipContents = false;
+
 		SetupPosition();
 		CallDeferred(nameof(LoadCards));
+	}
+
+	public override void _Process(double delta)
+	{
+		if (!_isDragging || _draggedCard == null)
+			return;
+
+		Vector2 mousePosition = GetGlobalMousePosition();
+		_draggedCard.GlobalPosition = mousePosition - _dragOffset;
+	}
+
+	public override void _Input(InputEvent inputEvent)
+	{
+		if (!_isDragging || _draggedCard == null)
+			return;
+
+		if (inputEvent is not InputEventMouseButton mouseButton)
+			return;
+
+		if (mouseButton.ButtonIndex != MouseButton.Left)
+			return;
+
+		if (mouseButton.Pressed)
+			return;
+
+		EndDrag();
+		GetViewport().SetInputAsHandled();
 	}
 
 	private void SetupPosition()
@@ -49,7 +94,6 @@ public partial class CardHandUI : Control
 		OffsetLeft = 0.0f;
 		OffsetRight = 0.0f;
 
-		// weiter hoch = größeren BottomOffset oder größere negative Top-Position
 		OffsetTop = -(HandHeight + HandBottomOffset);
 		OffsetBottom = -HandBottomOffset;
 	}
@@ -58,6 +102,19 @@ public partial class CardHandUI : Control
 	{
 		foreach (Node child in GetChildren())
 			child.QueueFree();
+
+		_tweens.Clear();
+		_basePositions.Clear();
+		_baseRotations.Clear();
+		_baseZIndexes.Clear();
+		_cardPathsByCard.Clear();
+
+		_selectedCard = null;
+		_selectedPlantType = null;
+
+		_draggedCard = null;
+		_draggedPlantType = null;
+		_isDragging = false;
 
 		List<string> cardPaths = new(_cardPaths);
 		Shuffle(cardPaths);
@@ -83,8 +140,6 @@ public partial class CardHandUI : Control
 		TextureRect card = new TextureRect();
 
 		card.Texture = texture;
-
-		// DAS ist der wichtige Teil: nicht Originalgröße vom Bild behalten
 		card.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		card.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 
@@ -100,10 +155,8 @@ public partial class CardHandUI : Control
 
 		float centerX = viewportSize.X / 2.0f - CardSize.X / 2.0f;
 		float baseX = centerX + relativeIndex * CardSpacing;
-
-		// Erstmal bewusst relativ weit unten im CardHand-Bereich
 		float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
-	
+
 		Vector2 basePosition = new Vector2(baseX, baseY);
 		float baseRotation = relativeIndex * FanRotationDegrees;
 
@@ -114,25 +167,147 @@ public partial class CardHandUI : Control
 		_basePositions[card] = basePosition;
 		_baseRotations[card] = baseRotation;
 		_baseZIndexes[card] = index;
+		_cardPathsByCard[card] = path;
 
-		card.MouseEntered += () => AnimateCard(card, true);
-		card.MouseExited += () => AnimateCard(card, false);
+		card.MouseEntered += () =>
+		{
+			if (_isDragging)
+				return;
+
+			AnimateCard(card, true);
+		};
+
+		card.MouseExited += () =>
+		{
+			if (_isDragging)
+				return;
+
+			if (_selectedCard != card)
+				AnimateCard(card, false);
+		};
 
 		card.GuiInput += inputEvent =>
 		{
-			if (inputEvent is InputEventMouseButton mouseButton &&
-				mouseButton.Pressed &&
-				mouseButton.ButtonIndex == MouseButton.Left)
-			{
-				GD.Print($"Selected card: {path}");
-			}
+			if (inputEvent is not InputEventMouseButton mouseButton)
+				return;
+
+			if (mouseButton.ButtonIndex != MouseButton.Left)
+				return;
+
+			if (!mouseButton.Pressed)
+				return;
+
+			SelectCard(card, path);
+			StartDrag(card, path);
+
+			GetViewport().SetInputAsHandled();
 		};
 
 		AddChild(card);
 	}
 
+	private void SelectCard(TextureRect card, string path)
+	{
+		if (_selectedCard != null && _selectedCard != card)
+		{
+			AnimateCard(_selectedCard, false);
+		}
+
+		_selectedCard = card;
+		_selectedPlantType = GetPlantTypeFromPath(path);
+
+		GD.Print($"Selected plant card: {_selectedPlantType}");
+
+		AnimateCard(card, true);
+
+		if (_selectedPlantType.HasValue)
+		{
+			PlantCardSelected?.Invoke(_selectedPlantType.Value);
+		}
+	}
+
+	private void StartDrag(TextureRect card, string path)
+	{
+		_draggedCard = card;
+		_draggedPlantType = GetPlantTypeFromPath(path);
+		_isDragging = true;
+
+		if (_tweens.TryGetValue(card, out Tween oldTween))
+		{
+			oldTween.Kill();
+			_tweens.Remove(card);
+		}
+
+		card.ZIndex = 200;
+		card.RotationDegrees = 0.0f;
+		card.Scale = new Vector2(DragScale, DragScale);
+
+		Vector2 mousePosition = GetGlobalMousePosition();
+		_dragOffset = mousePosition - card.GlobalPosition;
+
+		GD.Print($"Dragging plant card: {_draggedPlantType}");
+	}
+
+	private void EndDrag()
+	{
+		if (_draggedCard == null)
+			return;
+
+		Vector2 mousePosition = GetViewport().GetMousePosition();
+
+		if (_draggedPlantType.HasValue)
+		{
+			PlantCardDragReleased?.Invoke(_draggedPlantType.Value, mousePosition);
+			GD.Print($"Released plant card: {_draggedPlantType} at {mousePosition}");
+		}
+
+		TextureRect releasedCard = _draggedCard;
+
+		_draggedCard = null;
+		_draggedPlantType = null;
+		_isDragging = false;
+
+		_selectedCard = null;
+		_selectedPlantType = null;
+
+		AnimateCard(releasedCard, false);
+	}
+
+	public void ClearSelection()
+	{
+		if (_selectedCard != null)
+		{
+			AnimateCard(_selectedCard, false);
+		}
+
+		_selectedCard = null;
+		_selectedPlantType = null;
+	}
+
+	private PlantType GetPlantTypeFromPath(string path)
+	{
+		string lowerPath = path.ToLower();
+
+		if (lowerPath.Contains("baum"))
+			return PlantType.Oak;
+
+		if (lowerPath.Contains("moos"))
+			return PlantType.Moss;
+
+		if (lowerPath.Contains("pilz"))
+			return PlantType.Mushroom;
+
+		if (lowerPath.Contains("flechte"))
+			return PlantType.Moss;
+
+		return PlantType.Moss;
+	}
+
 	private void AnimateCard(TextureRect card, bool isHovering)
 	{
+		if (!_basePositions.ContainsKey(card))
+			return;
+
 		if (_tweens.TryGetValue(card, out Tween oldTween))
 		{
 			oldTween.Kill();

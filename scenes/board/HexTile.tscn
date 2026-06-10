@@ -21,5 +21,7 @@ script = ExtResource("1_r5n5e")
 material_override = SubResource("StandardMaterial3D_r5n5e")
 mesh = SubResource("CylinderMesh_3nvyo")
 
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TileMesh" unique_id=1799655193]
+
 [node name="PlantAnchor" type="Node3D" parent="." unique_id=1168317793]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
