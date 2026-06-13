@@ -1,3 +1,4 @@
+
 public class HexTileData
 {
 	public HexCoord Coord { get; private set; }

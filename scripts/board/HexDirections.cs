@@ -1,3 +1,4 @@
+
 public static class HexDirections
 {
 	public static readonly HexCoord[] Directions =

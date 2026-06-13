@@ -1,3 +1,4 @@
+
 using Godot;
 using System.Collections.Generic;
 
@@ -25,8 +26,43 @@ public partial class TurnManager : Node
 		DrawCard(CardData.CreatePlantCard(PlantType.Flower));
 		DrawCard(CardData.CreatePlantCard(PlantType.Mushroom));
 
+		 PlaceStartingOak();
 		GD.Print("Game started.");
 		StartTurn();
+	}
+	
+	private void PlaceStartingOak()
+	{
+		HexCoord startCoord = new HexCoord(0, 0);
+		HexTileData startTile = _boardManager.GetTileData(startCoord);
+
+		if (startTile == null)
+		{
+			GD.PrintErr("Starting oak could not be placed. Start tile is missing.");
+			return;
+		}
+
+		if (startTile.Plant != null)
+		{
+			return;
+		}
+
+		PlantDefinition oakDefinition = PlantDatabase.Get(PlantType.Oak);
+
+		if (oakDefinition == null)
+		{
+			GD.PrintErr("Starting oak could not be placed. Oak definition is missing.");
+			return;
+		}
+
+		PlantInstance startingOak = new PlantInstance(oakDefinition, wasCreatedBySpread: false);
+
+		startTile.PlacePlant(startingOak);
+
+		HexTile startTileView = _boardManager.GetTileView(startCoord);
+		startTileView?.UpdateVisualState();
+
+		_boardManager.RecalculateLightLevels();
 	}
 
 	public void StartTurn()

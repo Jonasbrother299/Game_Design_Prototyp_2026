@@ -1,6 +1,6 @@
 public class GameConfig
 {
-	public int StartingWater { get; set; } = 3;
+	public int StartingWater { get; set; } = 6;
 
 	public int LoseWaterLimit { get; set; } = 0;
 	public int WinWaterLimit { get; set; } = 50;
