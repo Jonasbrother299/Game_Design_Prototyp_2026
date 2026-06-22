@@ -58,7 +58,6 @@ public partial class CardHandUI : Control
 	private bool _isDragging = false;
 	private bool _removeDraggedCardAfterRelease = false;
 
-	private int _dragDebugFrameCounter = 0;
 
 	public override void _Ready()
 	{
@@ -155,7 +154,6 @@ public partial class CardHandUI : Control
 		_draggedPlantType = null;
 		_isDragging = false;
 		_removeDraggedCardAfterRelease = false;
-		_dragDebugFrameCounter = 0;
 
 		List<string> cardPaths = new(_cardPaths);
 		Shuffle(cardPaths);
@@ -311,8 +309,6 @@ public partial class CardHandUI : Control
 
 		PlantCardDragged?.Invoke(_draggedPlantType.Value, viewportMousePosition);
 
-		_dragDebugFrameCounter++;
-
 	}
 
 	private void SelectCard(TextureRect card, string path)
@@ -325,7 +321,6 @@ public partial class CardHandUI : Control
 		_selectedCard = card;
 		_selectedPlantType = GetPlantTypeFromPath(path);
 
-		GD.Print($"Selected plant card: {_selectedPlantType}");
 
 		AnimateCard(card, true);
 
@@ -341,7 +336,6 @@ public partial class CardHandUI : Control
 		_draggedPlantType = GetPlantTypeFromPath(path);
 		_isDragging = true;
 		_removeDraggedCardAfterRelease = false;
-		_dragDebugFrameCounter = 0;
 
 		_hoveredCard = null;
 
@@ -365,7 +359,6 @@ public partial class CardHandUI : Control
 			PlantCardDragged?.Invoke(_draggedPlantType.Value, viewportMousePosition);
 		}
 
-		GD.Print($"Dragging plant card: {_draggedPlantType}");
 	}
 
 	private void EndDrag()
@@ -378,7 +371,6 @@ public partial class CardHandUI : Control
 		if (_draggedPlantType.HasValue)
 		{
 			PlantCardDragReleased?.Invoke(_draggedPlantType.Value, mousePosition);
-			GD.Print($"Released plant card: {_draggedPlantType} at {mousePosition}");
 		}
 
 		TextureRect releasedCard = _draggedCard;
@@ -388,7 +380,6 @@ public partial class CardHandUI : Control
 		_draggedPlantType = null;
 		_isDragging = false;
 		_removeDraggedCardAfterRelease = false;
-		_dragDebugFrameCounter = 0;
 
 		_selectedCard = null;
 		_selectedPlantType = null;
@@ -472,6 +463,31 @@ public partial class CardHandUI : Control
 		RestoreDefaultChildOrder();
 	}
 
+	public void RefillHandToStartSize()
+	{
+		while (_cards.Count < StartHandSize)
+		{
+			string path = GetRandomCardPath();
+			Texture2D texture = GD.Load<Texture2D>(path);
+
+			if (texture == null)
+			{
+				GD.PrintErr($"Card image not found: {path}");
+				return;
+			}
+
+			CreateCard(texture, path, _cards.Count, StartHandSize);
+		}
+
+		RecalculateHandLayout();
+	}
+
+	private string GetRandomCardPath()
+	{
+		int randomIndex = _rng.RandiRange(0, _cardPaths.Length - 1);
+		return _cardPaths[randomIndex];
+	}
+
 	public void ClearSelection()
 	{
 		if (_selectedCard != null)
@@ -498,7 +514,7 @@ public partial class CardHandUI : Control
 			return PlantType.Mushroom;
 
 		if (lowerPath.Contains("flechte"))
-			return PlantType.Moss;
+		 	return PlantType.Lichen;
 
 		return PlantType.Moss;
 	}

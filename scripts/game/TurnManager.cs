@@ -1,4 +1,3 @@
-
 using Godot;
 using System.Collections.Generic;
 
@@ -26,43 +25,7 @@ public partial class TurnManager : Node
 		DrawCard(CardData.CreatePlantCard(PlantType.Flower));
 		DrawCard(CardData.CreatePlantCard(PlantType.Mushroom));
 
-		 PlaceStartingOak();
-		GD.Print("Game started.");
 		StartTurn();
-	}
-	
-	private void PlaceStartingOak()
-	{
-		HexCoord startCoord = new HexCoord(0, 0);
-		HexTileData startTile = _boardManager.GetTileData(startCoord);
-
-		if (startTile == null)
-		{
-			GD.PrintErr("Starting oak could not be placed. Start tile is missing.");
-			return;
-		}
-
-		if (startTile.Plant != null)
-		{
-			return;
-		}
-
-		PlantDefinition oakDefinition = PlantDatabase.Get(PlantType.Oak);
-
-		if (oakDefinition == null)
-		{
-			GD.PrintErr("Starting oak could not be placed. Oak definition is missing.");
-			return;
-		}
-
-		PlantInstance startingOak = new PlantInstance(oakDefinition, wasCreatedBySpread: false);
-
-		startTile.PlacePlant(startingOak);
-
-		HexTile startTileView = _boardManager.GetTileView(startCoord);
-		startTileView?.UpdateVisualState();
-
-		_boardManager.RecalculateLightLevels();
 	}
 
 	public void StartTurn()
@@ -80,7 +43,7 @@ public partial class TurnManager : Node
 			return;
 
 		ApplyActiveEvents();
-		ApplyPlantProduction();
+		ApplyPlantWaterBalance();
 		GrowPlants();
 		TickBlockedTiles();
 
@@ -101,7 +64,7 @@ public partial class TurnManager : Node
 			return;
 		}
 
-		DrawRandomCard();
+		DrawCardsUntilTargetHandSize();
 
 		State.CurrentRound++;
 		StartTurn();
@@ -121,7 +84,6 @@ public partial class TurnManager : Node
 		if (State.IsGameOver)
 		{
 			errorMessage = "Game is already over.";
-			GD.Print(errorMessage);
 			return false;
 		}
 
@@ -135,7 +97,6 @@ public partial class TurnManager : Node
 		if (card.CardType != CardType.Plant)
 		{
 			errorMessage = "Only plant cards can be played on tiles.";
-			GD.Print(errorMessage);
 			return false;
 		}
 
@@ -149,30 +110,18 @@ public partial class TurnManager : Node
 		if (State.CardsPlayedThisTurn >= Config.CardsPerTurnLimit)
 		{
 			errorMessage = "Card limit for this turn reached.";
-			GD.Print(errorMessage);
 			return false;
 		}
 
 		PlantDefinition plantDefinition = PlantDatabase.Get(card.PlantType);
 		PlantInstance plantInstance = new PlantInstance(plantDefinition, wasCreatedBySpread: false);
 
-		int cost = plantInstance.GetWaterCostWhenPlaced();
-
-		if (State.Water < cost)
-		{
-			errorMessage = $"Not enough water. Need {cost}, have {State.Water}.";
-			GD.Print(errorMessage);
-			return false;
-		}
-
 		if (!tile.CanPlacePlant(plantDefinition))
 		{
 			errorMessage = $"Cannot place {plantDefinition.DisplayName} on {tile.Coord}. Light: {tile.LightLevel}";
-			GD.Print(errorMessage);
 			return false;
 		}
 
-		State.Water -= cost;
 		State.CardsPlayedThisTurn++;
 
 		tile.PlacePlant(plantInstance);
@@ -184,9 +133,6 @@ public partial class TurnManager : Node
 
 		State.HandCards.Remove(card);
 
-		GD.Print($"Played {plantDefinition.DisplayName}. Cost: {cost}");
-		PrintState();
-
 		return true;
 	}
 
@@ -196,8 +142,6 @@ public partial class TurnManager : Node
 		EventDefinition eventDefinition = EventDatabase.Get(eventType);
 
 		State.ActiveEvents.Add(new ActiveGameEvent(eventDefinition));
-
-		GD.Print($"Event started: {eventDefinition.DisplayName} for {eventDefinition.DurationRounds} rounds.");
 	}
 
 	private void ApplyActiveEvents()
@@ -208,73 +152,75 @@ public partial class TurnManager : Node
 		{
 			totalWaterModifier += activeEvent.ApplyWaterModifier();
 			activeEvent.TickDown();
-
-			GD.Print($"Event active: {activeEvent.Definition.DisplayName} | Water: {activeEvent.Definition.WaterModifierPerRound}");
 		}
 
 		State.Water += totalWaterModifier;
 	}
+private void ApplyPlantWaterBalance()
+{
+	int totalProduction = 0;
+	int totalConsumption = 0;
 
-	private void ApplyPlantProduction()
+	foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
 	{
-		int totalProduction = 0;
+		if (tile.Plant == null)
+			continue;
 
-		foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
+		int consumption = tile.Plant.GetWaterConsumption();
+		int production = tile.Plant.GetWaterProduction();
+
+		if (tile.Plant.IsMature)
 		{
-			if (tile.Plant == null)
-				continue;
-
-			int production = tile.Plant.GetWaterProduction();
-
 			production += GetAdjacentProductionBonus(tile);
-
-			totalProduction += production;
 		}
 
-		State.Water += totalProduction;
-
-		GD.Print($"Plant production: +{totalProduction} water.");
+		totalConsumption += consumption;
+		totalProduction += production;
 	}
+
+	int waterDelta = totalProduction - totalConsumption;
+
+	State.Water += waterDelta;
+
+	GD.Print($"Water balance: +{totalProduction} production -{totalConsumption} consumption = {waterDelta}. Water: {State.Water}");
+}
 
 	private int GetAdjacentProductionBonus(HexTileData tile)
+{
+	int bonus = 0;
+
+	List<HexTileData> neighbors = _boardManager.GetNeighborData(tile.Coord);
+
+	foreach (HexTileData neighbor in neighbors)
 	{
-		int bonus = 0;
-		List<HexTileData> neighbors = _boardManager.GetNeighborData(tile.Coord);
+		if (neighbor.Plant == null)
+			continue;
 
-		foreach (HexTileData neighbor in neighbors)
+		if (!neighbor.Plant.IsMature)
+			continue;
+
+		if (neighbor.Plant.Definition.EffectType == PlantEffectType.AdjacentPlantsProducePlusOne)
 		{
-			if (neighbor.Plant == null)
-				continue;
-
-			if (!neighbor.Plant.IsMature)
-				continue;
-
-			if (neighbor.Plant.Definition.EffectType == PlantEffectType.AdjacentPlantsProducePlusOne)
-			{
-				bonus += 1;
-			}
-		}
-
-		return bonus;
-	}
-
-	private void GrowPlants()
-	{
-		foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
-		{
-			if (tile.Plant == null)
-				continue;
-
-			bool wasMatureBefore = tile.Plant.IsMature;
-
-			tile.Plant.GrowOneRound();
-
-			if (!wasMatureBefore && tile.Plant.IsMature)
-			{
-				GD.Print($"{tile.Plant.Definition.DisplayName} on {tile.Coord} is now mature.");
-			}
+			bonus += 1;
 		}
 	}
+
+	return bonus;
+}
+
+private void GrowPlants()
+{
+	foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
+	{
+		if (tile.Plant == null)
+			continue;
+
+		tile.Plant.GrowOneRound();
+
+		HexTile tileView = _boardManager.GetTileView(tile.Coord);
+		tileView?.UpdateVisualState();
+	}
+}
 
 	private bool ShouldCheckSpreadThisRound()
 	{
@@ -282,112 +228,124 @@ public partial class TurnManager : Node
 	}
 
 	private void ApplySpread()
+{
+	List<HexTileData> spreadingPlants = new();
+
+	foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
 	{
-		List<HexTileData> spreadingPlants = new();
+		if (!CanPlantSpread(tile))
+			continue;
 
-		foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
-		{
-			if (tile.Plant == null)
-				continue;
-
-			if (!tile.Plant.IsMature)
-				continue;
-
-			if (tile.Plant.Definition.SpreadChanceDenominator <= 0)
-				continue;
-
-			spreadingPlants.Add(tile);
-		}
-
-		foreach (HexTileData sourceTile in spreadingPlants)
-		{
-			TrySpreadFromTile(sourceTile);
-		}
+		spreadingPlants.Add(tile);
 	}
 
+	foreach (HexTileData sourceTile in spreadingPlants)
+	{
+		TrySpreadFromTile(sourceTile);
+	}
+}
+private bool CanPlantSpread(HexTileData tile)
+{
+	if (tile == null)
+		return false;
+
+	if (tile.Plant == null)
+		return false;
+
+	if (!tile.Plant.IsMature)
+		return false;
+
+	if (tile.Plant.Definition.SpreadChanceDenominator <= 0)
+		return false;
+
+	return true;
+}
 	private void TrySpreadFromTile(HexTileData sourceTile)
+{
+	PlantDefinition definition = sourceTile.Plant.Definition;
+
+	int denominator = GetModifiedSpreadDenominator(sourceTile);
+
+	int roll = _rng.RandiRange(1, denominator);
+
+	if (roll != 1)
 	{
-		PlantDefinition definition = sourceTile.Plant.Definition;
-
-		int denominator = GetModifiedSpreadDenominator(sourceTile);
-
-		int roll = _rng.RandiRange(1, denominator);
-
-		if (roll != 1)
-		{
-			GD.Print($"{definition.DisplayName} did not spread. Roll {roll}/{denominator}");
-			return;
-		}
-
-		List<HexTileData> possibleTiles = GetValidSpreadTargets(sourceTile, definition);
-
-		if (possibleTiles.Count == 0)
-		{
-			GD.Print($"{definition.DisplayName} wanted to spread, but no valid tile found.");
-			return;
-		}
-
-		int randomIndex = _rng.RandiRange(0, possibleTiles.Count - 1);
-		HexTileData targetTile = possibleTiles[randomIndex];
-
-		PlantInstance newPlant = new PlantInstance(definition, wasCreatedBySpread: true);
-		targetTile.PlacePlant(newPlant);
-
-		GD.Print($"{definition.DisplayName} spread from {sourceTile.Coord} to {targetTile.Coord}");
-
-		HexTile tileView = _boardManager.GetTileView(targetTile.Coord);
-		tileView?.UpdateVisualState();
+		return;
 	}
+
+	List<HexTileData> possibleTiles = GetValidSpreadTargets(sourceTile, definition);
+
+	if (possibleTiles.Count == 0)
+	{
+		return;
+	}
+
+	int randomIndex = _rng.RandiRange(0, possibleTiles.Count - 1);
+	HexTileData targetTile = possibleTiles[randomIndex];
+
+	PlantInstance newPlant = new PlantInstance(definition, wasCreatedBySpread: true);
+
+	targetTile.PlacePlant(newPlant);
+
+	HexTile targetTileView = _boardManager.GetTileView(targetTile.Coord);
+	targetTileView?.UpdateVisualState();
+
+	GD.Print($"{definition.DisplayName} spread from {sourceTile.Coord} to {targetTile.Coord}");
+}
 
 	private int GetModifiedSpreadDenominator(HexTileData sourceTile)
+{
+	int denominator = sourceTile.Plant.Definition.SpreadChanceDenominator;
+
+	List<HexTileData> neighbors = _boardManager.GetNeighborData(sourceTile.Coord);
+
+	foreach (HexTileData neighbor in neighbors)
 	{
-		int denominator = sourceTile.Plant.Definition.SpreadChanceDenominator;
+		if (neighbor.Plant == null)
+			continue;
 
-		List<HexTileData> neighbors = _boardManager.GetNeighborData(sourceTile.Coord);
+		if (!neighbor.Plant.IsMature)
+			continue;
 
-		foreach (HexTileData neighbor in neighbors)
+		if (neighbor.Plant.Definition.EffectType == PlantEffectType.SpreadChancePlusOneForNeighbors)
 		{
-			if (neighbor.Plant == null)
-				continue;
-
-			if (!neighbor.Plant.IsMature)
-				continue;
-
-			if (neighbor.Plant.Definition.EffectType == PlantEffectType.SpreadChancePlusOneForNeighbors)
-			{
-				denominator -= 1;
-			}
+			denominator -= 1;
 		}
-
-		foreach (ActiveGameEvent activeEvent in State.ActiveEvents)
-		{
-			if (activeEvent.Definition.EffectType == GameEventEffectType.IncreaseSpreadChance)
-			{
-				denominator -= 1;
-			}
-		}
-
-		if (denominator < 2)
-			denominator = 2;
-
-		return denominator;
 	}
+
+	foreach (ActiveGameEvent activeEvent in State.ActiveEvents)
+	{
+		if (activeEvent.Definition.EffectType == GameEventEffectType.IncreaseSpreadChance)
+		{
+			denominator -= 1;
+		}
+	}
+
+	if (denominator < 2)
+		denominator = 2;
+
+	return denominator;
+}
 
 	private List<HexTileData> GetValidSpreadTargets(HexTileData sourceTile, PlantDefinition definition)
+{
+	List<HexTileData> result = new();
+
+	List<HexTileData> neighbors = _boardManager.GetFreeNeighborTiles(sourceTile.Coord);
+
+	foreach (HexTileData neighbor in neighbors)
 	{
-		List<HexTileData> result = new();
-		List<HexTileData> neighbors = _boardManager.GetFreeNeighborTiles(sourceTile.Coord);
+		if (neighbor == null)
+			continue;
 
-		foreach (HexTileData neighbor in neighbors)
-		{
-			if (neighbor.CanPlacePlant(definition))
-			{
-				result.Add(neighbor);
-			}
-		}
+		if (!neighbor.CanPlacePlant(definition))
+			continue;
 
-		return result;
+		result.Add(neighbor);
 	}
+
+	return result;
+}
 
 	private void TickBlockedTiles()
 	{
@@ -400,6 +358,16 @@ public partial class TurnManager : Node
 	private void RemoveFinishedEvents()
 	{
 		State.ActiveEvents.RemoveAll(activeEvent => activeEvent.IsFinished);
+	}
+
+	private void DrawCardsUntilTargetHandSize()
+	{
+		int targetHandSize = Mathf.Min(3, Config.MaxHandSize);
+
+		while (State.HandCards.Count < targetHandSize)
+		{
+			DrawRandomCard();
+		}
 	}
 
 	private void DrawRandomCard()
@@ -419,8 +387,6 @@ public partial class TurnManager : Node
 			return;
 
 		State.HandCards.Add(card);
-
-		GD.Print($"Card drawn: {card.CardName}");
 	}
 
 	private PlantType GetRandomPlantType()

@@ -5,7 +5,10 @@ public partial class GameManager : Node
 	private BoardManager _boardManager;
 	private TurnManager _turnManager;
 	private CardHandUI _cardHand;
-
+	private Button _endTurnButton;
+	private Label _roundLabel;
+	private Label _waterLabel;
+	private Label _cardsPlayedLabel;
 	private HexTile _currentPreviewTile;
 
 	private string _lastDebugMessage = "";
@@ -32,10 +35,16 @@ public partial class GameManager : Node
 			return;
 		}
 
-		_turnManager.Setup(_boardManager);
-		_turnManager.StartGame();
+	_turnManager.Setup(_boardManager);
+	_turnManager.StartGame();
 
-		ConnectCardHand();
+	PlaceStarterOak();
+
+	ConnectCardHand();
+	ConnectEndTurnButton();
+	ConnectHudLabels();
+
+	UpdateHud();
 	}
 
 	private void ConnectCardHand()
@@ -53,7 +62,62 @@ public partial class GameManager : Node
 
 		GD.Print("GameManager connected to CardHandUI.");
 	}
+private void ConnectHudLabels()
+{
+	_roundLabel = FindNodeByName<Label>(GetTree().CurrentScene, "RoundLabel");
+	_waterLabel = FindNodeByName<Label>(GetTree().CurrentScene, "WaterLabel");
+	_cardsPlayedLabel = FindNodeByName<Label>(GetTree().CurrentScene, "CardsPlayLabel");
 
+	if (_roundLabel == null)
+		GD.PrintErr("RoundLabel not found. Make sure the label node is named RoundLabel.");
+
+	if (_waterLabel == null)
+		GD.PrintErr("WaterLabel not found. Make sure the label node is named WaterLabel.");
+
+	if (_cardsPlayedLabel == null)
+		GD.PrintErr("CardsPlayedLabel not found. Make sure the label node is named CardsPlayLabel.");
+}
+private T FindNodeByName<T>(Node root, string nodeName) where T : Node
+{
+	if (root == null)
+		return null;
+
+	if (root.Name == nodeName && root is T typedNode)
+		return typedNode;
+
+	foreach (Node child in root.GetChildren())
+	{
+		T foundNode = FindNodeByName<T>(child, nodeName);
+
+		if (foundNode != null)
+			return foundNode;
+	}
+
+	return null;
+}
+private void UpdateHud()
+{
+	if (_turnManager == null)
+		return;
+
+	if (_turnManager.State == null)
+		return;
+
+	if (_roundLabel != null)
+	{
+		_roundLabel.Text = $"Round: {_turnManager.State.CurrentRound}";
+	}
+
+	if (_waterLabel != null)
+	{
+		_waterLabel.Text = $"Water: {_turnManager.State.Water}";
+	}
+
+	if (_cardsPlayedLabel != null)
+	{
+		_cardsPlayedLabel.Text = $"Cards: {_turnManager.State.CardsPlayedThisTurn}/{_turnManager.Config.CardsPerTurnLimit}";
+	}
+}
 	public override void _ExitTree()
 	{
 		if (_cardHand != null)
@@ -61,6 +125,42 @@ public partial class GameManager : Node
 			_cardHand.PlantCardDragged -= OnPlantCardDragged;
 			_cardHand.PlantCardDragReleased -= OnPlantCardDragReleased;
 		}
+			if (_endTurnButton != null)
+		{
+			_endTurnButton.Pressed -= OnEndTurnButtonPressed;
+		}
+	}
+private void ConnectEndTurnButton()
+{
+	_endTurnButton = FindNodeByName<Button>(GetTree().CurrentScene, "EndTurnButton");
+
+	if (_endTurnButton == null)
+	{
+		GD.PrintErr("EndTurnButton not found. Make sure the button node is named EndTurnButton.");
+		return;
+	}
+
+	_endTurnButton.Pressed += OnEndTurnButtonPressed;
+
+	GD.Print("EndTurnButton connected.");
+}
+
+
+	private void OnEndTurnButtonPressed()
+	{
+		if (_turnManager == null)
+			return;
+
+		if (_turnManager.State == null)
+			return;
+
+		if (_turnManager.State.IsGameOver)
+			return;
+
+	_turnManager.EndTurn();
+	_cardHand?.RefillHandToStartSize();
+
+	UpdateHud();
 	}
 
 	private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
@@ -97,6 +197,7 @@ public partial class GameManager : Node
 		}
 
 		ClearCurrentPreview();
+		UpdateHud();
 
 		GD.Print($"Released plant card: {plantType} at {mousePosition}");
 		GD.Print("GameManager: drag released, preview cleared.");
@@ -247,22 +348,36 @@ public partial class GameManager : Node
 	}
 
 	private void PlaceStarterOak()
+{
+	HexCoord startCoord = new HexCoord(0, 0);
+	HexTileData centerTile = _boardManager.GetTileData(startCoord);
+
+	if (centerTile == null)
 	{
-		HexTileData centerTile = _boardManager.GetTileData(new HexCoord(0, 0));
-
-		CardData oakCard = CardData.CreatePlantCard(PlantType.Oak);
-
-		bool oakPlaced = _turnManager.TryPlayCardOnTile(
-			oakCard,
-			centerTile,
-			out string oakError
-		);
-
-		if (!oakPlaced)
-		{
-			GD.PrintErr(oakError);
-		}
+		GD.PrintErr("Starting oak could not be placed. Center tile is missing.");
+		return;
 	}
+
+	if (centerTile.Plant != null)
+		return;
+
+	PlantDefinition oakDefinition = PlantDatabase.Get(PlantType.Oak);
+
+	if (oakDefinition == null)
+	{
+		GD.PrintErr("Starting oak could not be placed. Oak definition is missing.");
+		return;
+	}
+
+	PlantInstance startingOak = new PlantInstance(oakDefinition, wasCreatedBySpread: false);
+
+	centerTile.PlacePlant(startingOak);
+
+	HexTile tileView = _boardManager.GetTileView(startCoord);
+	tileView?.UpdateVisualState();
+
+	_boardManager.RecalculateLightLevels();
+}
 
 	private void PlayHandCard(PlantType plantType, HexCoord coord)
 	{

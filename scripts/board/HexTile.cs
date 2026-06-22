@@ -12,7 +12,8 @@ public partial class HexTile : Node3D
 
 	private Node3D _plantAnchor;
 	private Node3D _plantVisualRoot;
-
+	
+	private Node3D _effectVisualRoot;
 	private Node3D _placementIndicatorRoot;
 	private MeshInstance3D _placementIndicatorMesh;
 
@@ -333,6 +334,7 @@ void fragment() {
 
 		UpdateTileMaterial();
 		RebuildPlantVisual();
+		RebuildEffectVisual();
 
 		if (Data.Plant != null)
 		{
@@ -389,40 +391,81 @@ void fragment() {
 
 		_plantAnchor.AddChild(_plantVisualRoot);
 	}
-
-	private Node3D CreatePlantVisual(PlantInstance plant)
+	private void RebuildEffectVisual()
+{
+	if (_effectVisualRoot != null)
 	{
-		Node3D root = new Node3D();
-		root.Name = $"{plant.Definition.Type}_Visual";
+		_effectVisualRoot.QueueFree();
+		_effectVisualRoot = null;
+	}
 
-		switch (plant.Definition.Type)
-		{
-			case PlantType.Oak:
-				CreateOakVisual(root, plant);
-				break;
+	if (Data == null || Data.Plant == null)
+		return;
 
-			case PlantType.Moss:
-				CreateMossVisual(root, plant);
-				break;
+	if (Data.Plant.Definition.Type != PlantType.Mushroom)
+		return;
 
-			case PlantType.Flower:
-				CreateFlowerVisual(root, plant);
-				break;
+	if (!Data.Plant.IsMature)
+		return;
 
-			case PlantType.Mushroom:
-				CreateMushroomVisual(root, plant);
-				break;
+	BoardManager boardManager = FindBoardManager();
 
-			case PlantType.Birch:
-				CreateBirchVisual(root, plant);
-				break;
-		}
+	if (boardManager == null)
+		return;
 
-		if (!plant.IsMature)
-		{
-			root.Scale = new Vector3(0.65f, 0.65f, 0.65f);
-		}
+	_effectVisualRoot = MushroomEffectVisualBuilder.Create(this, boardManager);
 
+	if (_effectVisualRoot != null)
+	{
+		AddChild(_effectVisualRoot);
+	}
+}
+
+private BoardManager FindBoardManager()
+{
+	Node current = GetParent();
+
+	while (current != null)
+	{
+		if (current is BoardManager boardManager)
+			return boardManager;
+
+		current = current.GetParent();
+	}
+
+	return null;
+}
+
+private Node3D CreatePlantVisual(PlantInstance plant)
+{
+	Node3D root = new Node3D();
+	root.Name = $"{plant.Definition.Type}_Visual";
+
+	Node3D factoryVisual = PlantVisualFactory.CreateVisual(plant, this);
+
+	 if (factoryVisual != null)
+	{
+		return factoryVisual;
+	}
+
+	switch (plant.Definition.Type)
+	{
+		case PlantType.Oak:
+			CreateOakVisual(root, plant);
+			break;
+
+		case PlantType.Moss:
+			CreateMossVisual(root, plant);
+			break;
+
+		case PlantType.Flower:
+			CreateFlowerVisual(root, plant);
+			break;
+
+		case PlantType.Birch:
+			CreateBirchVisual(root, plant);
+			break;
+	}
 		return root;
 	}
 
@@ -656,4 +699,5 @@ void fragment() {
 
 		return material;
 	}
+	
 }

@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://bo7p70nrsgono"]
+
+[ext_resource type="Script" uid="uid://pg064gpqnf2q" path="res://scripts/effects/RainLensCyaniluxOverlay.cs" id="1_overlay"]
+[ext_resource type="Shader" uid="uid://c5ss0vfol62hy" path="res://shaders/rain_lens_cyanilux_style.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_rainlens_cyanilux"]
+shader = ExtResource("2_shader")
+shader_parameter/intensity = 0.0
+shader_parameter/wet_film_strength = 0.32
+shader_parameter/dot_strength = 0.38
+shader_parameter/slide_strength = 0.58
+shader_parameter/distortion_strength = 0.03
+shader_parameter/blur_lod = 1.15
+shader_parameter/highlight_strength = 0.18
+shader_parameter/darken = 0.065
+shader_parameter/dot_tiling = 9.0
+shader_parameter/dot_speed = 0.075
+shader_parameter/dot_density = 0.44
+shader_parameter/slide_line_tiling = 8.0
+shader_parameter/slide_segment_tiling = 2.25
+shader_parameter/slide_speed_min = 0.2
+shader_parameter/slide_speed_max = 0.9
+shader_parameter/slide_density = 0.52
+
+[node name="RainLensLayer" type="CanvasLayer" unique_id=747532598]
+layer = 20
+
+[node name="RainLensRoot" type="Control" parent="." unique_id=1649195680]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RainLensOverlay" type="ColorRect" parent="RainLensRoot" unique_id=1878544084]
+material = SubResource("ShaderMaterial_rainlens_cyanilux")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_overlay")

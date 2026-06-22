@@ -9,9 +9,9 @@ public static class PlantDatabase
 			new PlantDefinition(
 				PlantType.Oak,
 				"Eiche",
-				playCost: 0,
+				waterConsumption: 0,
 				waterProduction: 0,
-				growthRounds: 0,
+				growthRounds: 3,
 				spreadChanceDenominator: 0,
 				allowedLightLevels: new List<LightLevel>
 				{
@@ -26,7 +26,7 @@ public static class PlantDatabase
 			new PlantDefinition(
 				PlantType.Moss,
 				"Moos",
-				playCost: 2,
+				waterConsumption: 2,
 				waterProduction: 3,
 				growthRounds: 2,
 				spreadChanceDenominator: 3,
@@ -43,7 +43,7 @@ public static class PlantDatabase
 			new PlantDefinition(
 				PlantType.Flower,
 				"Blume",
-				playCost: 2,
+				waterConsumption: 2,
 				waterProduction: 2,
 				growthRounds: 2,
 				spreadChanceDenominator: 3,
@@ -60,7 +60,7 @@ public static class PlantDatabase
 			new PlantDefinition(
 				PlantType.Mushroom,
 				"Pilz",
-				playCost: 1,
+				waterConsumption: 1,
 				waterProduction: 1,
 				growthRounds: 3,
 				spreadChanceDenominator: 3,
@@ -77,7 +77,7 @@ public static class PlantDatabase
 			new PlantDefinition(
 				PlantType.Birch,
 				"Birke",
-				playCost: 3,
+				waterConsumption: 3,
 				waterProduction: 0,
 				growthRounds: 4,
 				spreadChanceDenominator: 5,
@@ -87,6 +87,23 @@ public static class PlantDatabase
 					LightLevel.PartialShade
 				},
 				effectType: PlantEffectType.TreeShade
+			)
+		},
+		{
+			PlantType.Lichen,
+			new PlantDefinition(
+				PlantType.Lichen,
+				"Flechte",
+				waterConsumption: 1,
+				waterProduction: 2,
+				growthRounds: 2,
+				spreadChanceDenominator: 4,
+				allowedLightLevels: new List<LightLevel>
+				{
+					LightLevel.Shade,
+					LightLevel.PartialShade
+				},
+				effectType: PlantEffectType.None
 			)
 		}
 	};

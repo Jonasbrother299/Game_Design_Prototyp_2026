@@ -7,7 +7,8 @@ public partial class PlantDefinition : Resource
 	[Export] public PlantType Type;
 	[Export] public string DisplayName = "";
 
-	[Export] public int PlayCost = 1;
+	[Export] public int PlayCost = 0;
+	[Export] public int WaterConsumption = 0;
 	[Export] public int WaterProduction = 0;
 	[Export] public int GrowthRounds = 1;
 	[Export] public int SpreadChanceDenominator = 0;
@@ -22,16 +23,14 @@ public partial class PlantDefinition : Resource
 	[Export(PropertyHint.MultilineText)]
 	public string Description = "";
 
-	// Godot braucht einen leeren Konstruktor für Resources.
 	public PlantDefinition()
 	{
 	}
 
-	// Dieser Konstruktor passt exakt zu deinem PlantDatabase.cs.
 	public PlantDefinition(
 		PlantType type,
 		string displayName,
-		int playCost,
+		int waterConsumption,
 		int waterProduction,
 		int growthRounds,
 		int spreadChanceDenominator,
@@ -41,7 +40,8 @@ public partial class PlantDefinition : Resource
 	{
 		Type = type;
 		DisplayName = displayName;
-		PlayCost = playCost;
+		PlayCost = 0;
+		WaterConsumption = waterConsumption;
 		WaterProduction = waterProduction;
 		GrowthRounds = growthRounds;
 		SpreadChanceDenominator = spreadChanceDenominator;

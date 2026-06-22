@@ -5,14 +5,24 @@
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
+[ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
 [ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_c01mt"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_vcsgt"]
+panorama = SubResource("CompressedTexture2D_c01mt")
+energy_multiplier = 0.5
+
+[sub_resource type="Sky" id="Sky_0bbpv"]
+sky_material = SubResource("PanoramaSkyMaterial_vcsgt")
 
 [sub_resource type="Environment" id="Environment_0bbpv"]
 background_mode = 1
 background_color = Color(0.18431373, 0.20784314, 0.18431373, 1)
+sky = SubResource("Sky_0bbpv")
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.4
-reflected_light_source = 0
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
@@ -60,3 +70,41 @@ CardSize = Vector2(400, 450)
 HoverScale = 1.22
 FanYOffset = 17.0
 HandHeight = 350.0
+
+[node name="GameHub" type="Control" parent="UI/CanvasLayer" unique_id=1627881984]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 240.0
+offset_bottom = 180.0
+mouse_filter = 1
+
+[node name="RoundLabel" type="Label" parent="UI/CanvasLayer/GameHub" unique_id=372543252]
+layout_mode = 0
+offset_right = 200.0
+offset_bottom = 24.0
+
+[node name="WaterLabel" type="Label" parent="UI/CanvasLayer/GameHub" unique_id=958550084]
+layout_mode = 0
+offset_top = 28.0
+offset_right = 200.0
+offset_bottom = 52.0
+
+[node name="CardsPlayLabel" type="Label" parent="UI/CanvasLayer/GameHub" unique_id=332579715]
+layout_mode = 0
+offset_top = 56.0
+offset_right = 200.0
+offset_bottom = 80.0
+vertical_alignment = 2
+
+[node name="EndTurnButton" type="Button" parent="UI/CanvasLayer/GameHub" unique_id=629424259]
+layout_mode = 0
+offset_top = 95.0
+offset_right = 220.0
+offset_bottom = 137.0
+text = "Runde beenden"
+alignment = 2
+
+[node name="RainLensLayer" parent="." unique_id=802075878 instance=ExtResource("7_jlsqs")]
+visible = false
