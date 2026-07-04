@@ -9,8 +9,8 @@ public partial class GameManager : Node
 	private Label _roundLabel;
 	private Label _waterLabel;
 	private Label _cardsPlayedLabel;
+	private GameHub _gameHub;
 	private HexTile _currentPreviewTile;
-
 	private string _lastDebugMessage = "";
 
 	public override void _Ready()
@@ -43,7 +43,15 @@ public partial class GameManager : Node
 	ConnectCardHand();
 	ConnectEndTurnButton();
 	ConnectHudLabels();
+	ConnectGameHub();
 
+	// Start the in-game tutorial manager to orchestrate steps and highlights
+	if (GetTree().CurrentScene != null)
+	{
+		TutorialManager tutorial = new TutorialManager();
+		GetTree().CurrentScene.AddChild(tutorial);
+		tutorial.Start(_gameHub, _boardManager, _cardHand, _turnManager);
+	}
 	UpdateHud();
 	}
 
@@ -76,6 +84,16 @@ private void ConnectHudLabels()
 
 	if (_cardsPlayedLabel == null)
 		GD.PrintErr("CardsPlayedLabel not found. Make sure the label node is named CardsPlayLabel.");
+}
+
+private void ConnectGameHub()
+{
+	_gameHub = GetTree().CurrentScene.GetNodeOrNull<GameHub>("UI/CanvasLayer/GameHub");
+
+	if (_gameHub == null)
+	{
+		GD.PrintErr("GameHub not found. Tutorial cannot be shown.");
+	}
 }
 private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 {
