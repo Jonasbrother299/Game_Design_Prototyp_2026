@@ -3,27 +3,24 @@
 [ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
 [ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
+[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="4_q8u5g"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
 [ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
-[ext_resource type="Script" uid="uid://gamehubscript123" path="res://scripts/UI/GameHub.cs" id="8_ghub"]
+[ext_resource type="Script" uid="uid://cnektqrt4t5n5" path="res://scripts/UI/GameHub.cs" id="8_ghub"]
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_c01mt"]
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_lhr70"]
+panorama = ExtResource("4_q8u5g")
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_vcsgt"]
-panorama = SubResource("CompressedTexture2D_c01mt")
-energy_multiplier = 0.5
+[sub_resource type="Sky" id="Sky_wp0k4"]
+sky_material = SubResource("PanoramaSkyMaterial_lhr70")
 
-[sub_resource type="Sky" id="Sky_0bbpv"]
-sky_material = SubResource("PanoramaSkyMaterial_vcsgt")
-
-[sub_resource type="Environment" id="Environment_0bbpv"]
-background_mode = 1
-background_color = Color(0.18431373, 0.20784314, 0.18431373, 1)
-sky = SubResource("Sky_0bbpv")
-ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_energy = 0.4
+[sub_resource type="Environment" id="Environment_bjd11"]
+background_mode = 2
+sky = SubResource("Sky_wp0k4")
+ambient_light_source = 3
+reflected_light_source = 2
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
@@ -47,7 +44,7 @@ transform = Transform3D(0.81915206, 0.4055798, -0.4055798, 0, 0.70710677, 0.7071
 light_energy = 0.8
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]
-environment = SubResource("Environment_0bbpv")
+environment = SubResource("Environment_bjd11")
 camera_attributes = SubResource("CameraAttributesPractical_rarhs")
 compositor = SubResource("Compositor_vcsgt")
 
@@ -75,26 +72,25 @@ HandHeight = 350.0
 [node name="GameHub" type="Control" parent="UI/CanvasLayer" unique_id=1627881984]
 layout_mode = 3
 anchors_preset = 15
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-mouse_filter = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("8_ghub")
 
 [node name="TutorialPanel" type="Panel" parent="UI/CanvasLayer/GameHub" unique_id=1028347192]
-layout_mode = 3
+visible = false
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-visible = false
 mouse_filter = 1
 
 [node name="ColorRect" type="ColorRect" parent="UI/CanvasLayer/GameHub/TutorialPanel" unique_id=2019374618]
-layout_mode = 3
-anchors_preset = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -102,111 +98,78 @@ grow_vertical = 2
 color = Color(0, 0, 0, 0.18)
 
 [node name="CenterContainer" type="CenterContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel" unique_id=1918273746]
-layout_mode = 3
-anchors_preset = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="TutorialWindow" type="Panel" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer" unique_id=1182934000]
-layout_mode = 2
-anchors_preset = 0
-offset_right = 700.0
-offset_bottom = 420.0
-custom_minimum_size = Vector2(700, 420)
-margin_left = -350.0
-margin_top = -210.0
-margin_right = 350.0
-margin_bottom = 210.0
-theme = null
 clip_contents = true
+custom_minimum_size = Vector2(700, 420)
+layout_mode = 2
 
 [node name="TutorialLayoutVBox" type="VBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow" unique_id=1999999997]
-layout_mode = 3
+layout_mode = 1
 anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
 offset_right = -8.0
 offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
-custom_constants/separation = 10
 size_flags_horizontal = 3
 size_flags_vertical = 3
+alignment = 1
 
 [node name="TutorialTitle" type="Label" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1203947623]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Tutorial 1/4"
 horizontal_alignment = 1
-size_flags_horizontal = 3
 
 [node name="ScrollContainer" type="ScrollContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1999999999]
-layout_mode = 3
-anchors_preset = 15
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-scroll_horizontal = 0
-scroll_vertical = 1
-h_scroll_enabled = false
-v_scroll_enabled = true
 mouse_filter = 0
 
 [node name="ScrollContent" type="VBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer" unique_id=1173846201]
-layout_mode = 3
-anchors_preset = 15
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-alignment = 1
-custom_constants/separation = 10
+layout_mode = 2
 size_flags_horizontal = 3
+alignment = 1
 
 [node name="TutorialText" type="Label" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent" unique_id=1120394762]
 layout_mode = 2
-text = "Hier erscheint die Einführung für das erste Level. Ziehe eine Karte auf ein Feld, um sie zu platzieren."
-custom_constants/line_spacing = 2
-autowrap = true
 size_flags_horizontal = 3
+text = "Hier erscheint die Einführung für das erste Level. Ziehe eine Karte auf ein Feld, um sie zu platzieren."
 
 [node name="TutorialContentHBox" type="HBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent" unique_id=1182038472]
 layout_mode = 2
-alignment = 1
-custom_constants/separation = 16
 size_flags_horizontal = 3
+alignment = 1
 
 [node name="TutorialCardImage" type="TextureRect" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox" unique_id=1182038473]
-layout_mode = 2
-stretch_mode = 1
-expand = true
 custom_minimum_size = Vector2(200, 280)
-size_flags_horizontal = 1
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 1
 
 [node name="TutorialCardInfo" type="Label" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox" unique_id=1182038474]
 layout_mode = 2
-size_flags_horizontal = 1
-autowrap = true
-text = ""
 
 [node name="ProgressDots" type="HBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1999999998]
 layout_mode = 2
-alignment = 1
-custom_constants/separation = 6
 size_flags_horizontal = 3
+alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1049372618]
 layout_mode = 2
-alignment = 3
-custom_constants/separation = 8
 size_flags_horizontal = 3
+alignment = 3
 
 [node name="TutorialBackButton" type="Button" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/HBoxContainer" unique_id=1083927461]
 layout_mode = 2
@@ -224,9 +187,7 @@ offset_bottom = 24.0
 [node name="ExitButton" type="Button" parent="UI/CanvasLayer/GameHub" unique_id=827364928]
 layout_mode = 0
 anchor_left = 1.0
-anchor_top = 0.0
 anchor_right = 1.0
-anchor_bottom = 0.0
 offset_left = -52.0
 offset_top = 12.0
 offset_right = -12.0

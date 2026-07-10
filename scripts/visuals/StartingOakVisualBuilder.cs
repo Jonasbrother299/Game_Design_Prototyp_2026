@@ -2,7 +2,7 @@ using Godot;
 
 public static class StartingOakVisualBuilder
 {
-	private const string ModelPath = "res://assets/models/starting_oak.fbx";
+	private const string ModelPath = "res://scenes/board/plants/Oak.tscn";
 
 	public static Node3D Create(PlantInstance plant)
 	{
