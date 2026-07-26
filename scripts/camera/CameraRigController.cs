@@ -76,7 +76,8 @@ public partial class CameraRigController : Node3D
 		UpdateCameraPosition();
 	}
 
-	public override void _UnhandledInput(InputEvent inputEvent)
+	// Use _Input so the camera receives input events before GUI nodes mark them handled.
+	public override void _Input(InputEvent inputEvent)
 	{
 		HandleMouseButtons(inputEvent);
 		HandleMouseMotion(inputEvent);
