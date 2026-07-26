@@ -1,0 +1,114 @@
+[gd_scene format=3 uid="uid://dbsnedk2icmha"]
+
+[ext_resource type="Texture2D" uid="uid://cil4ny7ps22ie" path="res://assets/ui/waterbar/WaterCircleMask.png" id="1_6wpi5"]
+[ext_resource type="Texture2D" uid="uid://bqw0hht7rr0rn" path="res://assets/ui/waterbar/WaterCircle.png" id="3_uxdov"]
+
+[node name="Water" type="Control" unique_id=985273860]
+custom_minimum_size = Vector2(250, 250)
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+grow_horizontal = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1000220392]
+custom_minimum_size = Vector2(250, 230.18)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -125.0
+offset_top = -115.09
+offset_right = 125.0
+offset_bottom = 209.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer" unique_id=106998466]
+clip_children = 1
+layout_mode = 2
+texture = ExtResource("1_6wpi5")
+expand_mode = 5
+
+[node name="Control" type="Control" parent="MarginContainer/TextureRect" unique_id=1257070595]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/TextureRect/Control" unique_id=598367244]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 2
+
+[node name="WaterProduction" type="Panel" parent="MarginContainer/TextureRect/Control/HBoxContainer" unique_id=2101760752]
+self_modulate = Color(0, 18.892157, 18.892157, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.05
+
+[node name="WaterProductionProgress" type="ProgressBar" parent="MarginContainer/TextureRect/Control/HBoxContainer/WaterProduction" unique_id=204357106]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 126.969574
+offset_bottom = -65.78003
+grow_horizontal = 2
+grow_vertical = 2
+value = 2.42
+fill_mode = 3
+show_percentage = false
+
+[node name="Tree" type="Panel" parent="MarginContainer/TextureRect/Control/HBoxContainer" unique_id=1470691714]
+self_modulate = Color(3.028031, 18.892157, 0, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TreeProgress" type="ProgressBar" parent="MarginContainer/TextureRect/Control/HBoxContainer/Tree" unique_id=42332202]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 102.969574
+offset_bottom = -115.030426
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 3
+show_percentage = false
+
+[node name="WaterExpenditure" type="Panel" parent="MarginContainer/TextureRect/Control/HBoxContainer" unique_id=927052338]
+self_modulate = Color(0, 4.2253184, 18.892157, 1)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="WaterExpenditureProgress" type="ProgressBar" parent="MarginContainer/TextureRect/Control/HBoxContainer/WaterExpenditure" unique_id=1332632486]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 107.969574
+offset_bottom = -74.030426
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 3
+show_percentage = false
+
+[node name="TextureRect2" type="TextureRect" parent="MarginContainer" unique_id=2116540058]
+layout_mode = 2
+texture = ExtResource("3_uxdov")
+expand_mode = 5
