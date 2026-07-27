@@ -3,12 +3,12 @@ using Godot;
 public static class StartingOakVisualBuilder
 {
 	private const string ModelPath = "res://scenes/board/plants/Oak.tscn";
-	private const float MinimumModelScale = 0.45f;
-	private const float MaximumModelScale = 0.75f;
 	private const float MinimumFallbackScale = 0.65f;
 	private const float MaximumFallbackScale = 1.0f;
 
-	public static Node3D Create(PlantInstance plant)
+	public static Node3D Create(
+		PlantInstance plant,
+		float modelScale)
 	{
 		PackedScene modelScene = GD.Load<PackedScene>(ModelPath);
 
@@ -30,10 +30,7 @@ public static class StartingOakVisualBuilder
 		model.Name = "StartingOak_Visual";
 		model.Position = Vector3.Zero;
 		model.Rotation = Vector3.Zero;
-		model.Scale = Vector3.One * GetScale(
-			plant,
-			MinimumModelScale,
-			MaximumModelScale);
+		model.Scale = Vector3.One * modelScale;
 
 		return model;
 	}

@@ -113,7 +113,7 @@ alignment = 2
 
 [node name="TutorialOverlay" parent="UI/CanvasLayer" unique_id=269973507 instance=ExtResource("9_tutorial")]
 
-[node name="PauseMenu" parent="UI/CanvasLayer" instance=ExtResource("10_pause")]
+[node name="PauseMenu" parent="UI/CanvasLayer" unique_id=1719965911 instance=ExtResource("10_pause")]
 visible = false
 
 [node name="RainLensLayer" parent="." unique_id=802075878 instance=ExtResource("7_jlsqs")]

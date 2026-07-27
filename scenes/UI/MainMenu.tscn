@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://ifs463km2wex"]
+[gd_scene load_steps=9 format=3 uid="uid://ifs463km2wex"]
 
 [ext_resource type="Script" uid="uid://dsiubbb3giavj" path="res://scripts/UI/MainMenu.cs" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/images/LoadingScreen.png" id="2_background"]
 [ext_resource type="PackedScene" path="res://scenes/UI/SettingsMenu.tscn" id="4_settings"]
+[ext_resource type="PackedScene" path="res://scenes/UI/EncyclopediaMenu.tscn" id="5_encyclopedia"]
 
 [sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
 content_margin_left = 26.0
@@ -133,7 +134,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(420, 66)
 layout_mode = 2
 size_flags_horizontal = 0
-focus_neighbor_bottom = NodePath("../SettingsButton")
+focus_neighbor_bottom = NodePath("../EncyclopediaButton")
 theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
 theme_override_colors/font_hover_color = Color(1, 0.99, 0.84, 1)
 theme_override_font_sizes/font_size = 28
@@ -144,12 +145,29 @@ theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Spiel starten"
 alignment = 0
 
-[node name="SettingsButton" type="Button" parent="MenuMargin/MenuRow/MenuContent"]
+[node name="EncyclopediaButton" type="Button" parent="MenuMargin/MenuRow/MenuContent"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(420, 66)
 layout_mode = 2
 size_flags_horizontal = 0
 focus_neighbor_top = NodePath("../StartButton")
+focus_neighbor_bottom = NodePath("../SettingsButton")
+theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
+theme_override_colors/font_hover_color = Color(1, 0.99, 0.84, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Ökosystem-Lexikon"
+alignment = 0
+
+[node name="SettingsButton" type="Button" parent="MenuMargin/MenuRow/MenuContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 66)
+layout_mode = 2
+size_flags_horizontal = 0
+focus_neighbor_top = NodePath("../EncyclopediaButton")
 focus_neighbor_bottom = NodePath("../QuitButton")
 theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
 theme_override_colors/font_hover_color = Color(1, 0.99, 0.84, 1)
@@ -203,4 +221,7 @@ text = "PLAYTEST-BUILD"
 horizontal_alignment = 2
 
 [node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
+visible = false
+
+[node name="EncyclopediaMenu" parent="." instance=ExtResource("5_encyclopedia")]
 visible = false

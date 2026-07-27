@@ -7,6 +7,10 @@ public partial class BoardManager : Node3D
 	[Export] public int Radius = 2;
 	[Export] public float HexSize = 1.0f;
 
+	[ExportGroup("Starting Oak Visual")]
+	[Export(PropertyHint.Range, "0.05,2.0,0.01")]
+	public float StartingOakScale = 0.25f;
+
 	public BoardData BoardData { get; private set; } = new BoardData();
 
 	private readonly Dictionary<HexCoord, HexTile> _tileViews = new();
@@ -119,6 +123,7 @@ public partial class BoardManager : Node3D
 		HexTile tileView = HexTileScene.Instantiate<HexTile>();
 
 		tileView.Position = HexToWorld(tileData.Coord, HexSize);
+		tileView.ConfigureStartingOakScale(StartingOakScale);
 		tileView.Setup(tileData);
 
 		AddChild(tileView);
