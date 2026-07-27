@@ -1,0 +1,517 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/PauseMenu.cs" id="1_pause"]
+[ext_resource type="PackedScene" path="res://scenes/UI/SettingsMenu.tscn" id="2_settings"]
+
+[sub_resource type="StyleBoxFlat" id="StylePausePanel"]
+content_margin_left = 42.0
+content_margin_top = 32.0
+content_margin_right = 42.0
+content_margin_bottom = 34.0
+bg_color = Color(0.025, 0.03, 0.025, 0.97)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.73, 0.78, 0.49, 0.85)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleInfoPanel"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.055, 0.065, 0.05, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.48, 0.3, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 11.0
+bg_color = Color(0.07, 0.12, 0.07, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.67, 0.36, 0.75)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 11.0
+bg_color = Color(0.16, 0.24, 0.12, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.87, 0.53, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 20.0
+content_margin_top = 11.0
+content_margin_right = 20.0
+content_margin_bottom = 11.0
+bg_color = Color(0.035, 0.07, 0.035, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.87, 0.53, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.94, 0.94, 0.72, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="PauseMenu" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 100
+script = ExtResource("1_pause")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.68)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PausePanel" type="PanelContainer" parent="CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(850, 650)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePausePanel")
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/PausePanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PausePanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.82, 1)
+theme_override_font_sizes/font_size = 44
+text = "Pause"
+horizontal_alignment = 1
+
+[node name="GoalPanel" type="PanelContainer" parent="CenterContainer/PausePanel/Content"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleInfoPanel")
+
+[node name="GoalContent" type="VBoxContainer" parent="CenterContainer/PausePanel/Content/GoalPanel"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="GoalTitle" type="Label" parent="CenterContainer/PausePanel/Content/GoalPanel/GoalContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 17
+text = "ZIEL"
+
+[node name="GoalText" type="Label" parent="CenterContainer/PausePanel/Content/GoalPanel/GoalContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 20
+text = "Baue ein stabiles Ökosystem auf und halte die alte Eiche am Leben."
+autowrap_mode = 2
+
+[node name="StatusPanel" type="PanelContainer" parent="CenterContainer/PausePanel/Content"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleInfoPanel")
+
+[node name="StatusGrid" type="GridContainer" parent="CenterContainer/PausePanel/Content/StatusPanel"]
+layout_mode = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 7
+columns = 2
+
+[node name="RoundTitle" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.65, 1)
+theme_override_font_sizes/font_size = 18
+text = "Runde"
+
+[node name="RoundValue" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "–"
+
+[node name="WaterTitle" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.65, 1)
+theme_override_font_sizes/font_size = 18
+text = "Wasser"
+
+[node name="WaterValue" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "–"
+
+[node name="EventTitle" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.65, 1)
+theme_override_font_sizes/font_size = 18
+text = "Aktives Ereignis"
+
+[node name="EventValue" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Keines"
+
+[node name="ButtonGrid" type="GridContainer" parent="CenterContainer/PausePanel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="ResumeButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Weiterspielen"
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Einstellungen"
+
+[node name="ControlsButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Steuerung"
+
+[node name="RestartButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Partie neu starten"
+
+[node name="MainMenuButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Zum Hauptmenü"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Spiel beenden"
+
+[node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]
+visible = false
+
+[node name="ControlsOverlay" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 30
+
+[node name="Dimmer" type="ColorRect" parent="ControlsOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.82)
+
+[node name="CenterContainer" type="CenterContainer" parent="ControlsOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ControlsOverlay/CenterContainer"]
+custom_minimum_size = Vector2(720, 560)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePausePanel")
+
+[node name="Content" type="VBoxContainer" parent="ControlsOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.82, 1)
+theme_override_font_sizes/font_size = 38
+text = "Steuerung"
+horizontal_alignment = 1
+
+[node name="ControlGrid" type="GridContainer" parent="ControlsOverlay/CenterContainer/Panel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 25
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="CardControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 19
+text = "Karte platzieren"
+
+[node name="CardInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Karte mit linker Maustaste auf ein Feld ziehen"
+
+[node name="YawControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 19
+text = "Kamera drehen"
+
+[node name="YawInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Freie Fläche mit linker Maustaste ziehen"
+
+[node name="PitchControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 19
+text = "Kamera neigen"
+
+[node name="PitchInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Rechte Maustaste ziehen"
+
+[node name="ZoomControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 19
+text = "Kamera zoomen"
+
+[node name="ZoomInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Mausrad"
+
+[node name="RoundControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 19
+text = "Runde abschließen"
+
+[node name="RoundInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Button „Runde beenden“"
+
+[node name="PauseControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
+theme_override_font_sizes/font_size = 19
+text = "Pause"
+
+[node name="PauseInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 19
+text = "Esc"
+
+[node name="ControlsBackButton" type="Button" parent="ControlsOverlay/CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Zurück"
+
+[node name="ConfirmOverlay" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 40
+
+[node name="Dimmer" type="ColorRect" parent="ConfirmOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.84)
+
+[node name="CenterContainer" type="CenterContainer" parent="ConfirmOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ConfirmOverlay/CenterContainer"]
+custom_minimum_size = Vector2(620, 330)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePausePanel")
+
+[node name="Content" type="VBoxContainer" parent="ConfirmOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="ConfirmTitle" type="Label" parent="ConfirmOverlay/CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.82, 1)
+theme_override_font_sizes/font_size = 34
+text = "Aktion bestätigen"
+horizontal_alignment = 1
+
+[node name="ConfirmMessage" type="Label" parent="ConfirmOverlay/CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.92, 0.92, 0.84, 1)
+theme_override_font_sizes/font_size = 20
+text = "Der aktuelle Fortschritt geht verloren."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ButtonRow" type="HBoxContainer" parent="ConfirmOverlay/CenterContainer/Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="CancelButton" type="Button" parent="ConfirmOverlay/CenterContainer/Panel/Content/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Abbrechen"
+
+[node name="ConfirmButton" type="Button" parent="ConfirmOverlay/CenterContainer/Panel/Content/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Bestätigen"

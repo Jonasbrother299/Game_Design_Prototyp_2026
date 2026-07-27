@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EventDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="EventDefinition" format=3 uid="uid://usld6spmlsma"]
 
 [ext_resource type="Script" uid="uid://bobyghp6ygcrf" path="res://scripts/events/EventDefinition.cs" id="1_event"]
 
@@ -7,5 +7,4 @@ script = ExtResource("1_event")
 Type = 4
 DisplayName = "Hitzetag"
 WaterModifierPerRound = -3
-DurationRounds = 1
-Description = "Senkt den Wasserstand in der nächsten Rundenauflösung um 3."
+Description = "Beim nächsten Rundenende sinkt die Wasserproduktion um 3."

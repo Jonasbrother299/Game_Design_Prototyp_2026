@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EventDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="EventDefinition" format=3 uid="uid://bvuh300fc0p6v"]
 
 [ext_resource type="Script" uid="uid://bobyghp6ygcrf" path="res://scripts/events/EventDefinition.cs" id="1_event"]
 
@@ -6,9 +6,8 @@
 script = ExtResource("1_event")
 Type = 6
 DisplayName = "Schädlinge"
-DurationRounds = 1
 EffectType = 2
 SeedlingDeathChanceDenominator = 2
 MatureDeathChanceDenominator = 3
 MatureDeathRequiresMonoculture = true
-Description = "Setzlinge können sterben. Ausgewachsene Pflanzen sind gefährdet, wenn mindestens drei gleiche Pflanzen verbunden sind."
+Description = "Setzlinge können absterben. Ausgewachsene Pflanzen sind gefährdet, wenn mindestens drei Pflanzen derselben Art zusammenhängend verbunden sind."

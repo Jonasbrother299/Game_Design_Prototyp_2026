@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EventDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="EventDefinition" format=3 uid="uid://btaq3v1nycvp1"]
 
 [ext_resource type="Script" uid="uid://bobyghp6ygcrf" path="res://scripts/events/EventDefinition.cs" id="1_event"]
 
@@ -6,6 +6,5 @@
 script = ExtResource("1_event")
 Type = 5
 DisplayName = "Wind"
-DurationRounds = 1
 EffectType = 1
-Description = "Erhöht in der nächsten Rundenauflösung einmalig die Ausbreitungschance aller ausgewachsenen Pflanzen."
+Description = "Beim nächsten Rundenende erhalten alle ausgewachsenen Pflanzen einmalig eine höhere Ausbreitungschance."

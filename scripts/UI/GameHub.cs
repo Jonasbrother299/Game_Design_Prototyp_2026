@@ -2,6 +2,9 @@ using Godot;
 
 public partial class GameHub : Control
 {
+	[Signal]
+	public delegate void MenuRequestedEventHandler();
+
 	[Export] public Button ExitButton;
 
 	private TurnManager _turnManager;
@@ -35,7 +38,7 @@ public partial class GameHub : Control
 
 	private void OnExitButtonPressed()
 	{
-		GetTree().Quit();
+		EmitSignal(SignalName.MenuRequested);
 	}
 
 	private void SetupEventDisplay()
