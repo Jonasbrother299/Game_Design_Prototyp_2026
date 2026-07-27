@@ -3,24 +3,19 @@
 [ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
 [ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
-[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="4_q8u5g"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
 [ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://cnektqrt4t5n5" path="res://scripts/UI/GameHub.cs" id="8_ghub"]
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_lhr70"]
-panorama = ExtResource("4_q8u5g")
-
-[sub_resource type="Sky" id="Sky_wp0k4"]
-sky_material = SubResource("PanoramaSkyMaterial_lhr70")
-
 [sub_resource type="Environment" id="Environment_bjd11"]
-background_mode = 2
-sky = SubResource("Sky_wp0k4")
-ambient_light_source = 3
-reflected_light_source = 2
+background_mode = 1
+background_color = Color(0.16, 0.19, 0.16, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.55, 0.62, 0.55, 1)
+ambient_light_energy = 0.65
+reflected_light_source = 0
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
