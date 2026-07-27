@@ -26,11 +26,11 @@ public partial class HexTile : Node3D
 		Data = data;
 		Name = $"HexTile_{data.Coord.Q}_{data.Coord.R}";
 
-		_tileMesh = GetNodeOrNull<MeshInstance3D>("hex_tile/MeshInstance3D");
+		_tileMesh = FindRenderableTileMesh();
 
 		if (_tileMesh == null)
 		{
-			_tileMesh = GetNodeOrNull<MeshInstance3D>("TileMesh");
+			GD.PrintErr($"{Name}: No renderable tile mesh found.");
 		}
 
 		_plantAnchor = GetNodeOrNull<Node3D>("PlantAnchor");
@@ -166,7 +166,72 @@ public partial class HexTile : Node3D
 
 		return null;
 	}
+private MeshInstance3D FindRenderableTileMesh()
+{
+	MeshInstance3D directHexTile = GetNodeOrNull<MeshInstance3D>("hex_tile");
 
+	if (directHexTile != null && directHexTile.Mesh != null)
+		return directHexTile;
+
+	MeshInstance3D nestedHexTile = GetNodeOrNull<MeshInstance3D>("hex_tile/MeshInstance3D");
+
+	if (nestedHexTile != null && nestedHexTile.Mesh != null)
+		return nestedHexTile;
+
+	MeshInstance3D tileMesh = GetNodeOrNull<MeshInstance3D>("TileMesh");
+
+	if (tileMesh != null && tileMesh.Mesh != null)
+		return tileMesh;
+
+	return FindFirstRenderableMeshInstance(this);
+}
+private MeshInstance3D FindFirstRenderableMeshInstance(Node node)
+{
+	foreach (Node child in node.GetChildren())
+	{
+		if (IsIgnoredMeshNode(child))
+			continue;
+
+		if (child is MeshInstance3D meshInstance)
+		{
+			if (meshInstance.Mesh != null)
+				return meshInstance;
+		}
+
+		MeshInstance3D found = FindFirstRenderableMeshInstance(child);
+
+		if (found != null)
+			return found;
+	}
+
+	return null;
+}
+private bool IsIgnoredMeshNode(Node node)
+{
+	string nodeName = node.Name.ToString().ToLowerInvariant();
+	string nodePath = node.GetPath().ToString().ToLowerInvariant();
+	string fullText = $"{nodePath}/{nodeName}";
+
+	if (fullText.Contains("handcard"))
+		return true;
+
+	if (fullText.Contains("placement"))
+		return true;
+
+	if (fullText.Contains("placment"))
+		return true;
+
+	if (fullText.Contains("indicator"))
+		return true;
+
+	if (fullText.Contains("indikactor"))
+		return true;
+
+	if (fullText.Contains("preview"))
+		return true;
+
+	return false;
+}
 	private void SetupUniqueTileMaterial()
 	{
 		if (_tileMesh == null)
@@ -341,37 +406,37 @@ void fragment() {
 			GD.Print($"{Name} | Light: {Data.LightLevel} | Plant: {Data.Plant.Definition.DisplayName}");
 		}
 	}
-
-	private void UpdateTileMaterial()
+private void UpdateTileMaterial()
+{
+	if (_tileMesh == null || _tileMesh.Mesh == null)
 	{
-		if (_tileMesh == null)
-			return;
-
-		if (_tileMaterial == null)
-		{
-			SetupUniqueTileMaterial();
-		}
-
-		switch (Data.LightLevel)
-		{
-			case LightLevel.Sun:
-				_tileMaterial.AlbedoColor = new Color("d8dbd5");
-				break;
-
-			case LightLevel.PartialShade:
-				_tileMaterial.AlbedoColor = new Color("cfd4cc");
-				break;
-
-			case LightLevel.Shade:
-				_tileMaterial.AlbedoColor = new Color("bec6bc");
-				break;
-		}
-
-		if (Data.IsBlocked)
-		{
-			_tileMaterial.AlbedoColor = new Color("8f8a84");
-		}
+		_tileMesh = FindRenderableTileMesh();
 	}
+
+	if (_tileMesh == null)
+	{
+		GD.PrintErr($"{Name}: Cannot apply grass texture because tile mesh is null.");
+		return;
+	}
+
+	Texture2D grassTexture = GD.Load<Texture2D>("res://assets/textures/grass/grass.tga");
+
+	if (grassTexture == null)
+	{
+		GD.PrintErr($"{Name}: Grass texture could not be loaded.");
+		return;
+	}
+
+	StandardMaterial3D material = new StandardMaterial3D();
+	material.AlbedoTexture = grassTexture;
+	material.AlbedoColor = Colors.White;
+	material.Roughness = 1.0f;
+	material.Metallic = 0.0f;
+	material.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
+
+	_tileMesh.MaterialOverride = material;
+
+}
 
 	private void RebuildPlantVisual()
 	{
