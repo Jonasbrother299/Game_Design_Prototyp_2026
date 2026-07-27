@@ -9,7 +9,6 @@ public partial class GameManager : Node
 	private Label _roundLabel;
 	private Label _waterLabel;
 	private Label _cardsPlayedLabel;
-	private GameHub _gameHub;
 	private HexTile _currentPreviewTile;
 	private string _lastDebugMessage = "";
 
@@ -43,15 +42,7 @@ public partial class GameManager : Node
 	ConnectCardHand();
 	ConnectEndTurnButton();
 	ConnectHudLabels();
-	ConnectGameHub();
-
-	// Start the in-game tutorial manager to orchestrate steps and highlights
-	if (GetTree().CurrentScene != null)
-	{
-		TutorialManager tutorial = new TutorialManager();
-		GetTree().CurrentScene.AddChild(tutorial);
-		tutorial.Start(_gameHub, _boardManager, _cardHand, _turnManager);
-	}
+	StartTutorial();
 	UpdateHud();
 	}
 
@@ -67,6 +58,7 @@ public partial class GameManager : Node
 
 		_cardHand.PlantCardDragged += OnPlantCardDragged;
 		_cardHand.PlantCardDragReleased += OnPlantCardDragReleased;
+		_cardHand.SetCards(_turnManager.State.HandCards);
 
 		GD.Print("GameManager connected to CardHandUI.");
 	}
@@ -86,14 +78,25 @@ private void ConnectHudLabels()
 		GD.PrintErr("CardsPlayedLabel not found. Make sure the label node is named CardsPlayLabel.");
 }
 
-private void ConnectGameHub()
+private void StartTutorial()
 {
-	_gameHub = GetTree().CurrentScene.GetNodeOrNull<GameHub>("UI/CanvasLayer/GameHub");
+	Node currentScene = GetTree().CurrentScene;
 
-	if (_gameHub == null)
+	if (currentScene == null)
+		return;
+
+	TutorialOverlay overlay = currentScene.GetNodeOrNull<TutorialOverlay>("UI/CanvasLayer/TutorialOverlay");
+
+	if (overlay == null)
 	{
-		GD.PrintErr("GameHub not found. Tutorial cannot be shown.");
+		GD.PrintErr("TutorialOverlay not found. Expected path: UI/CanvasLayer/TutorialOverlay");
+		return;
 	}
+
+	TutorialManager tutorial = new TutorialManager();
+	tutorial.Name = "TutorialManager";
+	currentScene.AddChild(tutorial);
+	tutorial.Start(overlay, _boardManager, _cardHand, _turnManager);
 }
 private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 {
@@ -176,7 +179,7 @@ private void ConnectEndTurnButton()
 			return;
 
 	_turnManager.EndTurn();
-	_cardHand?.RefillHandToStartSize();
+	_cardHand?.SetCards(_turnManager.State.HandCards);
 
 	UpdateHud();
 	}
@@ -247,8 +250,8 @@ private void ConnectEndTurnButton()
 
 		if (card == null)
 		{
-			GD.Print($"GameManager: No {plantType} card found in TurnManager hand. Creating temporary card for prototype placement.");
-			card = CardData.CreatePlantCard(plantType);
+			GD.PrintErr($"GameManager: No {plantType} card found in the current hand.");
+			return false;
 		}
 
 		bool played = _turnManager.TryPlayCardOnTile(

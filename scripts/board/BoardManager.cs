@@ -81,7 +81,7 @@ public partial class BoardManager : Node3D
 			if (tile.Plant == null)
 				continue;
 
-			if (tile.Plant.Definition.EffectType != PlantEffectType.TreeShade)
+			if (!tile.Plant.Definition.CanProduceShade(tile.Plant.IsMature))
 				continue;
 
 			tile.LightLevel = LightLevel.Shade;

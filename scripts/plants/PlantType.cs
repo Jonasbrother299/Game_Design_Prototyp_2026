@@ -6,6 +6,5 @@ public enum PlantType
 	Moss,
 	Flower,
 	Mushroom,
-	Birch,
-	Lichen
+	Birch
 }

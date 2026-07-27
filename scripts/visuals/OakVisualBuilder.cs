@@ -33,22 +33,7 @@ public static class OakVisualBuilder
 
 	private static int GetTreeStage(PlantInstance plant)
 	{
-		if (plant == null)
-			return 1;
-
-		if (plant.IsMature)
-			return 4;
-
-		int totalGrowthRounds = plant.Definition.GrowthRounds;
-		int completedGrowthRounds = totalGrowthRounds - plant.RemainingGrowthRounds;
-
-		if (completedGrowthRounds <= 0)
-			return 1;
-
-		if (completedGrowthRounds == 1)
-			return 2;
-
-		return 3;
+		return Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 4);
 	}
 
 	private static void CreateSapling(Node3D root)

@@ -1,8 +1,8 @@
 [gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://dgkqgl3vfek6v"]
 
 [ext_resource type="Shader" path="res://addons/flexible_toon_shader/hatch_toon.gdshader" id="1_q44bp"]
-[ext_resource type="Texture2D" uid="uid://c0dpox2fcqs5d" path="res://addons/flexible_toon_shader/example/cup_texture.png" id="2"]
-[ext_resource type="Texture2D" uid="uid://1qnxn1x7e2vc" path="res://addons/flexible_toon_shader/hatch.png" id="3_s6hul"]
+[ext_resource type="Texture2D" uid="uid://cd80hlgfv1a2u" path="res://addons/flexible_toon_shader/example/cup_texture.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://bo4e87k7xurbw" path="res://addons/flexible_toon_shader/hatch.png" id="3_s6hul"]
 
 [resource]
 render_priority = 0

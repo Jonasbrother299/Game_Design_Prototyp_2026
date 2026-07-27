@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
 [ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://cnektqrt4t5n5" path="res://scripts/UI/GameHub.cs" id="8_ghub"]
+[ext_resource type="PackedScene" path="res://scenes/tutorial/TutorialOverlay.tscn" id="9_tutorial"]
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 1
@@ -15,7 +16,6 @@ background_color = Color(0.16, 0.19, 0.16, 1)
 ambient_light_source = 1
 ambient_light_color = Color(0.55, 0.62, 0.55, 1)
 ambient_light_energy = 0.65
-reflected_light_source = 0
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
@@ -73,107 +73,6 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("8_ghub")
 
-[node name="TutorialPanel" type="Panel" parent="UI/CanvasLayer/GameHub" unique_id=1028347192]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-
-[node name="ColorRect" type="ColorRect" parent="UI/CanvasLayer/GameHub/TutorialPanel" unique_id=2019374618]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.18)
-
-[node name="CenterContainer" type="CenterContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel" unique_id=1918273746]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TutorialWindow" type="Panel" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer" unique_id=1182934000]
-clip_contents = true
-custom_minimum_size = Vector2(700, 420)
-layout_mode = 2
-
-[node name="TutorialLayoutVBox" type="VBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow" unique_id=1999999997]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -8.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-alignment = 1
-
-[node name="TutorialTitle" type="Label" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1203947623]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Tutorial 1/4"
-horizontal_alignment = 1
-
-[node name="ScrollContainer" type="ScrollContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1999999999]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 0
-
-[node name="ScrollContent" type="VBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer" unique_id=1173846201]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="TutorialText" type="Label" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent" unique_id=1120394762]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Hier erscheint die Einführung für das erste Level. Ziehe eine Karte auf ein Feld, um sie zu platzieren."
-
-[node name="TutorialContentHBox" type="HBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent" unique_id=1182038472]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="TutorialCardImage" type="TextureRect" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox" unique_id=1182038473]
-custom_minimum_size = Vector2(200, 280)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 1
-
-[node name="TutorialCardInfo" type="Label" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox" unique_id=1182038474]
-layout_mode = 2
-
-[node name="ProgressDots" type="HBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1999999998]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1049372618]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 3
-
-[node name="TutorialBackButton" type="Button" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/HBoxContainer" unique_id=1083927461]
-layout_mode = 2
-text = "Zurück"
-
-[node name="TutorialNextButton" type="Button" parent="UI/CanvasLayer/GameHub/TutorialPanel/CenterContainer/TutorialWindow/TutorialLayoutVBox/HBoxContainer" unique_id=1092837465]
-layout_mode = 2
-text = "Weiter"
-
 [node name="RoundLabel" type="Label" parent="UI/CanvasLayer/GameHub" unique_id=372543252]
 layout_mode = 0
 offset_right = 200.0
@@ -210,6 +109,8 @@ offset_right = 220.0
 offset_bottom = 137.0
 text = "Runde beenden"
 alignment = 2
+
+[node name="TutorialOverlay" parent="UI/CanvasLayer" instance=ExtResource("9_tutorial")]
 
 [node name="RainLensLayer" parent="." unique_id=802075878 instance=ExtResource("7_jlsqs")]
 visible = false

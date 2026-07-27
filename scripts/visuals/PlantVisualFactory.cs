@@ -17,8 +17,11 @@ public static class PlantVisualFactory
 			case PlantType.Moss:
 				return MossVisualBuilder.Create(plant);
 
-			case PlantType.Lichen:
-				return LichenVisualBuilder.Create(plant);
+			case PlantType.Flower:
+				return FlowerVisualBuilder.Create(plant);
+
+			case PlantType.Birch:
+				return BirchVisualBuilder.Create(plant);
 
 			case PlantType.Oak:
 				if (IsStartingOakTile(tile))

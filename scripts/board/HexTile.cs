@@ -208,9 +208,18 @@ private MeshInstance3D FindFirstRenderableMeshInstance(Node node)
 }
 private bool IsIgnoredMeshNode(Node node)
 {
-	string nodeName = node.Name.ToString().ToLowerInvariant();
-	string nodePath = node.GetPath().ToString().ToLowerInvariant();
-	string fullText = $"{nodePath}/{nodeName}";
+	string fullText = "";
+	Node current = node;
+
+	while (current != null)
+	{
+		fullText += $"/{current.Name.ToString().ToLowerInvariant()}";
+
+		if (current == this)
+			break;
+
+		current = current.GetParent();
+	}
 
 	if (fullText.Contains("handcard"))
 		return true;

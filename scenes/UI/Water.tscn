@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dbsnedk2icmha"]
 
 [ext_resource type="Texture2D" uid="uid://cil4ny7ps22ie" path="res://assets/ui/waterbar/WaterCircleMask.png" id="1_6wpi5"]
-[ext_resource type="FontFile" uid="uid://pvq4hfwqoppn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="1_jsh08"]
-[ext_resource type="Texture2D" uid="uid://bqw0hht7rr0rn" path="res://assets/ui/waterbar/WaterCircle.png" id="3_uxdov"]
+[ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="1_jsh08"]
+[ext_resource type="Texture2D" uid="uid://pm80s0yti35v" path="res://assets/ui/waterbar/WaterCircle.png" id="3_uxdov"]
 
 [node name="Water" type="Control" unique_id=985273860]
 custom_minimum_size = Vector2(250, 250)

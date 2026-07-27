@@ -1,0 +1,108 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/tutorial/TutorialOverlay.cs" id="1_overlay"]
+
+[node name="TutorialOverlay" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_overlay")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.18)
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TutorialWindow" type="Panel" parent="CenterContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(700, 420)
+layout_mode = 2
+
+[node name="TutorialLayoutVBox" type="VBoxContainer" parent="CenterContainer/TutorialWindow"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="TutorialTitle" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tutorial"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+
+[node name="ScrollContent" type="VBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="TutorialText" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 2
+
+[node name="TutorialContentHBox" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="TutorialCardImage" type="TextureRect" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox"]
+custom_minimum_size = Vector2(200, 280)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TutorialCardInfo" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 2
+
+[node name="ProgressDots" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="Navigation" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 3
+
+[node name="TutorialBackButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation"]
+layout_mode = 2
+text = "Zurück"
+
+[node name="TutorialNextButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation"]
+layout_mode = 2
+text = "Weiter"
