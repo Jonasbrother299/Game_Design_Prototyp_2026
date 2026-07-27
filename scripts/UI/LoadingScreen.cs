@@ -96,10 +96,10 @@ public partial class LoadingScreen : Control
 		AddDebug("Checking scene paths...");
 
 		CheckPath(GameScenePath);
-		CheckPath("res://assets/cards/card_baum.jpeg");
-		CheckPath("res://assets/cards/card_flechte.jpeg");
 		CheckPath("res://assets/cards/card_moos.png");
 		CheckPath("res://assets/cards/card_pilz.jpeg");
+		CheckPath("res://assets/cards/card_blume.png");
+		CheckPath("res://assets/cards/card_birke.png");
 
 		AddDebug("Checks finished.");
 	}

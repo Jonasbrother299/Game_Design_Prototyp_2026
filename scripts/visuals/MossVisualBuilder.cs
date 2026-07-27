@@ -35,16 +35,7 @@ public static class MossVisualBuilder
 
 	private static int GetStage(PlantInstance plant)
 	{
-		if (plant == null)
-			return 1;
-
-		if (plant.IsMature)
-			return 3;
-
-		if (plant.GrowthProgress < 0.5f)
-			return 1;
-
-		return 2;
+		return Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 3);
 	}
 
 	private static void AddMossPatch(

@@ -1,27 +1,18 @@
-public class EventDefinition
+using Godot;
+
+[GlobalClass]
+public partial class EventDefinition : Resource
 {
-	public GameEventType Type { get; private set; }
+	[Export] public GameEventType Type;
+	[Export] public string DisplayName = "";
+	[Export] public int WaterModifierPerRound;
+	[Export] public int DurationRounds = 1;
+	[Export] public GameEventEffectType EffectType = GameEventEffectType.None;
+	[Export] public int SeedlingDeathChanceDenominator;
+	[Export] public bool SeedlingDeathRequiresSun;
+	[Export] public int MatureDeathChanceDenominator;
+	[Export] public bool MatureDeathRequiresMonoculture;
 
-	public string DisplayName { get; private set; }
-
-	public int WaterModifierPerRound { get; private set; }
-
-	public int DurationRounds { get; private set; }
-
-	public GameEventEffectType EffectType { get; private set; }
-
-	public EventDefinition(
-		GameEventType type,
-		string displayName,
-		int waterModifierPerRound,
-		int durationRounds,
-		GameEventEffectType effectType
-	)
-	{
-		Type = type;
-		DisplayName = displayName;
-		WaterModifierPerRound = waterModifierPerRound;
-		DurationRounds = durationRounds;
-		EffectType = effectType;
-	}
+	[Export(PropertyHint.MultilineText)]
+	public string Description = "";
 }

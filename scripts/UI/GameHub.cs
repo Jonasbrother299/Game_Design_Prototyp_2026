@@ -1,72 +1,121 @@
 using Godot;
-using System;
 
 public partial class GameHub : Control
 {
-	[Export] public Control TutorialPanel;
-	[Export] public Label TutorialTitleLabel;
-	[Export] public Label TutorialTextLabel;
-	[Export] public Button TutorialNextButton;
 	[Export] public Button ExitButton;
+
+	private TurnManager _turnManager;
+	private EventDisplayUI _eventDisplay;
+	private CanvasLayer _rainLensLayer;
+	private RainLensCyaniluxOverlay _rainLensOverlay;
 
 	public override void _Ready()
 	{
-		// Ensure tutorial panel is discoverable and hidden by default.
-		if (TutorialPanel == null)
-			TutorialPanel = GetNodeOrNull<Control>("TutorialPanel");
-
-		if (TutorialPanel != null)
-		{
-			TutorialPanel.MouseFilter = MouseFilterEnum.Stop;
-			TutorialPanel.ZIndex = 1000;
-			TutorialPanel.Hide();
-		}
-
 		if (ExitButton == null)
 			ExitButton = GetNodeOrNull<Button>("ExitButton");
 
 		if (ExitButton != null)
 			ExitButton.Pressed += OnExitButtonPressed;
+
+		CallDeferred(nameof(SetupEventDisplay));
 	}
 
-	public void ShowTutorialPanel()
+	public override void _ExitTree()
 	{
-		if (TutorialPanel == null)
-			return;
+		if (ExitButton != null)
+			ExitButton.Pressed -= OnExitButtonPressed;
 
-		TutorialPanel.Show();
-
-		// panel entrance animation
-		var window = TutorialPanel.GetNodeOrNull<Panel>("CenterContainer/TutorialWindow");
-
-		if (window != null)
+		if (_turnManager != null)
 		{
-			window.Scale = new Vector2(0.9f, 0.9f);
-			var tween = CreateTween();
-			tween.TweenProperty(window, "scale", new Vector2(1f,1f), 0.28f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			_turnManager.EventActivated -= OnEventActivated;
+			_turnManager.WaterPhaseResolved -= OnWaterPhaseResolved;
+			_turnManager.EventPhaseResolved -= OnEventPhaseResolved;
 		}
-	}
-
-	public void HideTutorialPanel()
-	{
-		TutorialPanel?.Hide();
-	}
-
-	// Helper to set texts and image; TutorialManager can manipulate nodes directly as well.
-	public void SetTitle(string title)
-	{
-		if (TutorialTitleLabel != null)
-			TutorialTitleLabel.Text = title;
-	}
-
-	public void SetText(string text)
-	{
-		if (TutorialTextLabel != null)
-			TutorialTextLabel.Text = text;
 	}
 
 	private void OnExitButtonPressed()
 	{
 		GetTree().Quit();
+	}
+
+	private void SetupEventDisplay()
+	{
+		Node currentScene = GetTree().CurrentScene;
+		if (currentScene == null)
+			return;
+
+		_turnManager = currentScene.GetNodeOrNull<TurnManager>("TurnManager");
+		if (_turnManager == null)
+		{
+			GD.PushError("GameHub: TurnManager fehlt.");
+			return;
+		}
+
+		_eventDisplay = GetNodeOrNull<EventDisplayUI>("EventDisplay");
+		if (_eventDisplay == null)
+		{
+			PackedScene displayScene = GD.Load<PackedScene>(
+				"res://scenes/UI/EventDisplay.tscn");
+			_eventDisplay = displayScene?.Instantiate<EventDisplayUI>();
+
+			if (_eventDisplay != null)
+			{
+				AddChild(_eventDisplay);
+			}
+		}
+
+		_rainLensOverlay =
+			currentScene.GetNodeOrNull<RainLensCyaniluxOverlay>(
+				"RainLensLayer/RainLensRoot/RainLensOverlay");
+		_rainLensLayer = _rainLensOverlay?.GetParent()?.GetParent() as CanvasLayer;
+
+		_turnManager.EventActivated += OnEventActivated;
+		_turnManager.WaterPhaseResolved += OnWaterPhaseResolved;
+		_turnManager.EventPhaseResolved += OnEventPhaseResolved;
+	}
+
+	private void OnEventActivated(GameEventType eventType)
+	{
+		_eventDisplay?.ShowActivated(EventDatabase.Get(eventType));
+
+		if (eventType == GameEventType.Rain ||
+			eventType == GameEventType.HeavyRain)
+		{
+			if (_rainLensLayer != null)
+				_rainLensLayer.Visible = true;
+
+			float intensity = eventType == GameEventType.HeavyRain ? 0.90f : 0.62f;
+			_rainLensOverlay?.StartRain(intensity);
+		}
+	}
+
+	private void OnWaterPhaseResolved(WaterPhaseResult result)
+	{
+		_eventDisplay?.ShowWaterResult(result);
+	}
+
+	private void OnEventPhaseResolved(EventPhaseResult result)
+	{
+		_eventDisplay?.ShowPhaseResult(result);
+
+		if (!ContainsRainEvent(result.ActiveEvents))
+		{
+			_rainLensOverlay?.StopRain();
+		}
+	}
+
+	private static bool ContainsRainEvent(
+		System.Collections.Generic.IReadOnlyList<GameEventType> activeEvents)
+	{
+		foreach (GameEventType eventType in activeEvents)
+		{
+			if (eventType == GameEventType.Rain ||
+				eventType == GameEventType.HeavyRain)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

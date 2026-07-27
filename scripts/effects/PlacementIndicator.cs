@@ -56,7 +56,7 @@ public partial class PlacementIndicator : Node3D
 		GD.Print($"PlacementIndicator shown at {GlobalPosition}. Valid: {isValid}");
 	}
 
-	public void Hide()
+	public new void Hide()
 	{
 		Visible = false;
 	}

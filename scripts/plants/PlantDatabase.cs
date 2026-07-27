@@ -1,99 +1,129 @@
+using Godot;
+using System;
 using System.Collections.Generic;
 
 public static class PlantDatabase
 {
-	private static readonly Dictionary<PlantType, PlantDefinition> Plants = new();
-
-	static PlantDatabase()
+	private static readonly Dictionary<PlantType, string> ResourcePaths = new()
 	{
-		// Create definitions and assign card images from assets
-		var oak = new PlantDefinition(
-			PlantType.Oak,
-			"Eiche",
-			waterConsumption: 0,
-			waterProduction: 0,
-			growthRounds: 3,
-			spreadChanceDenominator: 0,
-			allowedLightLevels: new List<LightLevel> { LightLevel.Sun, LightLevel.PartialShade },
-			effectType: PlantEffectType.TreeShade
-		);
-		oak.CardImage = Godot.GD.Load<Godot.Texture2D>("res://assets/cards/card_baum.jpeg");
+		{ PlantType.Oak, "res://data/plants/oak.tres" },
+		{ PlantType.Moss, "res://data/plants/moss.tres" },
+		{ PlantType.Flower, "res://data/plants/flower.tres" },
+		{ PlantType.Mushroom, "res://data/plants/mushroom.tres" },
+		{ PlantType.Birch, "res://data/plants/birch.tres" }
+	};
 
-		var moss = new PlantDefinition(
-			PlantType.Moss,
-			"Moos",
-			waterConsumption: 2,
-			waterProduction: 3,
-			growthRounds: 2,
-			spreadChanceDenominator: 3,
-			allowedLightLevels: new List<LightLevel> { LightLevel.Shade, LightLevel.PartialShade },
-			effectType: PlantEffectType.None
-		);
-		moss.CardImage = Godot.GD.Load<Godot.Texture2D>("res://assets/cards/card_moos.png");
+	private static readonly Dictionary<PlantType, PlantDefinition> Plants = LoadPlants();
 
-		var flower = new PlantDefinition(
-			PlantType.Flower,
-			"Blume",
-			waterConsumption: 2,
-			waterProduction: 2,
-			growthRounds: 2,
-			spreadChanceDenominator: 3,
-			allowedLightLevels: new List<LightLevel> { LightLevel.Sun, LightLevel.PartialShade },
-			effectType: PlantEffectType.SpreadChancePlusOneForNeighbors
-		);
-		flower.CardImage = Godot.GD.Load<Godot.Texture2D>("res://assets/cards/card_baum.jpeg");
-
-		var mushroom = new PlantDefinition(
-			PlantType.Mushroom,
-			"Pilz",
-			waterConsumption: 1,
-			waterProduction: 1,
-			growthRounds: 3,
-			spreadChanceDenominator: 3,
-			allowedLightLevels: new List<LightLevel> { LightLevel.Shade, LightLevel.PartialShade },
-			effectType: PlantEffectType.AdjacentPlantsProducePlusOne
-		);
-		mushroom.CardImage = Godot.GD.Load<Godot.Texture2D>("res://assets/cards/card_pilz.jpeg");
-
-		var birch = new PlantDefinition(
-			PlantType.Birch,
-			"Birke",
-			waterConsumption: 3,
-			waterProduction: 0,
-			growthRounds: 4,
-			spreadChanceDenominator: 5,
-			allowedLightLevels: new List<LightLevel> { LightLevel.Sun, LightLevel.PartialShade },
-			effectType: PlantEffectType.TreeShade
-		);
-		birch.CardImage = Godot.GD.Load<Godot.Texture2D>("res://assets/cards/card_baum.jpeg");
-
-		var lichen = new PlantDefinition(
-			PlantType.Lichen,
-			"Flechte",
-			waterConsumption: 1,
-			waterProduction: 2,
-			growthRounds: 2,
-			spreadChanceDenominator: 4,
-			allowedLightLevels: new List<LightLevel> { LightLevel.Shade, LightLevel.PartialShade },
-			effectType: PlantEffectType.None
-		);
-		lichen.CardImage = Godot.GD.Load<Godot.Texture2D>("res://assets/cards/card_flechte.jpeg");
-
-		Plants[PlantType.Oak] = oak;
-		Plants[PlantType.Moss] = moss;
-		Plants[PlantType.Flower] = flower;
-		Plants[PlantType.Mushroom] = mushroom;
-		Plants[PlantType.Birch] = birch;
-		Plants[PlantType.Lichen] = lichen;
-	}
+	public static bool IsValid => Plants.Count == ResourcePaths.Count;
 
 	public static PlantDefinition Get(PlantType type)
 	{
-		return Plants[type];
+		Plants.TryGetValue(type, out PlantDefinition plant);
+		return plant;
 	}
 
 	public static List<PlantDefinition> GetAll()
 	{
 		return new List<PlantDefinition>(Plants.Values);
+	}
+
+	private static Dictionary<PlantType, PlantDefinition> LoadPlants()
+	{
+		Dictionary<PlantType, PlantDefinition> plants = new();
+
+		foreach (KeyValuePair<PlantType, string> entry in ResourcePaths)
+		{
+			PlantDefinition plant = GD.Load<PlantDefinition>(entry.Value);
+			if (plant == null)
+			{
+				GD.PushError($"PlantDatabase: Ressource fehlt oder ist ungültig: {entry.Value}");
+				continue;
+			}
+
+			if (!ValidatePlant(plant, entry.Key, entry.Value))
+			{
+				continue;
+			}
+
+			plants[entry.Key] = plant;
+		}
+
+		return plants;
+	}
+
+	private static bool ValidatePlant(
+		PlantDefinition plant,
+		PlantType expectedType,
+		string resourcePath)
+	{
+		List<string> errors = new();
+
+		if (plant.Type != expectedType)
+			errors.Add($"Typ ist {plant.Type}, erwartet wurde {expectedType}");
+
+		if (!Enum.IsDefined(plant.Type) || plant.Type == PlantType.None)
+			errors.Add("Pflanzentyp ist ungültig");
+
+		if (string.IsNullOrWhiteSpace(plant.DisplayName))
+			errors.Add("Anzeigename fehlt");
+
+		if (plant.PlayCost < 0)
+			errors.Add("Spielkosten dürfen nicht negativ sein");
+
+		if (plant.WaterConsumption < 0 || plant.WaterProduction < 0)
+			errors.Add("Wasserwerte dürfen nicht negativ sein");
+
+		if (plant.GrowthRounds <= 0)
+			errors.Add("Wachstumsdauer muss größer als 0 sein");
+
+		if (plant.GrowthStageCount != plant.GrowthRounds + 1)
+		{
+			errors.Add(
+				$"Wachstumsstufen müssen Wachstumsrunden + 1 entsprechen " +
+				$"({plant.GrowthStageCount} statt {plant.GrowthRounds + 1})");
+		}
+
+		if (plant.SpreadChanceDenominator == 1 || plant.SpreadChanceDenominator < 0)
+			errors.Add("Ausbreitungsnenner muss 0 oder mindestens 2 sein");
+
+		if (plant.AllowedLightLevels == null || plant.AllowedLightLevels.Count == 0)
+		{
+			errors.Add("Mindestens ein erlaubtes Lichtlevel fehlt");
+		}
+		else
+		{
+			HashSet<LightLevel> lightLevels = new();
+			foreach (LightLevel lightLevel in plant.AllowedLightLevels)
+			{
+				if (!Enum.IsDefined(lightLevel))
+					errors.Add($"Lichtlevel {lightLevel} ist ungültig");
+
+				if (!lightLevels.Add(lightLevel))
+					errors.Add($"Lichtlevel {lightLevel} ist doppelt eingetragen");
+			}
+		}
+
+		if (!Enum.IsDefined(plant.EffectType))
+			errors.Add($"Pflanzeneffekt {plant.EffectType} ist ungültig");
+
+		if (plant.EffectType != PlantEffectType.TreeShade &&
+			!plant.ShadeRequiresMaturity)
+		{
+			errors.Add("ShadeRequiresMaturity ist nur für schattenspendende Pflanzen zulässig");
+		}
+
+		if (plant.Type != PlantType.Oak && plant.CardImage == null)
+			errors.Add("Kartenbild fehlt");
+
+		if (plant.Type == PlantType.Mushroom && plant.PlantScene == null)
+			errors.Add("Pilzmodell fehlt");
+
+		foreach (string error in errors)
+		{
+			GD.PushError($"PlantDatabase: {resourcePath}: {error}.");
+		}
+
+		return errors.Count == 0;
 	}
 }

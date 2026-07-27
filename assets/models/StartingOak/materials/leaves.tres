@@ -1,6 +1,6 @@
 [gd_resource type="VisualShader" format=3 uid="uid://75g57ojayr3u"]
 
-[ext_resource type="Texture2D" uid="uid://bsge7y7pg6ay1" path="res://assets/models/StartingOak/textures/leaf.png" id="1_4j1o5"]
+[ext_resource type="Texture2D" uid="uid://f0ta8snxh4k2" path="res://assets/models/StartingOak/textures/leaf.png" id="1_4j1o5"]
 
 [sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_4j1o5"]
 output_port_for_preview = 0

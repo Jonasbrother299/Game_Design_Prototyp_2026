@@ -3,6 +3,10 @@ using Godot;
 public static class StartingOakVisualBuilder
 {
 	private const string ModelPath = "res://scenes/board/plants/Oak.tscn";
+	private const float MinimumModelScale = 0.45f;
+	private const float MaximumModelScale = 0.75f;
+	private const float MinimumFallbackScale = 0.65f;
+	private const float MaximumFallbackScale = 1.0f;
 
 	public static Node3D Create(PlantInstance plant)
 	{
@@ -26,7 +30,10 @@ public static class StartingOakVisualBuilder
 		model.Name = "StartingOak_Visual";
 		model.Position = Vector3.Zero;
 		model.Rotation = Vector3.Zero;
-		model.Scale = new Vector3(1.0f, 1.0f, 1.0f);
+		model.Scale = Vector3.One * GetScale(
+			plant,
+			MinimumModelScale,
+			MaximumModelScale);
 
 		return model;
 	}
@@ -35,8 +42,20 @@ public static class StartingOakVisualBuilder
 	{
 		Node3D fallback = OakVisualBuilder.Create(plant);
 		fallback.Name = "StartingOak_Fallback";
-		fallback.Scale = new Vector3(1.35f, 1.35f, 1.35f);
+		fallback.Scale = Vector3.One * GetScale(
+			plant,
+			MinimumFallbackScale,
+			MaximumFallbackScale);
 
 		return fallback;
+	}
+
+	private static float GetScale(
+		PlantInstance plant,
+		float minimumScale,
+		float maximumScale)
+	{
+		float growthProgress = plant?.GrowthProgress ?? 1.0f;
+		return Mathf.Lerp(minimumScale, maximumScale, growthProgress);
 	}
 }

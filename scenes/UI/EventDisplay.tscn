@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/EventDisplayUI.cs" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_event"]
+bg_color = Color(0.105, 0.145, 0.105, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.58, 0.70, 0.40, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 8
+
+[node name="EventDisplay" type="PanelContainer"]
+visible = false
+z_index = 10
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 24.0
+offset_right = 220.0
+offset_bottom = 150.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_event")
+script = ExtResource("1_script")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.94, 0.72, 1)
+theme_override_font_sizes/font_size = 22
+text = "Ereignis"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+text = "Beschreibung"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Result" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.84, 0.64, 1)
+text = "Ergebnis"
+horizontal_alignment = 1
+autowrap_mode = 2

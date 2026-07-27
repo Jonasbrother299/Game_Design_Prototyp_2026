@@ -10,6 +10,20 @@ public class PlantInstance
 
 	public bool IsMature => RemainingGrowthRounds <= 0;
 
+	public int VisualGrowthStage
+	{
+		get
+		{
+			int stageCount = Mathf.Max(Definition.GrowthStageCount, 2);
+
+			if (IsMature)
+				return stageCount;
+
+			int stage = Mathf.FloorToInt(GrowthProgress * (stageCount - 1)) + 1;
+			return Mathf.Clamp(stage, 1, stageCount - 1);
+		}
+	}
+
 	public float GrowthProgress
 	{
 		get

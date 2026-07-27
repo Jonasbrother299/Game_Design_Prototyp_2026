@@ -15,6 +15,11 @@ public partial class CardData : Resource
 	public static CardData CreatePlantCard(PlantType plantType)
 	{
 		PlantDefinition definition = PlantDatabase.Get(plantType);
+		if (definition == null)
+		{
+			GD.PushError($"CardData: Plant definition is missing for {plantType}.");
+			return null;
+		}
 
 		CardData card = new CardData();
 
