@@ -2,58 +2,93 @@ using Godot;
 
 public partial class MainMenu : Control
 {
-	[Export] public Button StartButton;
-	[Export] public Button QuitButton;
-
 	private const string LoadingScenePath = "res://scenes/UI/LoadingScreen.tscn";
 	private const string GameScenePath = "res://scenes/Main.tscn";
 
+	private Button _startButton;
+	private Button _settingsButton;
+	private Button _quitButton;
+	private SettingsMenu _settingsMenu;
+	private bool _isChangingScene;
+
 	public override void _Ready()
 	{
-		GD.Print("MainMenu loaded.");
+		_startButton = GetNodeOrNull<Button>("%StartButton");
+		_settingsButton = GetNodeOrNull<Button>("%SettingsButton");
+		_quitButton = GetNodeOrNull<Button>("%QuitButton");
+		_settingsMenu = GetNodeOrNull<SettingsMenu>("SettingsMenu");
 
-		if (StartButton == null)
-			StartButton = GetNodeOrNull<Button>("CenterContainer/VBoxContainer/StartButton");
-
-		if (QuitButton == null)
-			QuitButton = GetNodeOrNull<Button>("CenterContainer/VBoxContainer/QuitButton");
-
-		if (StartButton == null)
+		if (_startButton == null || _settingsButton == null || _quitButton == null)
 		{
-			GD.PrintErr("StartButton not found. Check node path.");
+			GD.PushError("MainMenu: Mindestens ein Menübutton fehlt.");
 			return;
 		}
 
-		StartButton.Pressed += OnStartPressed;
+		_startButton.Pressed += OnStartPressed;
+		_settingsButton.Pressed += OnSettingsPressed;
+		_quitButton.Pressed += OnQuitPressed;
 
-		if (QuitButton != null)
-			QuitButton.Pressed += OnQuitPressed;
+		if (_settingsMenu != null)
+			_settingsMenu.Closed += OnSettingsClosed;
+		else
+			GD.PushWarning("MainMenu: SettingsMenu fehlt.");
+
+		_startButton.GrabFocus();
 	}
 
 	private void OnStartPressed()
 	{
-		GD.Print("Start button pressed.");
+		if (_isChangingScene)
+			return;
 
-		if (ResourceLoader.Exists(LoadingScenePath))
+		_isChangingScene = true;
+		SetMenuButtonsDisabled(true);
+
+		string targetScene = ResourceLoader.Exists(LoadingScenePath)
+			? LoadingScenePath
+			: GameScenePath;
+
+		if (!ResourceLoader.Exists(targetScene))
 		{
-			GD.Print("Loading screen found. Switching to loading screen.");
-			GetTree().ChangeSceneToFile(LoadingScenePath);
+			GD.PushError($"MainMenu: Zielszene fehlt: {targetScene}");
+			_isChangingScene = false;
+			SetMenuButtonsDisabled(false);
 			return;
 		}
 
-		GD.PrintErr("LoadingScreen.tscn not found. Loading Main.tscn directly.");
-
-		if (ResourceLoader.Exists(GameScenePath))
+		Error error = GetTree().ChangeSceneToFile(targetScene);
+		if (error != Error.Ok)
 		{
-			GetTree().ChangeSceneToFile(GameScenePath);
-			return;
+			GD.PushError($"MainMenu: Szenenwechsel fehlgeschlagen: {error}");
+			_isChangingScene = false;
+			SetMenuButtonsDisabled(false);
 		}
+	}
 
-		GD.PrintErr("Main.tscn also not found. Check scene paths.");
+	private void OnSettingsPressed()
+	{
+		if (_settingsMenu == null)
+			return;
+
+		SetMenuButtonsDisabled(true);
+		_settingsMenu.Open();
+	}
+
+	private void OnSettingsClosed()
+	{
+		SetMenuButtonsDisabled(false);
+		_settingsButton.GrabFocus();
 	}
 
 	private void OnQuitPressed()
 	{
 		GetTree().Quit();
+	}
+
+	private void SetMenuButtonsDisabled(bool disabled)
+	{
+		_startButton.Disabled = disabled;
+		_settingsButton.Disabled = disabled;
+		_quitButton.Disabled = disabled;
 	}
 }

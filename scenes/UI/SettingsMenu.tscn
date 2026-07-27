@@ -1,0 +1,205 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/SettingsMenu.cs" id="1_settings"]
+
+[sub_resource type="StyleBoxFlat" id="StylePanel"]
+content_margin_left = 38.0
+content_margin_top = 34.0
+content_margin_right = 38.0
+content_margin_bottom = 34.0
+bg_color = Color(0.025, 0.085, 0.045, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.7, 0.35, 0.75)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.07, 0.16, 0.075, 1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.58, 0.72, 0.38, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.15, 0.28, 0.12, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.88, 0.5, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.04, 0.105, 0.05, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.88, 0.5, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.93, 0.94, 0.7, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleSlider"]
+bg_color = Color(0.015, 0.045, 0.025, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleSliderFill"]
+bg_color = Color(0.55, 0.7, 0.32, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="SettingsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 20
+script = ExtResource("1_settings")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.005, 0.012, 0.007, 0.76)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SettingsPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(680, 500)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StylePanel")
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/SettingsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.92, 0.72, 1)
+theme_override_font_sizes/font_size = 44
+text = "Einstellungen"
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="VolumeRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="VolumeLabel" type="Label" parent="CenterContainer/SettingsPanel/Content/VolumeRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 23
+text = "Gesamtlautstärke"
+
+[node name="MasterVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/VolumeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_icons/grabber = null
+theme_override_icons/grabber_highlight = null
+theme_override_styles/slider = SubResource("StyleSlider")
+theme_override_styles/grabber_area = SubResource("StyleSliderFill")
+theme_override_styles/grabber_area_highlight = SubResource("StyleSliderFill")
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="MasterVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/VolumeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 22
+text = "80 %"
+horizontal_alignment = 2
+
+[node name="FullscreenToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 23
+text = "Vollbild"
+
+[node name="VsyncToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 23
+text = "VSync"
+
+[node name="ButtonSpacer" type="Control" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="BackButton" type="Button" parent="CenterContainer/SettingsPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Zurück"

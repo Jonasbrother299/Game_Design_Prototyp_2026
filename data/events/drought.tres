@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EventDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="EventDefinition" format=3 uid="uid://cq3hsjfkjpvd4"]
 
 [ext_resource type="Script" uid="uid://bobyghp6ygcrf" path="res://scripts/events/EventDefinition.cs" id="1_event"]
 
@@ -8,4 +8,4 @@ Type = 3
 DisplayName = "Dürre"
 WaterModifierPerRound = -4
 DurationRounds = 2
-Description = "Senkt den Wasserstand zwei Runden lang um 4."
+Description = "Zwei Runden lang sinkt die Wasserproduktion am Rundenende um 4."
