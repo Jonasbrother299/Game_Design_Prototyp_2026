@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://dcvamy8m5xu37"]
+
+[ext_resource type="PackedScene" uid="uid://b5w5jfsbhydt" path="res://assets/models/plants/SpiderliliFlower/Spidelilie.fbx" id="1_n5eok"]
+[ext_resource type="Texture2D" uid="uid://cuotg0ar1ilfo" path="res://assets/models/plants/SpiderliliFlower/textures/Spidelilie_Material.001_AlbedoTransparency.png" id="2_kqu8o"]
+[ext_resource type="Texture2D" uid="uid://cg3q4yqeyb0ew" path="res://assets/models/plants/SpiderliliFlower/textures/Spidelilie_Material_AlbedoTransparency.png" id="3_pksuv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_20ix0"]
+cull_mode = 2
+albedo_texture = ExtResource("2_kqu8o")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qtw3q"]
+albedo_texture = ExtResource("3_pksuv")
+
+[node name="Spidelilie" unique_id=1688451095 instance=ExtResource("1_n5eok")]
+
+[node name="Flower" parent="." index="0" unique_id=2014892765]
+material_override = SubResource("StandardMaterial3D_20ix0")
+
+[node name="Stem" parent="." index="1" unique_id=1445660828]
+material_override = SubResource("StandardMaterial3D_qtw3q")
