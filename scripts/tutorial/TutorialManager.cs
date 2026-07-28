@@ -7,8 +7,29 @@ public partial class TutorialManager : Node
 	private CardHandUI _cardHand;
 	private TurnManager _turnManager;
 
-	private int _step;
-	private const int TotalSteps = 9;
+	private enum TutorialStepId
+	{
+		Intro,
+		Goal,
+		PlayMossIntro,
+		WaitForMossPlacement,
+		EndTurnIntro,
+		WaitForEndTurn,
+		Water,
+		Growth,
+		Spread,
+		Event,
+		PlantDeath,
+		FreePlay
+	}
+
+	private TutorialStepId _currentStep = TutorialStepId.Intro;
+
+	private bool _hasShownWater;
+	private bool _hasShownGrowth;
+	private bool _hasShownSpread;
+	private bool _hasShownEvent;
+	private bool _hasShownPlantDeath;
 
 	public void Start(
 		TutorialOverlay overlay,
@@ -30,111 +51,311 @@ public partial class TutorialManager : Node
 
 		_overlay.NextRequested += OnNext;
 		_overlay.BackRequested += OnBack;
-		_overlay.ShowOverlay();
 
-		_step = 0;
-		ShowStep(_step);
+		if (_turnManager != null)
+		{
+			_turnManager.PlantPlaced += OnPlantPlaced;
+			_turnManager.EndTurnRequested += OnEndTurnRequested;
+			_turnManager.WaterPhaseResolved += OnWaterPhaseResolved;
+			_turnManager.GrowthPhaseResolved += OnGrowthPhaseResolved;
+			_turnManager.SpreadPhaseResolved += OnSpreadPhaseResolved;
+			_turnManager.EventPhaseResolved += OnEventPhaseResolved;
+		}
+
+		_currentStep = TutorialStepId.Intro;
+		ShowCurrentStep();
 	}
 
 	public override void _ExitTree()
 	{
-		if (_overlay == null)
-			return;
+		if (_overlay != null)
+		{
+			_overlay.NextRequested -= OnNext;
+			_overlay.BackRequested -= OnBack;
+		}
 
-		_overlay.NextRequested -= OnNext;
-		_overlay.BackRequested -= OnBack;
+		if (_turnManager != null)
+		{
+			_turnManager.PlantPlaced -= OnPlantPlaced;
+			_turnManager.EndTurnRequested -= OnEndTurnRequested;
+			_turnManager.WaterPhaseResolved -= OnWaterPhaseResolved;
+			_turnManager.GrowthPhaseResolved -= OnGrowthPhaseResolved;
+			_turnManager.SpreadPhaseResolved -= OnSpreadPhaseResolved;
+			_turnManager.EventPhaseResolved -= OnEventPhaseResolved;
+		}
 	}
 
 	private void OnNext()
 	{
-		if (_step >= TotalSteps - 1)
+		switch (_currentStep)
 		{
-			EndTutorial();
-			return;
-		}
+			case TutorialStepId.Intro:
+				GoToStep(TutorialStepId.Goal);
+				break;
 
-		_step++;
-		ShowStep(_step);
+			case TutorialStepId.Goal:
+				GoToStep(TutorialStepId.PlayMossIntro);
+				break;
+
+			case TutorialStepId.PlayMossIntro:
+				GoToStep(TutorialStepId.WaitForMossPlacement);
+				break;
+
+			case TutorialStepId.EndTurnIntro:
+				GoToStep(TutorialStepId.WaitForEndTurn);
+				break;
+
+			case TutorialStepId.Water:
+				GoToStep(TutorialStepId.Growth);
+				break;
+
+			case TutorialStepId.Growth:
+				GoToStep(TutorialStepId.Spread);
+				break;
+
+			case TutorialStepId.Spread:
+				GoToStep(TutorialStepId.Event);
+				break;
+
+			case TutorialStepId.Event:
+				GoToStep(TutorialStepId.PlantDeath);
+				break;
+
+			case TutorialStepId.PlantDeath:
+				GoToStep(TutorialStepId.FreePlay);
+				break;
+
+			case TutorialStepId.FreePlay:
+				EndTutorial();
+				break;
+
+			case TutorialStepId.WaitForMossPlacement:
+			case TutorialStepId.WaitForEndTurn:
+				// Diese Schritte werden durch echte Spielaktionen beendet.
+				break;
+		}
 	}
 
 	private void OnBack()
 	{
-		if (_step <= 0)
-			return;
-
-		_step--;
-		ShowStep(_step);
+		// Zurück ist im interaktiven Tutorial zunächst deaktiviert.
+		// Grund: Schritte wie Karte platzieren oder Runde beenden verändern den echten Spielzustand.
 	}
 
-	private void ShowStep(int step)
+	private void GoToStep(TutorialStepId step)
 	{
-		if (step < 0 || step >= TotalSteps)
-		{
-			EndTutorial();
-			return;
-		}
+		_currentStep = step;
+		ShowCurrentStep();
+	}
 
+	private void ShowCurrentStep()
+	{
 		ClearHighlights();
-		_overlay.SetNavigation(canGoBack: step > 0, isLastStep: step == TotalSteps - 1);
-		_overlay.SetProgress(step, TotalSteps);
 
-		switch (step)
+		if (_currentStep == TutorialStepId.Intro)
+			_overlay.ShowModal();
+		else
+			_overlay.ShowHint();
+
+		_overlay.SetNavigation(
+			canGoBack: false,
+			isLastStep: _currentStep == TutorialStepId.FreePlay
+		);
+		
+		bool waitsForAction =
+		_currentStep == TutorialStepId.WaitForMossPlacement ||
+		_currentStep == TutorialStepId.WaitForEndTurn;
+
+		_overlay.SetNextButtonVisible(!waitsForAction);
+		_overlay.SetBackButtonVisible(false);
+
+		switch (_currentStep)
 		{
-			case 0:
-				SetTitle("Willkommen");
-				SetText("Du kümmerst dich um ein kleines Ökosystem. Die Eiche in der Mitte ist das Herz des Waldes. Ziel: Wasserhaushalt stabil halten und die Eiche wachsen lassen.");
-				ShowCard(null, "Spielstart: Du hast 3 Karten. Ziehe eine Karte auf ein Feld, um sie zu platzieren.");
+			case TutorialStepId.Intro:
+				SetTitle("Einstieg");
+				SetText(
+					"Die Natur ist aus dem Gleichgewicht geraten. Lass dieses kleine Ökosystem wachsen.\n\n" +
+					"Du lernst Schritt für Schritt, wie du das Ökosystem stabilisierst."
+				);
 				break;
 
-			case 1:
-				SetTitle("Wasseranzeige");
-				SetText("Das Wasser reicht von 0 (Verlust) bis 50 (Sieg). Achte auf den Wasserwert.");
-				HighlightNode("UI/CanvasLayer/GameHub/WaterLabel");
-				ShowCard(null, "Wasser: Der wichtigste Wert. 50 = Sieg, 0 = Niederlage.");
-				break;
-
-			case 2:
-				SetTitle("Karten: Moos");
-				PlantDefinition moss = PlantDatabase.Get(PlantType.Moss);
-				ShowCard(moss.CardImage, $"{moss.DisplayName}\nProduktion: {moss.WaterProduction} - Verbrauch: {moss.WaterConsumption}\nWächst nach {moss.GrowthRounds} Runden\nVerbreitung: 1/{moss.SpreadChanceDenominator}");
-				break;
-
-			case 3:
-				SetTitle("Karten: Blume");
-				PlantDefinition flower = PlantDatabase.Get(PlantType.Flower);
-				ShowCard(flower.CardImage, $"{flower.DisplayName}\nProduktion: {flower.WaterProduction} - Verbrauch: {flower.WaterConsumption}\nWächst nach {flower.GrowthRounds} Runden\nVerbreitung: 1/{flower.SpreadChanceDenominator}");
-				break;
-
-			case 4:
-				SetTitle("Karten: Pilz");
-				PlantDefinition mushroom = PlantDatabase.Get(PlantType.Mushroom);
-				ShowCard(mushroom.CardImage, $"{mushroom.DisplayName}\nProduktion: {mushroom.WaterProduction} - Verbrauch: {mushroom.WaterConsumption}\nWächst nach {mushroom.GrowthRounds} Runden\nVerbreitung: 1/{mushroom.SpreadChanceDenominator}");
-				break;
-
-			case 5:
-				SetTitle("Karten: Birke");
-				PlantDefinition birch = PlantDatabase.Get(PlantType.Birch);
-				ShowCard(birch.CardImage, $"{birch.DisplayName}\nProduktion: {birch.WaterProduction} - Verbrauch: {birch.WaterConsumption}\nWächst nach {birch.GrowthRounds} Runden\nVerbreitung: 1/{birch.SpreadChanceDenominator}");
-				break;
-
-			case 6:
-				SetTitle("Ereignisse");
-				SetText("Ereignisse wie Regen oder Dürre verändern das Wasser. Sie können das Ökosystem stark beeinflussen.");
-				ShowCard(null, "Beispiel: Regen → +3 Wasser. Starkregen → +4 Wasser mit Risiken.");
-				break;
-
-			case 7:
-				SetTitle("Spielfeld");
-				SetText("Das Spielfeld besteht aus Hexfeldern. Pflanzen werden per Drag-and-drop platziert. Manche Pflanzen bevorzugen Schatten oder Sonne.");
+			case TutorialStepId.Goal:
+				SetTitle("Ziel");
+				SetText(
+					"Baue ein stabiles Ökosystem auf, damit diese alte Eiche überleben kann.\n\n" +
+					"Die Eiche in der Mitte ist dein wichtigstes Ziel. Fällt der Wasserwert auf 0, stirbt sie."
+				);
 				HighlightCenterTile();
 				break;
 
-			case 8:
-				SetTitle("Handkarten");
-				SetText("Jetzt bist du bereit. Wähle deine erste Karte und ziehe sie auf ein Feld deiner Wahl.");
-				HighlightNode("UI/CanvasLayer/CardHand");
+			case TutorialStepId.PlayMossIntro:
+				SetTitle("Karten ausspielen");
+				SetText(
+					"Ziehe die Moos-Karte auf das leuchtende Feld.\n\n" +
+					"Moos ist eine gute Startpflanze. Platziere sie auf einem geeigneten Feld neben der Eiche. " +
+					"Danach kannst du weitere Karten spielen oder die Runde beenden."
+				);
+				HighlightFirstPlayableTileFor(PlantType.Moss);
+				break;
+
+			case TutorialStepId.WaitForMossPlacement:
+				SetTitle("Moos platzieren");
+				SetText(
+					"Ziehe jetzt die Moos-Karte aus deiner Hand auf das leuchtende Feld.\n\n" +
+					"Das Tutorial geht weiter, sobald du Moos erfolgreich platziert hast."
+				);
+				HighlightFirstPlayableTileFor(PlantType.Moss);
+				break;
+
+			case TutorialStepId.EndTurnIntro:
+				SetTitle("Runde beenden");
+				SetText(
+					"Beende die Runde, damit dein Ökosystem sich entwickeln kann und die Übergangsphase beginnt.\n\n" +
+					"Klicke als nächstes auf den Runde-beenden-Button."
+				);
+				HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
+				break;
+
+			case TutorialStepId.WaitForEndTurn:
+				SetTitle("Runde beenden");
+				SetText(
+					"Klicke jetzt auf „Runde beenden“.\n\n" +
+					"Das Tutorial geht weiter, sobald die Runde beendet wurde."
+				);
+				HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
+				break;
+
+			case TutorialStepId.Water:
+				_hasShownWater = true;
+
+				SetTitle("Wasserhaushalt");
+				SetText(
+					"Der Wasserhaushalt zeigt, ob dein Ökosystem stabil bleibt.\n\n" +
+					"Einige Pflanzen produzieren Wasser, andere verbrauchen es. Fällt der Wert auf 0, stirbt die Eiche. " +
+					"Achte nach jeder Runde darauf, wie sich der Wasserwert verändert."
+				);
+				HighlightNode("UI/CanvasLayer/GameHub/WaterLabel");
+				break;
+
+			case TutorialStepId.Growth:
+				_hasShownGrowth = true;
+
+				SetTitle("Wachstum");
+				SetText(
+					"In jeder Übergangsphase wachsen bestehende Pflanzen.\n\n" +
+					"Wachstum kann später weitere Effekte ermöglichen. Beobachte die Pflanzen auf dem Spielfeld nach jeder Runde."
+				);
+				break;
+
+			case TutorialStepId.Spread:
+				_hasShownSpread = true;
+
+				SetTitle("Verbreitung");
+				SetText(
+					"Nach jeder Runde besteht die Chance, dass sich Pflanzen auf benachbarte freie Felder ausbreiten.\n\n" +
+					"So kann dein Ökosystem von selbst größer werden."
+				);
+				break;
+
+			case TutorialStepId.Event:
+				_hasShownEvent = true;
+
+				SetTitle("Ereignisse");
+				SetText(
+					"Am Ende einer Runde kann ein Ereignis dein Ökosystem verändern.\n\n" +
+					"Zum Beispiel kann Regen zusätzliches Wasser bringen. Ab jetzt können Ereignisse am Ende von Runden auftreten."
+				);
+				break;
+
+			case TutorialStepId.PlantDeath:
+				_hasShownPlantDeath = true;
+
+				SetTitle("Pflanze stirbt");
+				SetText(
+					"Kann eine Pflanze nicht überleben, stirbt sie.\n\n" +
+					"Das Feld bleibt danach für 2 Runden gesperrt. Achte auf Bedingungen wie Wasser, Licht und Ereignisse."
+				);
+				break;
+
+			case TutorialStepId.FreePlay:
+				SetTitle("Los geht's");
+				SetText(
+					"Du kennst jetzt die wichtigsten Regeln.\n\n" +
+					"Baue ein stabiles Ökosystem auf, halte die Eiche am Leben und beobachte Wasser, Wachstum, Verbreitung und Ereignisse."
+				);
 				break;
 		}
+	}
+
+	private void OnPlantPlaced(PlantType plantType, HexCoord coord)
+	{
+		if (_currentStep != TutorialStepId.WaitForMossPlacement)
+			return;
+
+		if (plantType != PlantType.Moss)
+			return;
+
+		GoToStep(TutorialStepId.EndTurnIntro);
+	}
+
+	private void OnEndTurnRequested(int round)
+	{
+		if (_currentStep != TutorialStepId.WaitForEndTurn)
+			return;
+
+		// Wir wechseln hier noch nicht direkt weiter.
+		// Grund: Der Wasserwert wurde zu diesem Zeitpunkt noch nicht berechnet.
+		// Die Erklärung zum Wasserhaushalt kommt deshalb erst in OnWaterPhaseResolved.
+	}
+
+	private void OnWaterPhaseResolved(WaterPhaseResult result)
+	{
+		if (_hasShownWater)
+			return;
+
+		if (_currentStep != TutorialStepId.WaitForEndTurn)
+			return;
+
+		GoToStep(TutorialStepId.Water);
+	}
+
+	private void OnGrowthPhaseResolved(GrowthPhaseResult result)
+	{
+		//if (_hasShownGrowth)
+			//return;
+//
+		//if (!_hasShownWater)
+			//return;
+//
+		//GoToStep(TutorialStepId.Growth);
+	}
+
+	private void OnSpreadPhaseResolved(SpreadPhaseResult result)
+	{
+		//if (_hasShownSpread)
+			//return;
+//
+		//if (!_hasShownGrowth)
+			//return;
+//
+		//if (result == null || result.Spreads == null || result.Spreads.Count == 0)
+			//return;
+//
+		//GoToStep(TutorialStepId.Spread);
+	}
+
+	private void OnEventPhaseResolved(EventPhaseResult result)
+	{
+		//if (_hasShownEvent)
+			//return;
+//
+		//if (!_hasShownSpread)
+			//return;
+//
+		//if (result == null || !result.ActivatedEvent.HasValue)
+			//return;
+//
+		//GoToStep(TutorialStepId.Event);
 	}
 
 	private void SetTitle(string title)
@@ -145,11 +366,6 @@ public partial class TutorialManager : Node
 	private void SetText(string text)
 	{
 		_overlay?.SetText(text);
-	}
-
-	private void ShowCard(Texture2D texture, string info)
-	{
-		_overlay?.SetCard(texture, info);
 	}
 
 	private void HighlightNode(string path)
@@ -163,6 +379,7 @@ public partial class TutorialManager : Node
 		tween.TweenProperty(canvasItem, "modulate", new Color(1.0f, 0.9f, 0.5f), 0.45f)
 			.SetTrans(Tween.TransitionType.Sine)
 			.SetEase(Tween.EaseType.InOut);
+
 		tween.SetLoops(4);
 	}
 
@@ -179,22 +396,58 @@ public partial class TutorialManager : Node
 			return;
 
 		tileView.SetPlacementPreview(true);
-		GetTree().CreateTimer(1.2f).Timeout += tileView.ClearPlacementPreview;
 	}
 
-	private void ClearHighlights()
+	private void HighlightFirstPlayableTileFor(PlantType plantType)
 	{
 		BoardManager board = _boardManager ?? GetTree().CurrentScene.GetNodeOrNull<BoardManager>("BoardManager");
 
 		if (board == null)
 			return;
 
+		PlantDefinition plant = PlantDatabase.Get(plantType);
+
+		if (plant == null)
+			return;
+
 		foreach (HexCoord coord in board.BoardData.Tiles.Keys)
-			board.GetTileView(coord)?.ClearPlacementPreview();
+		{
+			HexTileData tileData = board.BoardData.GetTile(coord);
+
+			if (tileData != null && tileData.CanPlacePlant(plant))
+			{
+				board.GetTileView(coord)?.SetPlacementPreview(true);
+				return;
+			}
+		}
+	}
+
+	private void ClearHighlights()
+	{
+		BoardManager board = _boardManager ?? GetTree().CurrentScene.GetNodeOrNull<BoardManager>("BoardManager");
+
+		if (board != null)
+		{
+			foreach (HexCoord coord in board.BoardData.Tiles.Keys)
+				board.GetTileView(coord)?.ClearPlacementPreview();
+		}
+
+		ClearHighlightedNode("UI/CanvasLayer/GameHub/WaterLabel");
+		ClearHighlightedNode("UI/CanvasLayer/GameHub/EndTurnButton");
+		ClearHighlightedNode("UI/CanvasLayer/CardHand");
+	}
+
+	private void ClearHighlightedNode(string path)
+	{
+		Node node = GetTree().CurrentScene.GetNodeOrNull<Node>(path);
+
+		if (node is CanvasItem canvasItem)
+			canvasItem.Modulate = Colors.White;
 	}
 
 	private void EndTutorial()
 	{
+		ClearHighlights();
 		_overlay?.HideOverlay();
 		QueueFree();
 	}
