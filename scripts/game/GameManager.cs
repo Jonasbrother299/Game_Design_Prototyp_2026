@@ -5,9 +5,8 @@ public partial class GameManager : Node
 	private BoardManager _boardManager;
 	private TurnManager _turnManager;
 	private CardHandUI _cardHand;
-	private Button _endTurnButton;
+	private BaseButton _endTurnButton;
 	private Label _roundLabel;
-	private Label _waterLabel;
 	private Label _cardsPlayedLabel;
 	private HexTile _currentPreviewTile;
 	private string _lastDebugMessage = "";
@@ -65,14 +64,10 @@ public partial class GameManager : Node
 private void ConnectHudLabels()
 {
 	_roundLabel = FindNodeByName<Label>(GetTree().CurrentScene, "RoundLabel");
-	_waterLabel = FindNodeByName<Label>(GetTree().CurrentScene, "WaterLabel");
 	_cardsPlayedLabel = FindNodeByName<Label>(GetTree().CurrentScene, "CardsPlayLabel");
 
 	if (_roundLabel == null)
 		GD.PrintErr("RoundLabel not found. Make sure the label node is named RoundLabel.");
-
-	if (_waterLabel == null)
-		GD.PrintErr("WaterLabel not found. Make sure the label node is named WaterLabel.");
 
 	if (_cardsPlayedLabel == null)
 		GD.PrintErr("CardsPlayedLabel not found. Make sure the label node is named CardsPlayLabel.");
@@ -129,11 +124,6 @@ private void UpdateHud()
 		_roundLabel.Text = $"Round: {_turnManager.State.CurrentRound}";
 	}
 
-	if (_waterLabel != null)
-	{
-		_waterLabel.Text = $"Water: {_turnManager.State.Water}";
-	}
-
 	if (_cardsPlayedLabel != null)
 	{
 		_cardsPlayedLabel.Text = $"Cards: {_turnManager.State.CardsPlayedThisTurn}/{_turnManager.Config.CardsPerTurnLimit}";
@@ -153,7 +143,9 @@ private void UpdateHud()
 	}
 private void ConnectEndTurnButton()
 {
-	_endTurnButton = FindNodeByName<Button>(GetTree().CurrentScene, "EndTurnButton");
+	_endTurnButton = FindNodeByName<BaseButton>(
+		GetTree().CurrentScene,
+		"EndTurnButton");
 
 	if (_endTurnButton == null)
 	{
