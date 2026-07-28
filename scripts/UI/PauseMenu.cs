@@ -20,6 +20,7 @@ public partial class PauseMenu : Control
 	private Button _resumeButton;
 	private Button _settingsButton;
 	private Button _controlsButton;
+	private Button _encyclopediaButton;
 	private Button _restartButton;
 	private Button _mainMenuButton;
 	private Button _quitButton;
@@ -32,6 +33,7 @@ public partial class PauseMenu : Control
 	private Label _confirmTitle;
 	private Label _confirmMessage;
 	private SettingsMenu _settingsMenu;
+	private EncyclopediaMenu _encyclopediaMenu;
 	private GameHub _gameHub;
 	private TurnManager _turnManager;
 	private PendingAction _pendingAction;
@@ -46,6 +48,7 @@ public partial class PauseMenu : Control
 		_resumeButton = GetNode<Button>("%ResumeButton");
 		_settingsButton = GetNode<Button>("%SettingsButton");
 		_controlsButton = GetNode<Button>("%ControlsButton");
+		_encyclopediaButton = GetNode<Button>("%EncyclopediaButton");
 		_restartButton = GetNode<Button>("%RestartButton");
 		_mainMenuButton = GetNode<Button>("%MainMenuButton");
 		_quitButton = GetNode<Button>("%QuitButton");
@@ -58,10 +61,12 @@ public partial class PauseMenu : Control
 		_confirmTitle = GetNode<Label>("%ConfirmTitle");
 		_confirmMessage = GetNode<Label>("%ConfirmMessage");
 		_settingsMenu = GetNode<SettingsMenu>("SettingsMenu");
+		_encyclopediaMenu = GetNode<EncyclopediaMenu>("EncyclopediaMenu");
 
 		_resumeButton.Pressed += ClosePauseMenu;
 		_settingsButton.Pressed += OpenSettings;
 		_controlsButton.Pressed += OpenControls;
+		_encyclopediaButton.Pressed += OpenEncyclopedia;
 		_restartButton.Pressed += RequestRestart;
 		_mainMenuButton.Pressed += RequestMainMenu;
 		_quitButton.Pressed += RequestQuit;
@@ -69,6 +74,7 @@ public partial class PauseMenu : Control
 		_cancelButton.Pressed += CancelConfirmation;
 		_confirmButton.Pressed += ConfirmPendingAction;
 		_settingsMenu.Closed += OnSettingsClosed;
+		_encyclopediaMenu.Closed += OnEncyclopediaClosed;
 
 		_gameHub = GetNodeOrNull<GameHub>("../GameHub");
 		if (_gameHub != null)
@@ -87,6 +93,8 @@ public partial class PauseMenu : Control
 
 		if (_confirmOverlay.Visible)
 			CancelConfirmation();
+		else if (_encyclopediaMenu.Visible)
+			_encyclopediaMenu.Close();
 		else if (_controlsOverlay.Visible)
 			CloseControls();
 		else if (_settingsMenu.Visible)
@@ -122,6 +130,7 @@ public partial class PauseMenu : Control
 	private void ClosePauseMenu()
 	{
 		_settingsMenu.Hide();
+		_encyclopediaMenu.Hide();
 		_controlsOverlay.Hide();
 		_confirmOverlay.Hide();
 		Hide();
@@ -183,6 +192,18 @@ public partial class PauseMenu : Control
 		_controlsOverlay.Hide();
 		ShowPausePanel();
 		_controlsButton.GrabFocus();
+	}
+
+	private void OpenEncyclopedia()
+	{
+		_pausePanel.Hide();
+		_encyclopediaMenu.Open();
+	}
+
+	private void OnEncyclopediaClosed()
+	{
+		ShowPausePanel();
+		_encyclopediaButton.GrabFocus();
 	}
 
 	private void RequestRestart()
@@ -260,6 +281,12 @@ public partial class PauseMenu : Control
 	{
 		GetTree().Paused = false;
 
+		if (SceneTransition.Instance != null)
+		{
+			SceneTransition.Instance.ChangeScene(scenePath);
+			return;
+		}
+
 		Error error = GetTree().ChangeSceneToFile(scenePath);
 		if (error == Error.Ok)
 			return;
@@ -272,6 +299,7 @@ public partial class PauseMenu : Control
 
 	private void ShowPausePanel()
 	{
+		_encyclopediaMenu.Hide();
 		_controlsOverlay.Hide();
 		_confirmOverlay.Hide();
 		_pausePanel.Show();

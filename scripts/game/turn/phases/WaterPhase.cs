@@ -66,6 +66,9 @@ public sealed class WaterPhase
 		BoardManager boardManager,
 		HexTileData tile)
 	{
+		if (tile.Plant.Definition.Type == PlantType.Oak)
+			return 0;
+
 		foreach (HexTileData neighbor in boardManager.GetNeighborData(tile.Coord))
 		{
 			if (neighbor.Plant == null || !neighbor.Plant.IsMature)

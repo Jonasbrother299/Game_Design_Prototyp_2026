@@ -7,7 +7,6 @@ public partial class LoadingScreen : Control
 
 	private Label _statusLabel;
 	private ProgressBar _progressBar;
-	private ColorRect _fadeRect;
 	private float _elapsedTime;
 	private bool _isChangingScene;
 
@@ -15,10 +14,6 @@ public partial class LoadingScreen : Control
 	{
 		_statusLabel = GetNode<Label>("%StatusLabel");
 		_progressBar = GetNode<ProgressBar>("%ProgressBar");
-		_fadeRect = GetNode<ColorRect>("%FadeRect");
-
-		Tween fadeIn = CreateTween();
-		fadeIn.TweenProperty(_fadeRect, "color:a", 0.0f, 0.3f);
 	}
 
 	public override void _Process(double delta)
@@ -53,17 +48,18 @@ public partial class LoadingScreen : Control
 		_isChangingScene = true;
 		_statusLabel.Text = "Spielwelt wird gestartet …";
 
-		Tween fadeOut = CreateTween();
-		fadeOut.TweenProperty(_fadeRect, "color:a", 1.0f, 0.25f);
-		fadeOut.TweenCallback(Callable.From(() =>
+		if (SceneTransition.Instance != null)
 		{
-			Error error = GetTree().ChangeSceneToFile(GameScenePath);
-			if (error != Error.Ok)
-			{
-				_isChangingScene = false;
-				ShowLoadError($"Spielwelt konnte nicht geöffnet werden: {error}");
-			}
-		}));
+			SceneTransition.Instance.ChangeScene(GameScenePath);
+			return;
+		}
+
+		Error error = GetTree().ChangeSceneToFile(GameScenePath);
+		if (error != Error.Ok)
+		{
+			_isChangingScene = false;
+			ShowLoadError($"Spielwelt konnte nicht geöffnet werden: {error}");
+		}
 	}
 
 	private void ShowLoadError(string message)

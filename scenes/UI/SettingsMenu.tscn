@@ -120,23 +120,29 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SettingsPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(680, 500)
+custom_minimum_size = Vector2(760, 700)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StylePanel")
 
 [node name="Content" type="VBoxContainer" parent="CenterContainer/SettingsPanel"]
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 14
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.92, 0.72, 1)
-theme_override_font_sizes/font_size = 44
+theme_override_font_sizes/font_size = 42
 text = "Einstellungen"
 horizontal_alignment = 1
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2
+
+[node name="AudioHeading" type="Label" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.78, 0.43, 1)
+theme_override_font_sizes/font_size = 18
+text = "AUDIO"
 
 [node name="VolumeRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2
@@ -172,19 +178,120 @@ theme_override_font_sizes/font_size = 22
 text = "80 %"
 horizontal_alignment = 2
 
-[node name="FullscreenToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content"]
-unique_name_in_owner = true
+[node name="MusicVolumeRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="MusicVolumeLabel" type="Label" parent="CenterContainer/SettingsPanel/Content/MusicVolumeRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 23
+text = "Musik"
+
+[node name="MusicVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/MusicVolumeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_icons/grabber = null
+theme_override_icons/grabber_highlight = null
+theme_override_styles/slider = SubResource("StyleSlider")
+theme_override_styles/grabber_area = SubResource("StyleSliderFill")
+theme_override_styles/grabber_area_highlight = SubResource("StyleSliderFill")
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="MusicVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/MusicVolumeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 22
+text = "80 %"
+horizontal_alignment = 2
+
+[node name="EffectsVolumeRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="EffectsVolumeLabel" type="Label" parent="CenterContainer/SettingsPanel/Content/EffectsVolumeRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 23
+text = "Effekte"
+
+[node name="EffectsVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/EffectsVolumeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_icons/grabber = null
+theme_override_icons/grabber_highlight = null
+theme_override_styles/slider = SubResource("StyleSlider")
+theme_override_styles/grabber_area = SubResource("StyleSliderFill")
+theme_override_styles/grabber_area_highlight = SubResource("StyleSliderFill")
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="EffectsVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/EffectsVolumeRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
+theme_override_font_sizes/font_size = 22
+text = "80 %"
+horizontal_alignment = 2
+
+[node name="DisplaySeparator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="DisplayHeading" type="Label" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.78, 0.43, 1)
+theme_override_font_sizes/font_size = 18
+text = "ANZEIGE"
+
+[node name="FullscreenRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+
+[node name="FullscreenLabel" type="Label" parent="CenterContainer/SettingsPanel/Content/FullscreenRow"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
 theme_override_font_sizes/font_size = 23
 text = "Vollbild"
 
-[node name="VsyncToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content"]
+[node name="FullscreenToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/FullscreenRow"]
 unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ResolutionRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="ResolutionLabel" type="Label" parent="CenterContainer/SettingsPanel/Content/ResolutionRow"]
+custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.91, 0.79, 1)
 theme_override_font_sizes/font_size = 23
-text = "VSync"
+text = "Fensterauflösung"
+
+[node name="ResolutionOptions" type="OptionButton" parent="CenterContainer/SettingsPanel/Content/ResolutionRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
 
 [node name="ButtonSpacer" type="Control" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2

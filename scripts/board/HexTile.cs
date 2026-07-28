@@ -21,6 +21,13 @@ public partial class HexTile : Node3D
 	private Material _validPreviewMaterial;
 	private Material _invalidPreviewMaterial;
 
+	public float StartingOakScale { get; private set; } = 0.25f;
+
+	public void ConfigureStartingOakScale(float scale)
+	{
+		StartingOakScale = Mathf.Max(0.01f, scale);
+	}
+
 	public void Setup(HexTileData data)
 	{
 		Data = data;
@@ -461,7 +468,6 @@ private void UpdateTileMaterial()
 		_plantVisualRoot = CreatePlantVisual(Data.Plant);
 		_plantVisualRoot.Position = Vector3.Zero;
 		_plantVisualRoot.Rotation = Vector3.Zero;
-		_plantVisualRoot.Scale = Vector3.One;
 
 		_plantAnchor.AddChild(_plantVisualRoot);
 	}

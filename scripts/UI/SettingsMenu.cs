@@ -6,26 +6,50 @@ public partial class SettingsMenu : Control
 	public delegate void ClosedEventHandler();
 
 	private const string SettingsPath = "user://settings.cfg";
+	private const string MusicBusName = "Music";
+	private const string EffectsBusName = "Effects";
+
+	private static readonly Vector2I[] WindowSizes =
+	{
+		new Vector2I(1280, 720),
+		new Vector2I(1600, 900),
+		new Vector2I(1920, 1080),
+		new Vector2I(2560, 1440)
+	};
 
 	private HSlider _masterVolumeSlider;
 	private Label _masterVolumeValue;
+	private HSlider _musicVolumeSlider;
+	private Label _musicVolumeValue;
+	private HSlider _effectsVolumeSlider;
+	private Label _effectsVolumeValue;
 	private CheckButton _fullscreenToggle;
-	private CheckButton _vsyncToggle;
+	private OptionButton _resolutionOptions;
 	private Button _backButton;
 
 	public override void _Ready()
 	{
+		EnsureAudioBus(MusicBusName);
+		EnsureAudioBus(EffectsBusName);
+
 		_masterVolumeSlider = GetNode<HSlider>("%MasterVolumeSlider");
 		_masterVolumeValue = GetNode<Label>("%MasterVolumeValue");
+		_musicVolumeSlider = GetNode<HSlider>("%MusicVolumeSlider");
+		_musicVolumeValue = GetNode<Label>("%MusicVolumeValue");
+		_effectsVolumeSlider = GetNode<HSlider>("%EffectsVolumeSlider");
+		_effectsVolumeValue = GetNode<Label>("%EffectsVolumeValue");
 		_fullscreenToggle = GetNode<CheckButton>("%FullscreenToggle");
-		_vsyncToggle = GetNode<CheckButton>("%VsyncToggle");
+		_resolutionOptions = GetNode<OptionButton>("%ResolutionOptions");
 		_backButton = GetNode<Button>("%BackButton");
 
+		PopulateResolutionOptions();
 		LoadSettings();
 
 		_masterVolumeSlider.ValueChanged += OnMasterVolumeChanged;
+		_musicVolumeSlider.ValueChanged += OnMusicVolumeChanged;
+		_effectsVolumeSlider.ValueChanged += OnEffectsVolumeChanged;
 		_fullscreenToggle.Toggled += OnFullscreenToggled;
-		_vsyncToggle.Toggled += OnVsyncToggled;
+		_resolutionOptions.ItemSelected += OnResolutionSelected;
 		_backButton.Pressed += Close;
 	}
 
@@ -53,40 +77,57 @@ public partial class SettingsMenu : Control
 
 	private void LoadSettings()
 	{
-		int masterBus = AudioServer.GetBusIndex("Master");
-		float currentVolume = masterBus >= 0
-			? Mathf.DbToLinear(AudioServer.GetBusVolumeDb(masterBus))
-			: 1.0f;
+		float masterVolume = GetBusVolume("Master");
+		float musicVolume = GetBusVolume(MusicBusName);
+		float effectsVolume = GetBusVolume(EffectsBusName);
 
 		DisplayServer.WindowMode windowMode = DisplayServer.WindowGetMode();
-		bool currentFullscreen =
+		bool fullscreen =
 			windowMode == DisplayServer.WindowMode.Fullscreen ||
 			windowMode == DisplayServer.WindowMode.ExclusiveFullscreen;
-		bool currentVsync =
-			DisplayServer.WindowGetVsyncMode() != DisplayServer.VSyncMode.Disabled;
+		Vector2I windowSize = DisplayServer.WindowGetSize();
+		bool hasSavedResolution = false;
 
 		ConfigFile config = new ConfigFile();
 		if (config.Load(SettingsPath) == Error.Ok)
 		{
-			currentVolume = config
-				.GetValue("audio", "master_volume", currentVolume)
+			masterVolume = config
+				.GetValue("audio", "master_volume", masterVolume)
 				.AsSingle();
-			currentFullscreen = config
-				.GetValue("display", "fullscreen", currentFullscreen)
+			musicVolume = config
+				.GetValue("audio", "music_volume", musicVolume)
+				.AsSingle();
+			effectsVolume = config
+				.GetValue("audio", "effects_volume", effectsVolume)
+				.AsSingle();
+			fullscreen = config
+				.GetValue("display", "fullscreen", fullscreen)
 				.AsBool();
-			currentVsync = config
-				.GetValue("display", "vsync", currentVsync)
-				.AsBool();
-
-			ApplyMasterVolume(currentVolume);
-			ApplyFullscreen(currentFullscreen);
-			ApplyVsync(currentVsync);
+			hasSavedResolution =
+				config.HasSectionKey("display", "window_width") &&
+				config.HasSectionKey("display", "window_height");
+			windowSize = new Vector2I(
+				config.GetValue("display", "window_width", windowSize.X).AsInt32(),
+				config.GetValue("display", "window_height", windowSize.Y).AsInt32());
 		}
 
-		_masterVolumeSlider.Value = Mathf.Clamp(currentVolume, 0.0f, 1.0f) * 100.0f;
-		_fullscreenToggle.ButtonPressed = currentFullscreen;
-		_vsyncToggle.ButtonPressed = currentVsync;
-		UpdateVolumeLabel();
+		ApplyBusVolume("Master", masterVolume);
+		ApplyBusVolume(MusicBusName, musicVolume);
+		ApplyBusVolume(EffectsBusName, effectsVolume);
+		ApplyFullscreen(fullscreen);
+
+		int resolutionIndex = FindClosestResolutionIndex(windowSize);
+		_resolutionOptions.Select(resolutionIndex);
+		_resolutionOptions.Disabled = fullscreen;
+
+		if (!fullscreen && hasSavedResolution)
+			ApplyResolution(WindowSizes[resolutionIndex]);
+
+		_masterVolumeSlider.Value = ToPercent(masterVolume);
+		_musicVolumeSlider.Value = ToPercent(musicVolume);
+		_effectsVolumeSlider.Value = ToPercent(effectsVolume);
+		_fullscreenToggle.ButtonPressed = fullscreen;
+		UpdateVolumeLabels();
 	}
 
 	private void SaveSettings()
@@ -97,13 +138,21 @@ public partial class SettingsMenu : Control
 			"master_volume",
 			(float)(_masterVolumeSlider.Value / 100.0));
 		config.SetValue(
+			"audio",
+			"music_volume",
+			(float)(_musicVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"audio",
+			"effects_volume",
+			(float)(_effectsVolumeSlider.Value / 100.0));
+		config.SetValue(
 			"display",
 			"fullscreen",
 			_fullscreenToggle.ButtonPressed);
-		config.SetValue(
-			"display",
-			"vsync",
-			_vsyncToggle.ButtonPressed);
+
+		Vector2I selectedResolution = GetSelectedResolution();
+		config.SetValue("display", "window_width", selectedResolution.X);
+		config.SetValue("display", "window_height", selectedResolution.Y);
 
 		Error error = config.Save(SettingsPath);
 		if (error != Error.Ok)
@@ -112,41 +161,134 @@ public partial class SettingsMenu : Control
 
 	private void OnMasterVolumeChanged(double value)
 	{
-		ApplyMasterVolume((float)(value / 100.0));
-		UpdateVolumeLabel();
+		ApplyBusVolume("Master", (float)(value / 100.0));
+		UpdateVolumeLabels();
+	}
+
+	private void OnMusicVolumeChanged(double value)
+	{
+		ApplyBusVolume(MusicBusName, (float)(value / 100.0));
+		UpdateVolumeLabels();
+	}
+
+	private void OnEffectsVolumeChanged(double value)
+	{
+		ApplyBusVolume(EffectsBusName, (float)(value / 100.0));
+		UpdateVolumeLabels();
 	}
 
 	private void OnFullscreenToggled(bool enabled)
 	{
 		ApplyFullscreen(enabled);
+		_resolutionOptions.Disabled = enabled;
+
+		if (!enabled)
+			ApplyResolution(GetSelectedResolution());
 	}
 
-	private void OnVsyncToggled(bool enabled)
+	private void OnResolutionSelected(long index)
 	{
-		ApplyVsync(enabled);
-	}
-
-	private void UpdateVolumeLabel()
-	{
-		_masterVolumeValue.Text = $"{Mathf.RoundToInt(_masterVolumeSlider.Value)} %";
-	}
-
-	private static void ApplyMasterVolume(float linearVolume)
-	{
-		int masterBus = AudioServer.GetBusIndex("Master");
-		if (masterBus < 0)
+		if (_fullscreenToggle.ButtonPressed)
 			return;
 
-		float clampedVolume = Mathf.Clamp(linearVolume, 0.0f, 1.0f);
-		bool muted = clampedVolume <= 0.001f;
-		AudioServer.SetBusMute(masterBus, muted);
+		ApplyResolution(WindowSizes[(int)index]);
+	}
+
+	private void PopulateResolutionOptions()
+	{
+		_resolutionOptions.Clear();
+
+		foreach (Vector2I windowSize in WindowSizes)
+			_resolutionOptions.AddItem($"{windowSize.X} × {windowSize.Y}");
+	}
+
+	private void UpdateVolumeLabels()
+	{
+		_masterVolumeValue.Text = FormatPercent(_masterVolumeSlider.Value);
+		_musicVolumeValue.Text = FormatPercent(_musicVolumeSlider.Value);
+		_effectsVolumeValue.Text = FormatPercent(_effectsVolumeSlider.Value);
+	}
+
+	private Vector2I GetSelectedResolution()
+	{
+		int selectedIndex = Mathf.Clamp(
+			_resolutionOptions.Selected,
+			0,
+			WindowSizes.Length - 1);
+
+		return WindowSizes[selectedIndex];
+	}
+
+	private static int FindClosestResolutionIndex(Vector2I size)
+	{
+		int closestIndex = 0;
+		long closestDifference = long.MaxValue;
+
+		for (int index = 0; index < WindowSizes.Length; index++)
+		{
+			long widthDifference = WindowSizes[index].X - size.X;
+			long heightDifference = WindowSizes[index].Y - size.Y;
+			long difference =
+				widthDifference * widthDifference +
+				heightDifference * heightDifference;
+
+			if (difference >= closestDifference)
+				continue;
+
+			closestDifference = difference;
+			closestIndex = index;
+		}
+
+		return closestIndex;
+	}
+
+	private static void EnsureAudioBus(string busName)
+	{
+		if (AudioServer.GetBusIndex(busName) >= 0)
+			return;
+
+		AudioServer.AddBus();
+		int busIndex = AudioServer.BusCount - 1;
+		AudioServer.SetBusName(busIndex, busName);
+		AudioServer.SetBusSend(busIndex, "Master");
+	}
+
+	private static float GetBusVolume(string busName)
+	{
+		int busIndex = AudioServer.GetBusIndex(busName);
+		if (busIndex < 0)
+			return 1.0f;
+
+		if (AudioServer.IsBusMute(busIndex))
+			return 0.0f;
+
+		return Mathf.DbToLinear(AudioServer.GetBusVolumeDb(busIndex));
+	}
+
+	private static void ApplyBusVolume(string busName, float linearVolume)
+	{
+		int busIndex = AudioServer.GetBusIndex(busName);
+		if (busIndex < 0)
+			return;
+
+		float volume = Mathf.Clamp(linearVolume, 0.0f, 1.0f);
+		bool muted = volume <= 0.001f;
+		AudioServer.SetBusMute(busIndex, muted);
 
 		if (!muted)
-			AudioServer.SetBusVolumeDb(masterBus, Mathf.LinearToDb(clampedVolume));
+			AudioServer.SetBusVolumeDb(busIndex, Mathf.LinearToDb(volume));
 	}
 
 	private static void ApplyFullscreen(bool enabled)
 	{
+		DisplayServer.WindowMode currentMode = DisplayServer.WindowGetMode();
+		bool isFullscreen =
+			currentMode == DisplayServer.WindowMode.Fullscreen ||
+			currentMode == DisplayServer.WindowMode.ExclusiveFullscreen;
+
+		if (isFullscreen == enabled)
+			return;
+
 		DisplayServer.WindowSetMode(
 			enabled
 				? DisplayServer.WindowMode.Fullscreen
@@ -156,11 +298,21 @@ public partial class SettingsMenu : Control
 			DisplayServer.WindowSetFlag(DisplayServer.WindowFlags.Borderless, false);
 	}
 
-	private static void ApplyVsync(bool enabled)
+	private static void ApplyResolution(Vector2I size)
 	{
-		DisplayServer.WindowSetVsyncMode(
-			enabled
-				? DisplayServer.VSyncMode.Enabled
-				: DisplayServer.VSyncMode.Disabled);
+		if (DisplayServer.WindowGetMode() != DisplayServer.WindowMode.Windowed)
+			return;
+
+		DisplayServer.WindowSetSize(size);
+	}
+
+	private static float ToPercent(float linearVolume)
+	{
+		return Mathf.Clamp(linearVolume, 0.0f, 1.0f) * 100.0f;
+	}
+
+	private static string FormatPercent(double value)
+	{
+		return $"{Mathf.RoundToInt(value)} %";
 	}
 }

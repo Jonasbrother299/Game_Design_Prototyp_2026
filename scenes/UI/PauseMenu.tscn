@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/PauseMenu.cs" id="1_pause"]
 [ext_resource type="PackedScene" path="res://scenes/UI/SettingsMenu.tscn" id="2_settings"]
+[ext_resource type="PackedScene" path="res://scenes/UI/EncyclopediaMenu.tscn" id="3_encyclopedia"]
 
 [sub_resource type="StyleBoxFlat" id="StylePausePanel"]
 content_margin_left = 42.0
@@ -125,7 +126,7 @@ grow_vertical = 2
 
 [node name="PausePanel" type="PanelContainer" parent="CenterContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(850, 650)
+custom_minimum_size = Vector2(850, 710)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StylePausePanel")
 
@@ -256,6 +257,18 @@ theme_override_styles/pressed = SubResource("StyleButtonPressed")
 theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Steuerung"
 
+[node name="EncyclopediaButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(365, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Ökosystem-Lexikon"
+
 [node name="RestartButton" type="Button" parent="CenterContainer/PausePanel/Content/ButtonGrid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(365, 56)
@@ -293,6 +306,9 @@ theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Spiel beenden"
 
 [node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]
+visible = false
+
+[node name="EncyclopediaMenu" parent="." instance=ExtResource("3_encyclopedia")]
 visible = false
 
 [node name="ControlsOverlay" type="Control" parent="."]

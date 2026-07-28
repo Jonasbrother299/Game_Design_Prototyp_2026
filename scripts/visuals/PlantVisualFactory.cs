@@ -26,7 +26,9 @@ public static class PlantVisualFactory
 			case PlantType.Oak:
 				if (IsStartingOakTile(tile))
 				{
-					return StartingOakVisualBuilder.Create(plant);
+					return StartingOakVisualBuilder.Create(
+						plant,
+						tile.StartingOakScale);
 				}
 
 				return OakVisualBuilder.Create(plant);
