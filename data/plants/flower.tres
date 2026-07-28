@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
 [ext_resource type="Texture2D" uid="uid://cjhwywn3skfq3" path="res://assets/cards/card_blume.png" id="2_card"]
+[ext_resource type="PackedScene" path="res://assets/models/plants/SpiderliliFlower/Spidelilie.fbx" id="3_model"]
 
 [resource]
 script = ExtResource("1_plant")
@@ -15,3 +16,4 @@ SpreadChanceDenominator = 3
 AllowedLightLevels = Array[int]([0, 1])
 EffectType = 3
 CardImage = ExtResource("2_card")
+PlantScene = ExtResource("3_model")
