@@ -2,11 +2,51 @@ using Godot;
 
 public static class BirchVisualBuilder
 {
-	public static Node3D Create(PlantInstance plant)
+	public static Node3D Create(PlantInstance plant, float modelScale)
 	{
 		Node3D root = new Node3D();
 		root.Name = "Birch_Visual";
 
+		if (TryAddModel(root, plant, modelScale))
+			return root;
+
+		AddFallbackVisual(root, plant);
+		return root;
+	}
+
+	private static bool TryAddModel(
+		Node3D root,
+		PlantInstance plant,
+		float modelScale)
+	{
+		PackedScene birchScene = plant?.Definition?.PlantScene;
+
+		if (birchScene == null)
+			return false;
+
+		Node instance = birchScene.Instantiate();
+
+		if (instance is not Node3D birchModel)
+		{
+			instance?.Free();
+			return false;
+		}
+
+		int stage = Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 5);
+		float progress = (stage - 1) / 4.0f;
+		float growthScale = Mathf.Lerp(0.35f, 1.0f, progress);
+
+		birchModel.Name = "BirchModel";
+		birchModel.Position = Vector3.Zero;
+		birchModel.Rotation = Vector3.Zero;
+		birchModel.Scale *= Mathf.Max(0.01f, modelScale) * growthScale;
+
+		root.AddChild(birchModel);
+		return true;
+	}
+
+	private static void AddFallbackVisual(Node3D root, PlantInstance plant)
+	{
 		int stage = Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 5);
 		float progress = (stage - 1) / 4.0f;
 		float trunkHeight = Mathf.Lerp(0.30f, 1.10f, progress);
@@ -28,7 +68,7 @@ public static class BirchVisualBuilder
 		if (stage == 1)
 		{
 			AddLeafBlob(root, new Vector3(0.0f, trunkHeight + 0.05f, 0.0f), 0.13f);
-			return root;
+			return;
 		}
 
 		float canopyRadius = Mathf.Lerp(0.17f, 0.34f, progress);
@@ -56,8 +96,6 @@ public static class BirchVisualBuilder
 				new Vector3(-canopyRadius * 0.20f, trunkHeight - 0.08f, 0.20f),
 				canopyRadius * 0.72f);
 		}
-
-		return root;
 	}
 
 	private static void AddBarkMark(

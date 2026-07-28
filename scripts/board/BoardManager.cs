@@ -20,11 +20,22 @@ public partial class BoardManager : Node3D
 	[Export] public Color BlockedPreviewTint = new Color(0.48f, 0.50f, 0.48f);
 
 	[ExportGroup("Mushroom Visual")]
-	[Export(PropertyHint.Range, "0.1,30.0,0.1")]
-	public float MushroomModelScale = 0.6f;
+	[Export(PropertyHint.Range, "0.1,2.0,0.05")]
+	public float MushroomModelScale = 0.32f;
 
 	[Export(PropertyHint.Range, "0.1,3.0,0.1")]
 	public float MushroomGrowthAnimationSpeed = 1.0f;
+
+	[ExportGroup("Flower Visual")]
+	[Export(PropertyHint.Range, "0.01,1.0,0.01")]
+	public float FlowerModelScale = 0.38f;
+
+	[Export(PropertyHint.Range, "1,7,1")]
+	public int MatureFlowerCount = 4;
+
+	[ExportGroup("Birch Visual")]
+	[Export(PropertyHint.Range, "0.01,1.0,0.01")]
+	public float BirchModelScale = 0.18f;
 
 	public BoardData BoardData { get; private set; } = new BoardData();
 
@@ -147,6 +158,10 @@ public partial class BoardManager : Node3D
 		tileView.ConfigureMushroomVisual(
 			MushroomModelScale,
 			MushroomGrowthAnimationSpeed);
+		tileView.ConfigureFlowerVisual(
+			FlowerModelScale,
+			MatureFlowerCount);
+		tileView.ConfigureBirchVisual(BirchModelScale);
 		tileView.Setup(tileData);
 
 		AddChild(tileView);

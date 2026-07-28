@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" load_steps=6 format=3 uid="uid://072530l8561r"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" uid="uid://dsjvmd1dqa4t0" path="res://assets/cards/card_pilz.jpeg" id="2_card"]
+[ext_resource type="Texture2D" path="res://assets/cards/card_pilz.png" id="2_card"]
 [ext_resource type="PackedScene" path="res://assets/models/plants/mushroom/Stage_1_MushroomGrowthAnimation.glb" id="3_stage_1"]
 [ext_resource type="PackedScene" path="res://assets/models/plants/mushroom/Stage_2_MushroomGrowthAnimation.glb" id="4_stage_2"]
 [ext_resource type="PackedScene" path="res://assets/models/plants/mushroom/Stage_3_MushroomGrowthAnimation.glb" id="5_stage_3"]

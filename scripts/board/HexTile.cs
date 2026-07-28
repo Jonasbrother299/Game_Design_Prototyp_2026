@@ -34,8 +34,11 @@ public partial class HexTile : Node3D
 		new Color(0.38f, 0.40f, 0.38f);
 	public Color BlockedPreviewTint { get; private set; } =
 		new Color(0.48f, 0.50f, 0.48f);
-	public float MushroomModelScale { get; private set; } = 0.6f;
+	public float MushroomModelScale { get; private set; } = 0.32f;
 	public float MushroomGrowthAnimationSpeed { get; private set; } = 1.0f;
+	public float FlowerModelScale { get; private set; } = 0.38f;
+	public int MatureFlowerCount { get; private set; } = 4;
+	public float BirchModelScale { get; private set; } = 0.18f;
 
 	public void ConfigureStartingOakScale(float scale)
 	{
@@ -60,6 +63,17 @@ public partial class HexTile : Node3D
 	{
 		MushroomModelScale = Mathf.Max(0.1f, modelScale);
 		MushroomGrowthAnimationSpeed = Mathf.Max(0.1f, growthAnimationSpeed);
+	}
+
+	public void ConfigureFlowerVisual(float modelScale, int matureFlowerCount)
+	{
+		FlowerModelScale = Mathf.Max(0.01f, modelScale);
+		MatureFlowerCount = Mathf.Clamp(matureFlowerCount, 1, 7);
+	}
+
+	public void ConfigureBirchVisual(float modelScale)
+	{
+		BirchModelScale = Mathf.Max(0.01f, modelScale);
 	}
 
 	public void Setup(HexTileData data)

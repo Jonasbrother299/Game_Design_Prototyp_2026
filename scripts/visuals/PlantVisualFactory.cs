@@ -25,10 +25,15 @@ public static class PlantVisualFactory
 				return MossVisualBuilder.Create(plant);
 
 			case PlantType.Flower:
-				return FlowerVisualBuilder.Create(plant);
+				return FlowerVisualBuilder.Create(
+					plant,
+					tile.FlowerModelScale,
+					tile.MatureFlowerCount);
 
 			case PlantType.Birch:
-				return BirchVisualBuilder.Create(plant);
+				return BirchVisualBuilder.Create(
+					plant,
+					tile.BirchModelScale);
 
 			case PlantType.Oak:
 				if (IsStartingOakTile(tile))

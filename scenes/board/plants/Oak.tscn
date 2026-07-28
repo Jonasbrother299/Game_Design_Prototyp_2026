@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dr15dpset8y4s"]
 
-[ext_resource type="PackedScene" uid="uid://0rxs3d327h6p" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
+[ext_resource type="PackedScene" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
 [ext_resource type="Shader" uid="uid://75g57ojayr3u" path="res://assets/textures/leaves/leaves.tres" id="2_4ko5o"]
 [ext_resource type="Shader" uid="uid://bdkhwi4ebu8hh" path="res://assets/textures/leaves/leaves2.tres" id="2_by30i"]
 [ext_resource type="Texture2D" uid="uid://b5e3ckjtf8ep8" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_AlbedoTransparency.png" id="3_4ko5o"]

@@ -133,6 +133,12 @@ public static class PlantDatabase
 			}
 		}
 
+		if (plant.Type == PlantType.Flower && plant.PlantScene == null)
+			errors.Add("Blumenmodell fehlt");
+
+		if (plant.Type == PlantType.Birch && plant.PlantScene == null)
+			errors.Add("Birkenmodell fehlt");
+
 		foreach (string error in errors)
 		{
 			GD.PushError($"PlantDatabase: {resourcePath}: {error}.");
