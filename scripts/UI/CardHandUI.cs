@@ -7,6 +7,7 @@ public partial class CardHandUI : Control
 	public event Action<PlantType> PlantCardSelected;
 	public event Action<PlantType, Vector2> PlantCardDragged;
 	public event Action<PlantType, Vector2> PlantCardDragReleased;
+	public event Action PlantCardDragCanceled;
 
 	[Export] public Vector2 CardSize = new Vector2(95, 140);
 	[Export] public float HoverLift = 90.0f;
@@ -73,6 +74,15 @@ public partial class CardHandUI : Control
 	{
 		if (inputEvent is not InputEventMouseButton mouseButton)
 			return;
+
+		if (mouseButton.ButtonIndex == MouseButton.Right &&
+			mouseButton.Pressed &&
+			_isDragging)
+		{
+			CancelDrag();
+			GetViewport().SetInputAsHandled();
+			return;
+		}
 
 		if (mouseButton.ButtonIndex != MouseButton.Left)
 			return;
@@ -375,6 +385,26 @@ public partial class CardHandUI : Control
 		{
 			AnimateCard(releasedCard, false);
 		}
+	}
+
+	private void CancelDrag()
+	{
+		if (!_isDragging || _draggedCard == null)
+			return;
+
+		TextureRect canceledCard = _draggedCard;
+
+		_draggedCard = null;
+		_draggedPlantType = null;
+		_isDragging = false;
+		_removeDraggedCardAfterRelease = false;
+
+		_selectedCard = null;
+		_selectedPlantType = null;
+		_hoveredCard = null;
+
+		AnimateCard(canceledCard, false);
+		PlantCardDragCanceled?.Invoke();
 	}
 
 	private void RemoveCardFromHand(TextureRect card)

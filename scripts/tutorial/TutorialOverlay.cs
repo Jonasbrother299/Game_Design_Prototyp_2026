@@ -7,23 +7,28 @@ public partial class TutorialOverlay : Control
 	public event Action BackRequested;
 
 	private Control _centerContainer;
-	private Panel _window;
+	private ColorRect _backdrop;
+	private PanelContainer _window;
 	private Label _titleLabel;
 	private Label _textLabel;
 	private Button _nextButton;
 	private Button _backButton;
 
-	private readonly Vector2 _modalWindowMinSize = new Vector2(620, 420);
-	private readonly Vector2 _hintWindowMinSize = new Vector2(360, 220);
+	private readonly Vector2 _modalWindowMinSize = new Vector2(780, 470);
+	private readonly Vector2 _hintWindowMinSize = new Vector2(540, 450);
 
 	public override void _Ready()
 	{
 		ZIndex = 1000;
 
 		_centerContainer = GetNodeOrNull<Control>("CenterContainer");
-		_window = GetNodeOrNull<Panel>("CenterContainer/TutorialWindow");
+		_backdrop = GetNodeOrNull<ColorRect>("Backdrop");
+		_window = GetNodeOrNull<PanelContainer>(
+			"CenterContainer/TutorialWindow");
 		_titleLabel = GetNodeOrNull<Label>("CenterContainer/TutorialWindow/TutorialLayoutVBox/TutorialTitle");
-		_textLabel = GetNodeOrNull<Label>("CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialText");
+		_textLabel = GetNodeOrNull<Label>(
+			"CenterContainer/TutorialWindow/TutorialLayoutVBox/" +
+			"BodyPanel/TutorialText");
 		_backButton = GetNodeOrNull<Button>("CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation/TutorialBackButton");
 		_nextButton = GetNodeOrNull<Button>("CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation/TutorialNextButton");
 
@@ -50,6 +55,7 @@ public partial class TutorialOverlay : Control
 		Show();
 
 		MoveWindowToModalContainer();
+		SetBackdropColor(new Color(0.005f, 0.012f, 0.007f, 0.68f));
 
 		MouseFilter = MouseFilterEnum.Stop;
 
@@ -73,6 +79,7 @@ public partial class TutorialOverlay : Control
 		Show();
 
 		MoveWindowToOverlayRoot();
+		SetBackdropColor(new Color(0.0f, 0.0f, 0.0f, 0.10f));
 
 		// Wichtig:
 		// Der große TutorialOverlay-Control darf im Hint-Modus keine Klicks blockieren.
@@ -84,6 +91,7 @@ public partial class TutorialOverlay : Control
 		if (_window != null)
 		{
 			_window.CustomMinimumSize = _hintWindowMinSize;
+			_window.Size = _hintWindowMinSize;
 
 			// Wichtig:
 			// Auch das Panel selbst ignoriert Mausinput.
@@ -163,6 +171,10 @@ public partial class TutorialOverlay : Control
 
 		if (_window.GetParent() != this)
 			_window.Reparent(this, false);
+
+		_window.SetAnchorsPreset(
+			Control.LayoutPreset.TopLeft,
+			keepOffsets: false);
 	}
 
 	private void PositionHintWindow()
@@ -170,18 +182,13 @@ public partial class TutorialOverlay : Control
 		if (_window == null)
 			return;
 
-		Vector2 viewportSize = GetViewportRect().Size;
-		Vector2 margin = new Vector2(24, 88);
+		_window.Position = new Vector2(32, 96);
+	}
 
-		Vector2 windowSize = _window.Size;
-
-		if (windowSize.X <= 1 || windowSize.Y <= 1)
-			windowSize = _window.GetCombinedMinimumSize();
-
-		_window.Position = new Vector2(
-			viewportSize.X - windowSize.X - margin.X,
-			margin.Y
-		);
+	private void SetBackdropColor(Color color)
+	{
+		if (_backdrop != null)
+			_backdrop.Color = color;
 	}
 
 	private void SetChildMouseFilters(Node node, MouseFilterEnum mouseFilter)
@@ -220,12 +227,19 @@ public partial class TutorialOverlay : Control
 		if (_window == null)
 			return;
 
+		_window.PivotOffset = _window.Size * 0.5f;
 		_window.Scale = new Vector2(0.96f, 0.96f);
+		_window.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.0f);
 
 		Tween tween = CreateTween();
 		tween.TweenProperty(_window, "scale", Vector2.One, 0.18f)
 			.SetTrans(Tween.TransitionType.Sine)
 			.SetEase(Tween.EaseType.Out);
+		tween.Parallel().TweenProperty(
+			_window,
+			"modulate",
+			Colors.White,
+			0.16f);
 	}
 
 	private void OnNextPressed()
