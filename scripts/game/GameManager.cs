@@ -192,27 +192,26 @@ private void OnEndTurnButtonPressed()
 	UpdateHud();
 }
 
-	private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
+private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
+{
+	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
+
+	if (hoveredTile == null)
 	{
-	
-
-
-		HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
-
-		if (hoveredTile == null)
-		{
-			ClearCurrentPreview();
-			return;
-		}
-
-		if (hoveredTile != _currentPreviewTile)
-		{
-			ClearCurrentPreview();
-			_currentPreviewTile = hoveredTile;
-		}
-
-		UpdateCurrentPreview(plantType);
+		ClearCurrentPreview();
+		_tutorialManager?.RefreshTutorialHighlights();
+		return;
 	}
+
+	if (hoveredTile != _currentPreviewTile)
+	{
+		ClearCurrentPreview();
+		_currentPreviewTile = hoveredTile;
+		_tutorialManager?.RefreshTutorialHighlights();
+	}
+
+	UpdateCurrentPreview(plantType);
+}
 
 	private void OnPlantCardDragReleased(PlantType plantType, Vector2 mousePosition)
 	{
@@ -226,6 +225,7 @@ private void OnEndTurnButtonPressed()
 		}
 
 		ClearCurrentPreview();
+		_tutorialManager?.RefreshTutorialHighlights();
 		UpdateHud();
 
 		GD.Print($"Released plant card: {plantType} at {mousePosition}");

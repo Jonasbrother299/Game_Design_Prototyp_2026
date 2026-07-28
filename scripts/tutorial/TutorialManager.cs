@@ -11,16 +11,13 @@ public partial class TutorialManager : Node
 	{
 		Intro,
 		Goal,
-		PlayMossIntro,
 		WaitForMossPlacement,
-		EndTurnIntro,
-		WaitForEndTurn,
+		OptionalCardPlay,
 		Water,
 		Growth,
 		Spread,
 		Event,
-		PlantDeath,
-		FreePlay
+		PlantDeath
 	}
 
 	private TutorialStepId _currentStep = TutorialStepId.Intro;
@@ -96,15 +93,7 @@ public partial class TutorialManager : Node
 				break;
 
 			case TutorialStepId.Goal:
-				GoToStep(TutorialStepId.PlayMossIntro);
-				break;
-
-			case TutorialStepId.PlayMossIntro:
 				GoToStep(TutorialStepId.WaitForMossPlacement);
-				break;
-
-			case TutorialStepId.EndTurnIntro:
-				GoToStep(TutorialStepId.WaitForEndTurn);
 				break;
 
 			case TutorialStepId.Water:
@@ -124,15 +113,11 @@ public partial class TutorialManager : Node
 				break;
 
 			case TutorialStepId.PlantDeath:
-				GoToStep(TutorialStepId.FreePlay);
-				break;
-
-			case TutorialStepId.FreePlay:
 				EndTutorial();
 				break;
 
 			case TutorialStepId.WaitForMossPlacement:
-			case TutorialStepId.WaitForEndTurn:
+			case TutorialStepId.OptionalCardPlay:
 				// Diese Schritte werden durch echte Spielaktionen beendet.
 				break;
 		}
@@ -155,22 +140,27 @@ public partial class TutorialManager : Node
 		if (_isFinished)
 			return true;
 
-		if (_currentStep != TutorialStepId.WaitForMossPlacement)
-			return false;
-
 		if (card == null || tile == null)
 			return false;
 
-		if (card.CardType != CardType.Plant)
-			return false;
+		if (_currentStep == TutorialStepId.WaitForMossPlacement)
+		{
+			if (card.CardType != CardType.Plant)
+				return false;
 
-		if (card.PlantType != PlantType.Moss)
-			return false;
+			if (card.PlantType != PlantType.Moss)
+				return false;
 
-		if (!_requiredMossPlacementCoord.HasValue)
-			return false;
+			if (!_requiredMossPlacementCoord.HasValue)
+				return false;
 
-		return tile.Coord.Equals(_requiredMossPlacementCoord.Value);
+			return tile.Coord.Equals(_requiredMossPlacementCoord.Value);
+		}
+
+		if (_currentStep == TutorialStepId.OptionalCardPlay)
+			return true;
+
+		return false;
 	}
 
 	public bool CanEndTurn()
@@ -178,7 +168,25 @@ public partial class TutorialManager : Node
 		if (_isFinished)
 			return true;
 
-		return _currentStep == TutorialStepId.WaitForEndTurn;
+		return _currentStep == TutorialStepId.OptionalCardPlay;
+	}
+		
+	public void RefreshTutorialHighlights()
+	{
+		if (_isFinished)
+			return;
+
+		if (_currentStep == TutorialStepId.WaitForMossPlacement)
+		{
+			HighlightFirstPlayableTileFor(PlantType.Moss);
+			return;
+		}
+
+		if (_currentStep == TutorialStepId.OptionalCardPlay)
+		{
+			HighlightNode("UI/CanvasLayer/CardHand");
+			HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
+		}
 	}
 
 	private void ShowCurrentStep()
@@ -192,12 +200,12 @@ public partial class TutorialManager : Node
 
 		_overlay.SetNavigation(
 			canGoBack: false,
-			isLastStep: _currentStep == TutorialStepId.FreePlay
+			isLastStep: _currentStep == TutorialStepId.PlantDeath
 		);
 		
 		bool waitsForAction =
 		_currentStep == TutorialStepId.WaitForMossPlacement ||
-		_currentStep == TutorialStepId.WaitForEndTurn;
+		_currentStep == TutorialStepId.OptionalCardPlay;
 
 		_overlay.SetNextButtonVisible(!waitsForAction);
 		_overlay.SetBackButtonVisible(false);
@@ -207,8 +215,7 @@ public partial class TutorialManager : Node
 			case TutorialStepId.Intro:
 				SetTitle("Einstieg");
 				SetText(
-					"Die Natur ist aus dem Gleichgewicht geraten. Lass dieses kleine Ökosystem wachsen.\n\n" +
-					"Du lernst Schritt für Schritt, wie du das Ökosystem stabilisierst."
+					"Die Natur ist aus dem Gleichgewicht geraten. Lass dieses kleine Ökosystem wachsen."
 				);
 				break;
 
@@ -221,7 +228,7 @@ public partial class TutorialManager : Node
 				HighlightCenterTile();
 				break;
 
-			case TutorialStepId.PlayMossIntro:
+			case TutorialStepId.WaitForMossPlacement:
 				SetTitle("Karten ausspielen");
 				SetText(
 					"Ziehe die Moos-Karte auf das leuchtende Feld.\n\n" +
@@ -230,31 +237,15 @@ public partial class TutorialManager : Node
 				);
 				HighlightFirstPlayableTileFor(PlantType.Moss);
 				break;
-
-			case TutorialStepId.WaitForMossPlacement:
-				SetTitle("Moos platzieren");
+				
+			case TutorialStepId.OptionalCardPlay:
+				SetTitle("Weitere Karten spielen");
 				SetText(
-					"Ziehe jetzt die Moos-Karte aus deiner Hand auf das leuchtende Feld.\n\n" +
-					"Das Tutorial geht weiter, sobald du Moos erfolgreich platziert hast."
+					"Du hast Moos erfolgreich platziert.\n\n" +
+					"Jetzt kannst du so viele weitere Karten spielen, wie du möchtest — von keiner bis zu allen. " +
+					"Wenn du fertig bist, beende die Runde, damit dein Ökosystem sich entwickeln kann."
 				);
-				HighlightFirstPlayableTileFor(PlantType.Moss);
-				break;
-
-			case TutorialStepId.EndTurnIntro:
-				SetTitle("Runde beenden");
-				SetText(
-					"Beende die Runde, damit dein Ökosystem sich entwickeln kann und die Übergangsphase beginnt.\n\n" +
-					"Klicke als nächstes auf den Runde-beenden-Button."
-				);
-				HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
-				break;
-
-			case TutorialStepId.WaitForEndTurn:
-				SetTitle("Runde beenden");
-				SetText(
-					"Klicke jetzt auf „Runde beenden“.\n\n" +
-					"Das Tutorial geht weiter, sobald die Runde beendet wurde."
-				);
+				HighlightNode("UI/CanvasLayer/CardHand");
 				HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
 				break;
 
@@ -309,14 +300,6 @@ public partial class TutorialManager : Node
 					"Das Feld bleibt danach für 2 Runden gesperrt. Achte auf Bedingungen wie Wasser, Licht und Ereignisse."
 				);
 				break;
-
-			case TutorialStepId.FreePlay:
-				SetTitle("Los geht's");
-				SetText(
-					"Du kennst jetzt die wichtigsten Regeln.\n\n" +
-					"Baue ein stabiles Ökosystem auf, halte die Eiche am Leben und beobachte Wasser, Wachstum, Verbreitung und Ereignisse."
-				);
-				break;
 		}
 	}
 
@@ -328,12 +311,12 @@ public partial class TutorialManager : Node
 		if (plantType != PlantType.Moss)
 			return;
 
-		GoToStep(TutorialStepId.EndTurnIntro);
+		GoToStep(TutorialStepId.OptionalCardPlay);
 	}
 
 	private void OnEndTurnRequested(int round)
 	{
-		if (_currentStep != TutorialStepId.WaitForEndTurn)
+		if (_currentStep != TutorialStepId.OptionalCardPlay)
 			return;
 
 		// Wir wechseln hier noch nicht direkt weiter.
@@ -346,7 +329,7 @@ public partial class TutorialManager : Node
 		if (_hasShownWater)
 			return;
 
-		if (_currentStep != TutorialStepId.WaitForEndTurn)
+		if (_currentStep != TutorialStepId.OptionalCardPlay)
 			return;
 
 		GoToStep(TutorialStepId.Water);
