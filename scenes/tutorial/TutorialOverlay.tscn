@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ccsqc8nj81y5c"]
 
-[ext_resource type="Script" path="res://scripts/tutorial/TutorialOverlay.cs" id="1_overlay"]
+[ext_resource type="Script" uid="uid://dery827hnol51" path="res://scripts/tutorial/TutorialOverlay.cs" id="1_overlay"]
 
-[node name="TutorialOverlay" type="Control"]
+[node name="TutorialOverlay" type="Control" unique_id=225137712]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -10,20 +10,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 script = ExtResource("1_overlay")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=361023438]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.18)
 mouse_filter = 2
+color = Color(0, 0, 0, 0.18)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=282233556]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,12 +30,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TutorialWindow" type="Panel" parent="CenterContainer"]
+[node name="TutorialWindow" type="Panel" parent="CenterContainer" unique_id=231017051]
 clip_contents = true
 custom_minimum_size = Vector2(700, 420)
 layout_mode = 2
 
-[node name="TutorialLayoutVBox" type="VBoxContainer" parent="CenterContainer/TutorialWindow"]
+[node name="TutorialLayoutVBox" type="VBoxContainer" parent="CenterContainer/TutorialWindow" unique_id=1799740566]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,58 +50,37 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 alignment = 1
 
-[node name="TutorialTitle" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+[node name="TutorialTitle" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=323704727]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Tutorial"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1001428761]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 0
 
-[node name="ScrollContent" type="VBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer"]
+[node name="ScrollContent" type="VBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer" unique_id=1425323378]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
 
-[node name="TutorialText" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent"]
+[node name="TutorialText" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent" unique_id=1692033478]
 layout_mode = 2
 size_flags_horizontal = 3
 autowrap_mode = 2
 
-[node name="TutorialContentHBox" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="TutorialCardImage" type="TextureRect" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox"]
-custom_minimum_size = Vector2(200, 280)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="TutorialCardInfo" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-autowrap_mode = 2
-
-[node name="ProgressDots" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="Navigation" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
+[node name="Navigation" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=2128024124]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 3
 
-[node name="TutorialBackButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation"]
+[node name="TutorialBackButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1386900530]
 layout_mode = 2
 text = "Zurück"
 
-[node name="TutorialNextButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation"]
+[node name="TutorialNextButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1359908772]
 layout_mode = 2
 text = "Weiter"
