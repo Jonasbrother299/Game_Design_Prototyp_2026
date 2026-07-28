@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/UI/PauseMenu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" path="res://scenes/UI/Water.tscn" id="11_water"]
 [ext_resource type="Texture2D" path="res://assets/ui/button/endTurn_button.png" id="12_end_turn"]
+[ext_resource type="PackedScene" path="res://scenes/UI/RoundDisplay.tscn" id="13_round"]
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 1
@@ -76,19 +77,9 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("8_ghub")
 
-[node name="RoundLabel" type="Label" parent="UI/CanvasLayer/GameHub" unique_id=372543252]
-layout_mode = 0
-offset_right = 200.0
-offset_bottom = 24.0
-
 [node name="WaterLabel" parent="UI/CanvasLayer/GameHub" instance=ExtResource("11_water")]
 
-[node name="CardsPlayLabel" type="Label" parent="UI/CanvasLayer/GameHub" unique_id=332579715]
-layout_mode = 0
-offset_top = 56.0
-offset_right = 200.0
-offset_bottom = 80.0
-vertical_alignment = 2
+[node name="RoundDisplay" parent="UI/CanvasLayer/GameHub" instance=ExtResource("13_round")]
 
 [node name="EndTurnButton" type="TextureButton" parent="UI/CanvasLayer/GameHub" unique_id=629424259]
 layout_mode = 0
@@ -96,8 +87,8 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -92.0
+offset_left = -284.0
+offset_top = -110.0
 offset_right = -24.0
 offset_bottom = -34.0
 grow_horizontal = 0

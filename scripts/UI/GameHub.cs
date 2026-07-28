@@ -11,6 +11,7 @@ public partial class GameHub : Control
 	private BoardManager _boardManager;
 	private EventDisplayUI _eventDisplay;
 	private WaterDisplayUI _waterDisplay;
+	private RoundDisplayUI _roundDisplay;
 	private CanvasLayer _rainLensLayer;
 	private RainLensCyaniluxOverlay _rainLensOverlay;
 
@@ -91,6 +92,16 @@ public partial class GameHub : Control
 			UpdateWaterPreview();
 		}
 
+		_roundDisplay = GetNodeOrNull<RoundDisplayUI>("RoundDisplay");
+		if (_roundDisplay == null)
+		{
+			GD.PushError("GameHub: Rundenanzeige fehlt.");
+		}
+		else if (_turnManager.State != null)
+		{
+			_roundDisplay.ShowRound(_turnManager.State.CurrentRound);
+		}
+
 		_rainLensOverlay =
 			currentScene.GetNodeOrNull<RainLensCyaniluxOverlay>(
 				"RainLensLayer/RainLensRoot/RainLensOverlay");
@@ -129,6 +140,7 @@ public partial class GameHub : Control
 
 	private void OnTurnStarted(int round)
 	{
+		_roundDisplay?.ShowRound(round);
 		UpdateWaterPreview();
 	}
 

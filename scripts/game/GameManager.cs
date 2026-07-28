@@ -6,8 +6,6 @@ public partial class GameManager : Node
 	private TurnManager _turnManager;
 	private CardHandUI _cardHand;
 	private BaseButton _endTurnButton;
-	private Label _roundLabel;
-	private Label _cardsPlayedLabel;
 	private HexTile _currentPreviewTile;
 	private TutorialManager _tutorialManager;
 	private string _lastDebugMessage = "";
@@ -41,9 +39,7 @@ public partial class GameManager : Node
 
 	ConnectCardHand();
 	ConnectEndTurnButton();
-	ConnectHudLabels();
 	StartTutorial();
-	UpdateHud();
 	}
 
 	private void ConnectCardHand()
@@ -58,22 +54,11 @@ public partial class GameManager : Node
 
 		_cardHand.PlantCardDragged += OnPlantCardDragged;
 		_cardHand.PlantCardDragReleased += OnPlantCardDragReleased;
+		_cardHand.PlantCardDragCanceled += OnPlantCardDragCanceled;
 		_cardHand.SetCards(_turnManager.State.HandCards);
 
 		GD.Print("GameManager connected to CardHandUI.");
 	}
-private void ConnectHudLabels()
-{
-	_roundLabel = FindNodeByName<Label>(GetTree().CurrentScene, "RoundLabel");
-	_cardsPlayedLabel = FindNodeByName<Label>(GetTree().CurrentScene, "CardsPlayLabel");
-
-	if (_roundLabel == null)
-		GD.PrintErr("RoundLabel not found. Make sure the label node is named RoundLabel.");
-
-	if (_cardsPlayedLabel == null)
-		GD.PrintErr("CardsPlayedLabel not found. Make sure the label node is named CardsPlayLabel.");
-}
-
 private void StartTutorial()
 {
 	Node currentScene = GetTree().CurrentScene;
@@ -113,30 +98,13 @@ private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 
 	return null;
 }
-private void UpdateHud()
-{
-	if (_turnManager == null)
-		return;
-
-	if (_turnManager.State == null)
-		return;
-
-	if (_roundLabel != null)
-	{
-		_roundLabel.Text = $"Round: {_turnManager.State.CurrentRound}";
-	}
-
-	if (_cardsPlayedLabel != null)
-	{
-		_cardsPlayedLabel.Text = $"Cards: {_turnManager.State.CardsPlayedThisTurn}/{_turnManager.Config.CardsPerTurnLimit}";
-	}
-}
 	public override void _ExitTree()
 	{
 		if (_cardHand != null)
 		{
 			_cardHand.PlantCardDragged -= OnPlantCardDragged;
 			_cardHand.PlantCardDragReleased -= OnPlantCardDragReleased;
+			_cardHand.PlantCardDragCanceled -= OnPlantCardDragCanceled;
 		}
 			if (_endTurnButton != null)
 		{
@@ -180,8 +148,6 @@ private void OnEndTurnButtonPressed()
 
 	_turnManager.EndTurn();
 	_cardHand?.SetCards(_turnManager.State.HandCards);
-
-	UpdateHud();
 }
 
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
@@ -205,6 +171,12 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 	UpdateCurrentPreview(plantType);
 }
 
+	private void OnPlantCardDragCanceled()
+	{
+		ClearCurrentPreview();
+		_tutorialManager?.RefreshTutorialHighlights();
+	}
+
 	private void OnPlantCardDragReleased(PlantType plantType, Vector2 mousePosition)
 	{
 		HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
@@ -218,7 +190,6 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 
 		ClearCurrentPreview();
 		_tutorialManager?.RefreshTutorialHighlights();
-		UpdateHud();
 
 		GD.Print($"Released plant card: {plantType} at {mousePosition}");
 		GD.Print("GameManager: drag released, preview cleared.");
