@@ -1,18 +1,18 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://3m6vgxyfuv8n"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" uid="uid://jdbebbsvb3am" path="res://assets/cards/card_birke.png" id="2_card"]
+[ext_resource type="Texture2D" uid="uid://dwdu6gha82buj" path="res://assets/cards/card_birke.png" id="2_card"]
+[ext_resource type="PackedScene" uid="uid://bgyebtrvvcpor" path="res://scenes/board/plants/Birch.tscn" id="2_esn6p"]
 
 [resource]
 script = ExtResource("1_plant")
 Type = 5
 DisplayName = "Birke"
 WaterConsumption = 3
-WaterProduction = 0
 GrowthRounds = 4
 GrowthStageCount = 5
 SpreadChanceDenominator = 5
 AllowedLightLevels = Array[int]([0, 1])
 EffectType = 1
-ShadeRequiresMaturity = true
 CardImage = ExtResource("2_card")
+PlantScene = ExtResource("2_esn6p")
