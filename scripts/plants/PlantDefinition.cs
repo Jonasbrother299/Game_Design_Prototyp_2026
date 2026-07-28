@@ -20,6 +20,7 @@ public partial class PlantDefinition : Resource
 
 	[Export] public Texture2D CardImage;
 	[Export] public PackedScene PlantScene;
+	[Export] public Godot.Collections.Array<PackedScene> GrowthStageScenes = new();
 
 	[Export(PropertyHint.MultilineText)]
 	public string Description = "";
