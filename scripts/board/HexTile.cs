@@ -20,12 +20,46 @@ public partial class HexTile : Node3D
 	private StandardMaterial3D _tileMaterial;
 	private Material _validPreviewMaterial;
 	private Material _invalidPreviewMaterial;
+	private Material _blockedPreviewMaterial;
+
+	private PlantInstance _renderedPlant;
+	private int _renderedGrowthStage = -1;
+	private bool _renderedAsDead;
 
 	public float StartingOakScale { get; private set; } = 0.25f;
+	public float DeadPlantScale { get; private set; } = 0.6f;
+	public Color DeadPlantTint { get; private set; } =
+		new Color(0.32f, 0.27f, 0.20f);
+	public Color BlockedTileTint { get; private set; } =
+		new Color(0.38f, 0.40f, 0.38f);
+	public Color BlockedPreviewTint { get; private set; } =
+		new Color(0.48f, 0.50f, 0.48f);
+	public float MushroomModelScale { get; private set; } = 0.6f;
+	public float MushroomGrowthAnimationSpeed { get; private set; } = 1.0f;
 
 	public void ConfigureStartingOakScale(float scale)
 	{
 		StartingOakScale = Mathf.Max(0.01f, scale);
+	}
+
+	public void ConfigureDeadPlantVisuals(
+		float deadPlantScale,
+		Color deadPlantTint,
+		Color blockedTileTint,
+		Color blockedPreviewTint)
+	{
+		DeadPlantScale = Mathf.Clamp(deadPlantScale, 0.1f, 1.0f);
+		DeadPlantTint = deadPlantTint;
+		BlockedTileTint = blockedTileTint;
+		BlockedPreviewTint = blockedPreviewTint;
+	}
+
+	public void ConfigureMushroomVisual(
+		float modelScale,
+		float growthAnimationSpeed)
+	{
+		MushroomModelScale = Mathf.Max(0.1f, modelScale);
+		MushroomGrowthAnimationSpeed = Mathf.Max(0.1f, growthAnimationSpeed);
 	}
 
 	public void Setup(HexTileData data)
@@ -58,8 +92,12 @@ public partial class HexTile : Node3D
 
 	private void SetupPlacementIndicator()
 	{
-		_validPreviewMaterial = CreatePlacementIndicatorMaterial(true);
-		_invalidPreviewMaterial = CreatePlacementIndicatorMaterial(false);
+		_validPreviewMaterial = CreatePlacementIndicatorMaterial(
+			new Color(0.25f, 1.0f, 0.45f, 1.0f));
+		_invalidPreviewMaterial = CreatePlacementIndicatorMaterial(
+			new Color(1.0f, 0.15f, 0.15f, 1.0f));
+		_blockedPreviewMaterial = CreatePlacementIndicatorMaterial(
+			BlockedPreviewTint);
 
 		_placementIndicatorRoot = GetNodeOrNull<Node3D>("HandCardPlacementIndicator");
 
@@ -333,7 +371,11 @@ private bool IsIgnoredMeshNode(Node node)
 		}
 
 		_placementIndicatorMesh.Visible = true;
-		_placementIndicatorMesh.MaterialOverride = isValid ? _validPreviewMaterial : _invalidPreviewMaterial;
+		_placementIndicatorMesh.MaterialOverride = Data?.IsBlocked == true
+			? _blockedPreviewMaterial
+			: isValid
+				? _validPreviewMaterial
+				: _invalidPreviewMaterial;
 	}
 
 	public void ClearPlacementPreview()
@@ -344,15 +386,11 @@ private bool IsIgnoredMeshNode(Node node)
 		_placementIndicatorMesh.Visible = false;
 	}
 
-	private Material CreatePlacementIndicatorMaterial(bool isValid)
+	private Material CreatePlacementIndicatorMaterial(Color color)
 	{
 		ShaderMaterial material = new ShaderMaterial();
 
 		material.Shader = GetPlacementPreviewShader();
-
-		Color color = isValid
-			? new Color(0.25f, 1.0f, 0.45f, 1.0f)
-			: new Color(1.0f, 0.15f, 0.15f, 1.0f);
 
 		material.SetShaderParameter("base_color", color);
 		material.SetShaderParameter("bottom_y", -0.25f);
@@ -443,33 +481,87 @@ private void UpdateTileMaterial()
 		return;
 	}
 
-	StandardMaterial3D material = new StandardMaterial3D();
-	material.AlbedoTexture = grassTexture;
-	material.AlbedoColor = Colors.White;
-	material.Roughness = 1.0f;
-	material.Metallic = 0.0f;
-	material.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
+	_tileMaterial = new StandardMaterial3D();
+	_tileMaterial.AlbedoTexture = grassTexture;
+	_tileMaterial.AlbedoColor = Data.IsBlocked
+		? BlockedTileTint
+		: Colors.White;
+	_tileMaterial.Roughness = 1.0f;
+	_tileMaterial.Metallic = 0.0f;
+	_tileMaterial.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
 
-	_tileMesh.MaterialOverride = material;
+	_tileMesh.MaterialOverride = _tileMaterial;
 
 }
 
 	private void RebuildPlantVisual()
 	{
+		PlantInstance visualPlant = Data.Plant ?? Data.DeadPlant;
+		bool renderAsDead =
+			Data.Plant == null &&
+			Data.DeadPlant != null &&
+			Data.DeadPlant.Definition.Type != PlantType.Oak;
+		int growthStage = visualPlant?.VisualGrowthStage ?? -1;
+
+		if (_plantVisualRoot != null &&
+			ReferenceEquals(_renderedPlant, visualPlant) &&
+			_renderedGrowthStage == growthStage &&
+			_renderedAsDead == renderAsDead)
+		{
+			return;
+		}
+
 		if (_plantVisualRoot != null)
 		{
 			_plantVisualRoot.QueueFree();
 			_plantVisualRoot = null;
 		}
 
-		if (Data.Plant == null || _plantAnchor == null)
+		_renderedPlant = visualPlant;
+		_renderedGrowthStage = growthStage;
+		_renderedAsDead = renderAsDead;
+
+		if (visualPlant == null || _plantAnchor == null)
 			return;
 
-		_plantVisualRoot = CreatePlantVisual(Data.Plant);
+		_plantVisualRoot = CreatePlantVisual(
+			visualPlant,
+			animateGrowth: !renderAsDead);
 		_plantVisualRoot.Position = Vector3.Zero;
 		_plantVisualRoot.Rotation = Vector3.Zero;
 
+		if (renderAsDead)
+			ApplyDeadPlantStyle(_plantVisualRoot);
+
 		_plantAnchor.AddChild(_plantVisualRoot);
+	}
+
+	private void ApplyDeadPlantStyle(Node3D visualRoot)
+	{
+		visualRoot.Scale *= DeadPlantScale;
+		visualRoot.Position += new Vector3(0.0f, -0.03f, 0.0f);
+
+		Node productionAura = visualRoot.FindChild(
+			"ProductionAura",
+			recursive: true,
+			owned: false);
+		productionAura?.Free();
+
+		StandardMaterial3D deadMaterial = new StandardMaterial3D();
+		deadMaterial.AlbedoColor = DeadPlantTint;
+		deadMaterial.Roughness = 1.0f;
+		deadMaterial.Metallic = 0.0f;
+
+		ApplyMaterialOverride(visualRoot, deadMaterial);
+	}
+
+	private static void ApplyMaterialOverride(Node node, Material material)
+	{
+		if (node is GeometryInstance3D geometry)
+			geometry.MaterialOverride = material;
+
+		foreach (Node child in node.GetChildren())
+			ApplyMaterialOverride(child, material);
 	}
 	private void RebuildEffectVisual()
 {
@@ -516,12 +608,17 @@ private BoardManager FindBoardManager()
 	return null;
 }
 
-private Node3D CreatePlantVisual(PlantInstance plant)
+private Node3D CreatePlantVisual(
+	PlantInstance plant,
+	bool animateGrowth)
 {
 	Node3D root = new Node3D();
 	root.Name = $"{plant.Definition.Type}_Visual";
 
-	Node3D factoryVisual = PlantVisualFactory.CreateVisual(plant, this);
+	Node3D factoryVisual = PlantVisualFactory.CreateVisual(
+		plant,
+		this,
+		animateGrowth);
 
 	 if (factoryVisual != null)
 	{

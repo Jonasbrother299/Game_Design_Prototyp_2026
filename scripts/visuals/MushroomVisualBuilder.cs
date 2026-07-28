@@ -3,22 +3,24 @@ using System.Collections.Generic;
 
 public static class MushroomVisualBuilder
 {
-	private const float ModelMeshScaleMultiplier = 12.0f;
+	private const int GrowthModelCount = 3;
 
-	public static Node3D Create(PlantInstance plant)
+	public static Node3D Create(
+		PlantInstance plant,
+		float modelScale,
+		float animationSpeed,
+		bool animateGrowth)
 	{
 		Node3D root = new Node3D();
 		root.Name = "Mushroom_Visual";
 
-		Node3D model = CreateModel(plant);
-		if (model != null)
-		{
-			root.AddChild(model);
-		}
-		else
-		{
+		if (!AddGrowthModels(
+				root,
+				plant,
+				modelScale,
+				animationSpeed,
+				animateGrowth))
 			AddFallbackMushrooms(root, plant);
-		}
 
 		if (plant != null && plant.IsMature)
 		{
@@ -28,103 +30,210 @@ public static class MushroomVisualBuilder
 		return root;
 	}
 
-	private static Node3D CreateModel(PlantInstance plant)
+	private static bool AddGrowthModels(
+		Node3D root,
+		PlantInstance plant,
+		float modelScale,
+		float animationSpeed,
+		bool animateGrowth)
 	{
-		PackedScene plantScene = plant?.Definition?.PlantScene;
-		if (plantScene == null)
-			return null;
+		Godot.Collections.Array<PackedScene> growthScenes =
+			plant?.Definition?.GrowthStageScenes;
 
-		Node instance = plantScene.Instantiate();
-		if (instance is not Node3D model)
+		if (growthScenes == null || growthScenes.Count != GrowthModelCount)
+			return false;
+
+		foreach (PackedScene growthScene in growthScenes)
 		{
-			instance.Free();
-			return null;
+			if (growthScene == null)
+				return false;
 		}
 
-		List<Node3D> stageOneNodes = new();
-		List<Node3D> stageTwoNodes = new();
-		List<Node3D> stageThreeNodes = new();
+		int visualStage = Mathf.Clamp(
+			plant.VisualGrowthStage,
+			1,
+			GrowthModelCount + 1);
+		int visibleModelCount = Mathf.Min(visualStage, GrowthModelCount);
+		float safeModelScale = Mathf.Max(0.1f, modelScale);
+		List<Node3D> models = new();
 
-		CollectStageNodes(model, stageOneNodes, stageTwoNodes, stageThreeNodes);
-
-		if (stageOneNodes.Count + stageTwoNodes.Count + stageThreeNodes.Count == 0)
+		for (int i = 0; i < GrowthModelCount; i++)
 		{
-			model.Free();
-			return null;
+			Node instance = growthScenes[i].Instantiate();
+			if (instance is not Node3D model)
+			{
+				instance.Free();
+				FreeModels(models);
+				return false;
+			}
+
+			model.Name = $"MushroomGrowthModel_{i + 1}";
+			model.Visible = i < visibleModelCount;
+
+			List<Node3D> renderNodes = new();
+			CollectRenderNodes(model, renderNodes);
+			CompensateModelScale(renderNodes, safeModelScale);
+
+			model.Position = new Vector3(-0.22f, -0.14f, 0.40f);
+			model.Scale *= safeModelScale;
+
+			bool shouldAnimate =
+				animateGrowth &&
+				visualStage <= GrowthModelCount &&
+				i == visualStage - 1;
+			bool shouldShowEndState =
+				i < visibleModelCount &&
+				!shouldAnimate;
+
+			AnimationPlayer animationPlayer = FindAnimationPlayer(model);
+			ConfigureStageAnimationWhenInsideTree(
+				animationPlayer,
+				shouldShowEndState,
+				shouldAnimate,
+				animationSpeed);
+
+			models.Add(model);
 		}
 
-		stageTwoNodes.Sort(CompareNodeNames);
+		foreach (Node3D model in models)
+			root.AddChild(model);
 
-		int visualStage = Mathf.Clamp(plant.VisualGrowthStage, 1, 4);
-		SetNodesVisible(stageOneNodes, true);
-
-		for (int i = 0; i < stageTwoNodes.Count; i++)
-		{
-			int requiredStage = i == 0 ? 2 : 3;
-			stageTwoNodes[i].Visible = visualStage >= requiredStage;
-		}
-
-		SetNodesVisible(stageThreeNodes, visualStage >= 4);
-
-		model.Name = "MushroomModel";
-		model.Position = new Vector3(-0.22f, -0.14f, 0.40f);
-		return model;
+		return true;
 	}
 
-	private static void CollectStageNodes(
+	private static void CollectRenderNodes(
 		Node node,
-		List<Node3D> stageOneNodes,
-		List<Node3D> stageTwoNodes,
-		List<Node3D> stageThreeNodes)
+		List<Node3D> renderNodes)
 	{
 		foreach (Node child in node.GetChildren())
 		{
-			string name = child.Name.ToString().ToLowerInvariant();
+			if (child is MeshInstance3D meshInstance)
+				renderNodes.Add(meshInstance);
 
-			if (child is Node3D node3D)
-			{
-				if (name.Contains("stage1"))
-				{
-					PrepareModelNode(node3D);
-					stageOneNodes.Add(node3D);
-					continue;
-				}
-
-				if (name.Contains("stage2"))
-				{
-					PrepareModelNode(node3D);
-					stageTwoNodes.Add(node3D);
-					continue;
-				}
-
-				if (name.Contains("stage3"))
-				{
-					PrepareModelNode(node3D);
-					stageThreeNodes.Add(node3D);
-					continue;
-				}
-			}
-
-			CollectStageNodes(child, stageOneNodes, stageTwoNodes, stageThreeNodes);
+			CollectRenderNodes(child, renderNodes);
 		}
 	}
 
-	private static void PrepareModelNode(Node3D node)
+	private static AnimationPlayer FindAnimationPlayer(Node node)
 	{
-		node.Scale *= ModelMeshScaleMultiplier;
+		if (node is AnimationPlayer animationPlayer)
+			return animationPlayer;
+
+		foreach (Node child in node.GetChildren())
+		{
+			AnimationPlayer found = FindAnimationPlayer(child);
+			if (found != null)
+				return found;
+		}
+
+		return null;
 	}
 
-	private static int CompareNodeNames(Node3D first, Node3D second)
+	private static void ConfigureStageAnimationWhenInsideTree(
+		AnimationPlayer animationPlayer,
+		bool shouldShowEndState,
+		bool shouldAnimate,
+		float animationSpeed)
 	{
-		return string.CompareOrdinal(first.Name.ToString(), second.Name.ToString());
+		if (animationPlayer == null ||
+			(!shouldShowEndState && !shouldAnimate))
+			return;
+
+		if (animationPlayer.IsInsideTree())
+		{
+			ConfigureStageAnimation(
+				animationPlayer,
+				shouldShowEndState,
+				shouldAnimate,
+				animationSpeed);
+			return;
+		}
+
+		void OnTreeEntered()
+		{
+			animationPlayer.TreeEntered -= OnTreeEntered;
+			ConfigureStageAnimation(
+				animationPlayer,
+				shouldShowEndState,
+				shouldAnimate,
+				animationSpeed);
+		}
+
+		animationPlayer.TreeEntered += OnTreeEntered;
 	}
 
-	private static void SetNodesVisible(List<Node3D> nodes, bool visible)
+	private static void ConfigureStageAnimation(
+		AnimationPlayer animationPlayer,
+		bool shouldShowEndState,
+		bool shouldAnimate,
+		float animationSpeed)
+	{
+		StringName growthAnimation = FindGrowthAnimation(animationPlayer);
+		if (IsAnimationNameMissing(growthAnimation))
+			return;
+
+		if (shouldAnimate)
+		{
+			animationPlayer.SpeedScale = Mathf.Max(0.1f, animationSpeed);
+			animationPlayer.Play(growthAnimation);
+			animationPlayer.Advance(0.0);
+			return;
+		}
+
+		if (shouldShowEndState)
+			ApplyAnimationEnd(animationPlayer, growthAnimation);
+	}
+
+	private static StringName FindGrowthAnimation(AnimationPlayer animationPlayer)
+	{
+		foreach (StringName animationName in animationPlayer.GetAnimationList())
+		{
+			if (IsAnimationNameMissing(animationName))
+				continue;
+
+			if (animationName.ToString() != "RESET")
+				return animationName;
+		}
+
+		return default;
+	}
+
+	private static void ApplyAnimationEnd(
+		AnimationPlayer animationPlayer,
+		StringName animationName)
+	{
+		if (IsAnimationNameMissing(animationName))
+			return;
+
+		Animation animation = animationPlayer.GetAnimation(animationName);
+		if (animation == null)
+			return;
+
+		animationPlayer.Play(animationName);
+		animationPlayer.Seek(animation.Length, update: true);
+		animationPlayer.Stop(keepState: true);
+	}
+
+	private static bool IsAnimationNameMissing(StringName animationName)
+	{
+		return animationName == null ||
+			string.IsNullOrEmpty(animationName.ToString());
+	}
+
+	private static void CompensateModelScale(
+		List<Node3D> nodes,
+		float modelScale)
 	{
 		foreach (Node3D node in nodes)
 		{
-			node.Visible = visible;
+			node.Position /= modelScale;
 		}
+	}
+
+	private static void FreeModels(List<Node3D> models)
+	{
+		foreach (Node3D model in models)
+			model.Free();
 	}
 
 	private static void AddFallbackMushrooms(Node3D root, PlantInstance plant)

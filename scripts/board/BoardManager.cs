@@ -11,6 +11,21 @@ public partial class BoardManager : Node3D
 	[Export(PropertyHint.Range, "0.05,2.0,0.01")]
 	public float StartingOakScale = 0.25f;
 
+	[ExportGroup("Dead Plant Visuals")]
+	[Export(PropertyHint.Range, "0.1,1.0,0.05")]
+	public float DeadPlantScale = 0.6f;
+
+	[Export] public Color DeadPlantTint = new Color(0.32f, 0.27f, 0.20f);
+	[Export] public Color BlockedTileTint = new Color(0.38f, 0.40f, 0.38f);
+	[Export] public Color BlockedPreviewTint = new Color(0.48f, 0.50f, 0.48f);
+
+	[ExportGroup("Mushroom Visual")]
+	[Export(PropertyHint.Range, "0.1,30.0,0.1")]
+	public float MushroomModelScale = 0.6f;
+
+	[Export(PropertyHint.Range, "0.1,3.0,0.1")]
+	public float MushroomGrowthAnimationSpeed = 1.0f;
+
 	public BoardData BoardData { get; private set; } = new BoardData();
 
 	private readonly Dictionary<HexCoord, HexTile> _tileViews = new();
@@ -124,6 +139,14 @@ public partial class BoardManager : Node3D
 
 		tileView.Position = HexToWorld(tileData.Coord, HexSize);
 		tileView.ConfigureStartingOakScale(StartingOakScale);
+		tileView.ConfigureDeadPlantVisuals(
+			DeadPlantScale,
+			DeadPlantTint,
+			BlockedTileTint,
+			BlockedPreviewTint);
+		tileView.ConfigureMushroomVisual(
+			MushroomModelScale,
+			MushroomGrowthAnimationSpeed);
 		tileView.Setup(tileData);
 
 		AddChild(tileView);

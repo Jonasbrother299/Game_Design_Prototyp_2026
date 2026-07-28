@@ -6,6 +6,7 @@ public class HexTileData
 	public LightLevel LightLevel { get; set; } = LightLevel.Sun;
 
 	public PlantInstance Plant { get; private set; }
+	public PlantInstance DeadPlant { get; private set; }
 
 	public int BlockedRounds { get; private set; } = 0;
 
@@ -35,19 +36,33 @@ public class HexTileData
 	public void PlacePlant(PlantInstance plant)
 	{
 		Plant = plant;
+		DeadPlant = null;
+		BlockedRounds = 0;
 	}
 
 	public void RemovePlantAndBlockTile(int rounds)
 	{
+		if (Plant?.Definition.Type != PlantType.Oak)
+			DeadPlant = Plant;
+
 		Plant = null;
-		BlockedRounds = rounds;
+		BlockedRounds = System.Math.Max(rounds, 0);
+
+		if (BlockedRounds == 0)
+			DeadPlant = null;
 	}
 
-	public void TickBlockedRound()
+	public bool TickBlockedRound()
 	{
+		if (BlockedRounds <= 0)
+			return false;
+
+		BlockedRounds--;
+
 		if (BlockedRounds > 0)
-		{
-			BlockedRounds--;
-		}
+			return false;
+
+		DeadPlant = null;
+		return true;
 	}
 }

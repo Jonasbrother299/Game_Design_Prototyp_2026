@@ -2,7 +2,10 @@ using Godot;
 
 public static class PlantVisualFactory
 {
-	public static Node3D CreateVisual(PlantInstance plant, HexTile tile)
+	public static Node3D CreateVisual(
+		PlantInstance plant,
+		HexTile tile,
+		bool animateGrowth = true)
 	{
 		if (plant == null)
 		{
@@ -12,7 +15,11 @@ public static class PlantVisualFactory
 		switch (plant.Definition.Type)
 		{
 			case PlantType.Mushroom:
-				return MushroomVisualBuilder.Create(plant);
+				return MushroomVisualBuilder.Create(
+					plant,
+					tile.MushroomModelScale,
+					tile.MushroomGrowthAnimationSpeed,
+					animateGrowth);
 
 			case PlantType.Moss:
 				return MossVisualBuilder.Create(plant);

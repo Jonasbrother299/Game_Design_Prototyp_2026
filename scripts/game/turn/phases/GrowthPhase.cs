@@ -36,7 +36,8 @@ public sealed class GrowthPhase
 	{
 		foreach (HexTileData tile in boardManager.BoardData.Tiles.Values)
 		{
-			tile.TickBlockedRound();
+			if (tile.TickBlockedRound())
+				boardManager.GetTileView(tile.Coord)?.UpdateVisualState();
 		}
 	}
 }
