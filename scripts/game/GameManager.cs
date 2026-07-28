@@ -10,6 +10,7 @@ public partial class GameManager : Node
 	private Label _waterLabel;
 	private Label _cardsPlayedLabel;
 	private HexTile _currentPreviewTile;
+	private TutorialManager _tutorialManager;
 	private string _lastDebugMessage = "";
 
 	public override void _Ready()
@@ -93,11 +94,12 @@ private void StartTutorial()
 		return;
 	}
 
-	TutorialManager tutorial = new TutorialManager();
-	tutorial.Name = "TutorialManager";
-	currentScene.AddChild(tutorial);
-	tutorial.Start(overlay, _boardManager, _cardHand, _turnManager);
+	_tutorialManager = new TutorialManager();
+	_tutorialManager.Name = "TutorialManager";
+	currentScene.AddChild(_tutorialManager);
+	_tutorialManager.Start(overlay, _boardManager, _cardHand, _turnManager);
 }
+
 private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 {
 	if (root == null)
@@ -167,22 +169,28 @@ private void ConnectEndTurnButton()
 }
 
 
-	private void OnEndTurnButtonPressed()
+private void OnEndTurnButtonPressed()
+{
+	if (_turnManager == null)
+		return;
+
+	if (_turnManager.State == null)
+		return;
+
+	if (_turnManager.State.IsGameOver)
+		return;
+
+	if (_tutorialManager != null && !_tutorialManager.CanEndTurn())
 	{
-		if (_turnManager == null)
-			return;
-
-		if (_turnManager.State == null)
-			return;
-
-		if (_turnManager.State.IsGameOver)
-			return;
+		GD.Print("Tutorial: Runde beenden ist gerade noch nicht erlaubt.");
+		return;
+	}
 
 	_turnManager.EndTurn();
 	_cardHand?.SetCards(_turnManager.State.HandCards);
 
 	UpdateHud();
-	}
+}
 
 	private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 	{
@@ -254,6 +262,12 @@ private void ConnectEndTurnButton()
 			return false;
 		}
 
+		if (_tutorialManager != null && !_tutorialManager.CanPlayCard(card, releasedTile.Data))
+		{
+			GD.Print("Tutorial: Diese Karte darf gerade nicht auf dieses Feld gespielt werden.");
+			return false;
+		}
+
 		bool played = _turnManager.TryPlayCardOnTile(
 			card,
 			releasedTile.Data,
@@ -286,9 +300,15 @@ private void ConnectEndTurnButton()
 			return;
 		}
 
-		bool canPlace = _currentPreviewTile.CanPlacePlant(definition);
+		bool canPlaceByRules = _currentPreviewTile.CanPlacePlant(definition);
 
-		_currentPreviewTile.SetPlacementPreview(canPlace);
+		CardData card = GetCardFromHand(plantType);
+
+		bool canPlaceByTutorial =
+			_tutorialManager == null ||
+			_tutorialManager.CanPlayCard(card, _currentPreviewTile.Data);
+
+		_currentPreviewTile.SetPlacementPreview(canPlaceByRules && canPlaceByTutorial);
 	}
 
 	private void ClearCurrentPreview()

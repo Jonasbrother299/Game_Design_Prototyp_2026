@@ -30,6 +30,8 @@ public partial class TutorialManager : Node
 	private bool _hasShownSpread;
 	private bool _hasShownEvent;
 	private bool _hasShownPlantDeath;
+	private HexCoord? _requiredMossPlacementCoord;
+	private bool _isFinished;
 
 	public void Start(
 		TutorialOverlay overlay,
@@ -146,6 +148,37 @@ public partial class TutorialManager : Node
 	{
 		_currentStep = step;
 		ShowCurrentStep();
+	}
+	
+	public bool CanPlayCard(CardData card, HexTileData tile)
+	{
+		if (_isFinished)
+			return true;
+
+		if (_currentStep != TutorialStepId.WaitForMossPlacement)
+			return false;
+
+		if (card == null || tile == null)
+			return false;
+
+		if (card.CardType != CardType.Plant)
+			return false;
+
+		if (card.PlantType != PlantType.Moss)
+			return false;
+
+		if (!_requiredMossPlacementCoord.HasValue)
+			return false;
+
+		return tile.Coord.Equals(_requiredMossPlacementCoord.Value);
+	}
+
+	public bool CanEndTurn()
+	{
+		if (_isFinished)
+			return true;
+
+		return _currentStep == TutorialStepId.WaitForEndTurn;
 	}
 
 	private void ShowCurrentStep()
@@ -410,12 +443,23 @@ public partial class TutorialManager : Node
 		if (plant == null)
 			return;
 
+		HexCoord preferredCoord = new HexCoord(1, 0);
+		HexTileData preferredTileData = board.BoardData.GetTile(preferredCoord);
+
+		if (preferredTileData != null && preferredTileData.CanPlacePlant(plant))
+		{
+			_requiredMossPlacementCoord = preferredCoord;
+			board.GetTileView(preferredCoord)?.SetPlacementPreview(true);
+			return;
+		}
+
 		foreach (HexCoord coord in board.BoardData.Tiles.Keys)
 		{
 			HexTileData tileData = board.BoardData.GetTile(coord);
 
 			if (tileData != null && tileData.CanPlacePlant(plant))
 			{
+				_requiredMossPlacementCoord = coord;
 				board.GetTileView(coord)?.SetPlacementPreview(true);
 				return;
 			}
@@ -447,6 +491,7 @@ public partial class TutorialManager : Node
 
 	private void EndTutorial()
 	{
+		_isFinished = true;
 		ClearHighlights();
 		_overlay?.HideOverlay();
 		QueueFree();
