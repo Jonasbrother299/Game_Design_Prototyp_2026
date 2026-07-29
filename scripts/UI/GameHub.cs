@@ -42,6 +42,8 @@ public partial class GameHub : Control
 
 	public override void _Ready()
 	{
+		MouseFilter = MouseFilterEnum.Ignore;
+
 		WaterFeedbackFont ??= GD.Load<Font>(
 			"res://assets/ui/fonts/Eckmannpsych-Medium.ttf");
 

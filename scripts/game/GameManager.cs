@@ -2,14 +2,22 @@ using Godot;
 
 public partial class GameManager : Node
 {
+	private const float TileFocusClickThreshold = 6.0f;
+	private static bool _skipTutorialOnNextStart;
+
 	private BoardManager _boardManager;
 	private TurnManager _turnManager;
+	private CameraRigController _cameraRig;
+	private HexTile _mainTreeTile;
 	private CardHandUI _cardHand;
 	private BaseButton _endTurnButton;
 	private BaseButton _discardHandButton;
 	private HexTile _currentPreviewTile;
 	private TutorialManager _tutorialManager;
 	private string _lastDebugMessage = "";
+	private bool _isCardDragActive;
+	private bool _isTileFocusClickCandidate;
+	private Vector2 _tileFocusPressPosition;
 
 	public override void _Ready()
 	{
@@ -33,15 +41,35 @@ public partial class GameManager : Node
 			return;
 		}
 
-	_turnManager.Setup(_boardManager);
-	_turnManager.StartGame();
+		_turnManager.Setup(_boardManager);
+		_turnManager.StartGame();
 
-	PlaceStarterOak();
+		PlaceStarterOak();
+		ConfigureCameraRig();
 
-	ConnectCardHand();
-	ConnectEndTurnButton();
-	ConnectDiscardHandButton();
-	StartTutorial();
+		ConnectCardHand();
+		ConnectEndTurnButton();
+		ConnectDiscardHandButton();
+
+		if (!ConsumeTutorialSkipRequest())
+			StartTutorial();
+	}
+
+	public static void SkipTutorialOnNextStart()
+	{
+		_skipTutorialOnNextStart = true;
+	}
+
+	public static void ClearTutorialSkipRequest()
+	{
+		_skipTutorialOnNextStart = false;
+	}
+
+	private static bool ConsumeTutorialSkipRequest()
+	{
+		bool shouldSkip = _skipTutorialOnNextStart;
+		_skipTutorialOnNextStart = false;
+		return shouldSkip;
 	}
 
 	private void ConnectCardHand()
@@ -61,6 +89,161 @@ public partial class GameManager : Node
 
 		GD.Print("GameManager connected to CardHandUI.");
 	}
+
+	public override void _UnhandledInput(InputEvent inputEvent)
+	{
+		if (inputEvent is InputEventMouseMotion mouseMotion)
+		{
+			if (_isTileFocusClickCandidate &&
+				mouseMotion.Position.DistanceTo(_tileFocusPressPosition) >
+				TileFocusClickThreshold)
+			{
+				_isTileFocusClickCandidate = false;
+			}
+
+			return;
+		}
+
+		if (inputEvent is not InputEventMouseButton mouseButton ||
+			mouseButton.ButtonIndex != MouseButton.Left)
+		{
+			return;
+		}
+
+		if (mouseButton.Pressed)
+		{
+			_isTileFocusClickCandidate = CanFocusTileFromMouse();
+			_tileFocusPressPosition = mouseButton.Position;
+			return;
+		}
+
+		bool shouldFocusTile =
+			_isTileFocusClickCandidate &&
+			mouseButton.Position.DistanceTo(_tileFocusPressPosition) <=
+			TileFocusClickThreshold &&
+			CanFocusTileFromMouse();
+		_isTileFocusClickCandidate = false;
+
+		if (!shouldFocusTile)
+			return;
+
+		HexTile clickedTile = IsMainTreeVisualUnderMouse(mouseButton.Position)
+			? _mainTreeTile
+			: GetHexTileUnderMouse(mouseButton.Position);
+
+		if (clickedTile == null || !_cameraRig.FocusTile(clickedTile))
+			return;
+
+		GetViewport().SetInputAsHandled();
+	}
+
+	private void ConfigureCameraRig()
+	{
+		_cameraRig = GetTree().CurrentScene?.GetNodeOrNull<CameraRigController>(
+			"CameraRig");
+
+		if (_cameraRig == null)
+		{
+			GD.PrintErr("CameraRigController not found. Expected path: CameraRig");
+			return;
+		}
+
+		_mainTreeTile = _boardManager.GetTileView(new HexCoord(0, 0));
+		_cameraRig.ConfigureBoardContext(_boardManager, _mainTreeTile);
+	}
+
+	private bool IsMainTreeVisualUnderMouse(Vector2 mousePosition)
+	{
+		if (_mainTreeTile == null || !IsInstanceValid(_mainTreeTile))
+			return false;
+
+		Camera3D camera = GetViewport().GetCamera3D();
+		Node treeVisual = _mainTreeTile.FindChild(
+			"StartingOak_Visual",
+			recursive: true,
+			owned: false);
+
+		if (camera == null || treeVisual == null)
+			return false;
+
+		Rect2 screenBounds = default;
+		bool hasScreenBounds = false;
+		ExpandVisualScreenBounds(
+			treeVisual,
+			camera,
+			ref screenBounds,
+			ref hasScreenBounds);
+
+		return hasScreenBounds && screenBounds.Grow(8.0f).HasPoint(mousePosition);
+	}
+
+	private static void ExpandVisualScreenBounds(
+		Node node,
+		Camera3D camera,
+		ref Rect2 screenBounds,
+		ref bool hasScreenBounds)
+	{
+		if (node is VisualInstance3D visual && visual.Visible)
+		{
+			Aabb bounds = visual.GetAabb();
+
+			for (int x = 0; x <= 1; x++)
+			{
+				for (int y = 0; y <= 1; y++)
+				{
+					for (int z = 0; z <= 1; z++)
+					{
+						Vector3 corner = bounds.Position + new Vector3(
+							bounds.Size.X * x,
+							bounds.Size.Y * y,
+							bounds.Size.Z * z);
+						Vector3 worldCorner = visual.GlobalTransform * corner;
+
+						if (camera.IsPositionBehind(worldCorner))
+							continue;
+
+						Vector2 screenCorner = camera.UnprojectPosition(worldCorner);
+
+						if (!hasScreenBounds)
+						{
+							screenBounds = new Rect2(screenCorner, Vector2.Zero);
+							hasScreenBounds = true;
+						}
+						else
+						{
+							screenBounds = screenBounds.Expand(screenCorner);
+						}
+					}
+				}
+			}
+		}
+
+		foreach (Node child in node.GetChildren())
+		{
+			ExpandVisualScreenBounds(
+				child,
+				camera,
+				ref screenBounds,
+				ref hasScreenBounds);
+		}
+	}
+
+	private bool CanFocusTileFromMouse()
+	{
+		if (_cameraRig == null ||
+			!_cameraRig.InteractionEnabled ||
+			_isCardDragActive ||
+			_currentPreviewTile != null ||
+			GetTree().Paused)
+		{
+			return false;
+		}
+
+		Control hoveredControl = GetViewport().GuiGetHoveredControl();
+		return hoveredControl == null ||
+			hoveredControl.MouseFilter != Control.MouseFilterEnum.Stop;
+	}
+
 private void StartTutorial()
 {
 	Node currentScene = GetTree().CurrentScene;
@@ -197,6 +380,8 @@ private void UpdateDiscardHandButtonState()
 
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 {
+	_isCardDragActive = true;
+	_isTileFocusClickCandidate = false;
 	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
 
 	if (hoveredTile == null)
@@ -218,12 +403,16 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 
 	private void OnPlantCardDragCanceled()
 	{
+		_isCardDragActive = false;
+		_isTileFocusClickCandidate = false;
 		ClearCurrentPreview();
 		_tutorialManager?.RefreshTutorialHighlights();
 	}
 
 	private void OnPlantCardDragReleased(PlantType plantType, Vector2 mousePosition)
 	{
+		_isCardDragActive = false;
+		_isTileFocusClickCandidate = false;
 		HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
 
 		bool wasPlaced = TryPlacePlantOnReleasedTile(plantType, releasedTile);

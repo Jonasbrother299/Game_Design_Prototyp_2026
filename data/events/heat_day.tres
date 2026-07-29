@@ -6,5 +6,6 @@
 script = ExtResource("1_event")
 Type = 4
 DisplayName = "Hitzetag"
+SelectionWeight = 1
 WaterModifierPerRound = -3
 Description = "Beim nächsten Rundenende sinkt die Wasserproduktion um 3."

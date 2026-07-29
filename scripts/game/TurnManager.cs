@@ -14,7 +14,7 @@ public partial class TurnManager : Node
 	public event Action<GameEventType> EventActivated;
 	public event Action<GameState> GameEnded;
 
-	public GameConfig Config { get; private set; } = new GameConfig();
+	[Export] public GameConfig Config = GameConfig.LoadDefault();
 	public GameState State { get; private set; }
 	public bool CanDiscardHand =>
 		State != null &&
@@ -54,9 +54,7 @@ public partial class TurnManager : Node
 		State = new GameState(Config);
 		State.HandCards.Clear();
 
-		DrawCard(CardData.CreatePlantCard(PlantType.Moss));
-		DrawCard(CardData.CreatePlantCard(PlantType.Flower));
-		DrawCard(CardData.CreatePlantCard(PlantType.Mushroom));
+		DrawConfiguredStartingCards();
 
 		StartTurn();
 	}
@@ -254,6 +252,27 @@ public partial class TurnManager : Node
 		return result;
 	}
 
+	private void DrawConfiguredStartingCards()
+	{
+		int targetHandSize = Mathf.Min(
+			Config.StartingHandSize,
+			Config.MaxHandSize);
+
+		foreach (PlantDefinition plant in PlantDatabase.GetAll())
+		{
+			int copies = System.Math.Max(plant.StartingHandCopies, 0);
+
+			for (int index = 0;
+				index < copies && State.HandCards.Count < targetHandSize;
+				index++)
+			{
+				DrawCard(CardData.CreatePlantCard(plant.Type));
+			}
+		}
+
+		DrawCardsUntilTargetHandSize();
+	}
+
 	private void DrawCardsUntilTargetHandSize()
 	{
 		int targetHandSize = Mathf.Min(Config.StartingHandSize, Config.MaxHandSize);
@@ -283,16 +302,34 @@ public partial class TurnManager : Node
 
 	private PlantType GetRandomPlantType()
 	{
-		PlantType[] plants =
-		{
-			PlantType.Moss,
-			PlantType.Flower,
-			PlantType.Mushroom,
-			PlantType.Birch
-		};
+		List<PlantDefinition> plants = PlantDatabase.GetAll();
+		int totalWeight = 0;
 
-		int index = _rng.RandiRange(0, plants.Length - 1);
-		return plants[index];
+		foreach (PlantDefinition plant in plants)
+		{
+			if (plant.Type is PlantType.None or PlantType.Oak)
+				continue;
+
+			totalWeight += System.Math.Max(plant.DrawWeight, 0);
+		}
+
+		if (totalWeight <= 0)
+			return PlantType.Moss;
+
+		int selection = _rng.RandiRange(1, totalWeight);
+
+		foreach (PlantDefinition plant in plants)
+		{
+			if (plant.Type is PlantType.None or PlantType.Oak)
+				continue;
+
+			selection -= System.Math.Max(plant.DrawWeight, 0);
+
+			if (selection <= 0)
+				return plant.Type;
+		}
+
+		return PlantType.Moss;
 	}
 
 	private void PrintState()

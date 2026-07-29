@@ -4,18 +4,12 @@ using System.Collections.Generic;
 
 public static class PlantDatabase
 {
-	private static readonly Dictionary<PlantType, string> ResourcePaths = new()
-	{
-		{ PlantType.Oak, "res://data/plants/oak.tres" },
-		{ PlantType.Moss, "res://data/plants/moss.tres" },
-		{ PlantType.Flower, "res://data/plants/flower.tres" },
-		{ PlantType.Mushroom, "res://data/plants/mushroom.tres" },
-		{ PlantType.Birch, "res://data/plants/birch.tres" }
-	};
+	private static readonly int RequiredPlantCount =
+		Enum.GetValues<PlantType>().Length - 1;
 
 	private static readonly Dictionary<PlantType, PlantDefinition> Plants = LoadPlants();
 
-	public static bool IsValid => Plants.Count == ResourcePaths.Count;
+	public static bool IsValid => Plants.Count == RequiredPlantCount;
 
 	public static PlantDefinition Get(PlantType type)
 	{
@@ -31,22 +25,33 @@ public static class PlantDatabase
 	private static Dictionary<PlantType, PlantDefinition> LoadPlants()
 	{
 		Dictionary<PlantType, PlantDefinition> plants = new();
+		GameConfig config = GameConfig.LoadDefault();
 
-		foreach (KeyValuePair<PlantType, string> entry in ResourcePaths)
+		foreach (PlantType expectedType in Enum.GetValues<PlantType>())
 		{
-			PlantDefinition plant = GD.Load<PlantDefinition>(entry.Value);
+			if (expectedType == PlantType.None)
+				continue;
+
+			PlantDefinition plant = config.GetPlant(expectedType);
+
 			if (plant == null)
 			{
-				GD.PushError($"PlantDatabase: Ressource fehlt oder ist ungültig: {entry.Value}");
+				GD.PushError(
+					$"PlantDatabase: Eintrag für {expectedType} fehlt in " +
+					$"{GameConfig.DefaultResourcePath}.");
 				continue;
 			}
 
-			if (!ValidatePlant(plant, entry.Key, entry.Value))
+			string resourcePath = string.IsNullOrWhiteSpace(plant.ResourcePath)
+				? GameConfig.DefaultResourcePath
+				: plant.ResourcePath;
+
+			if (!ValidatePlant(plant, expectedType, resourcePath))
 			{
 				continue;
 			}
 
-			plants[entry.Key] = plant;
+			plants[expectedType] = plant;
 		}
 
 		return plants;
@@ -71,6 +76,12 @@ public static class PlantDatabase
 		if (plant.PlayCost < 0)
 			errors.Add("Spielkosten dürfen nicht negativ sein");
 
+		if (plant.StartingHandCopies < 0)
+			errors.Add("Startkartenanzahl darf nicht negativ sein");
+
+		if (plant.DrawWeight < 0)
+			errors.Add("Ziehgewicht darf nicht negativ sein");
+
 		if (plant.WaterConsumption < 0 || plant.WaterProduction < 0)
 			errors.Add("Wasserwerte dürfen nicht negativ sein");
 
@@ -86,6 +97,29 @@ public static class PlantDatabase
 
 		if (plant.SpreadChanceDenominator == 1 || plant.SpreadChanceDenominator < 0)
 			errors.Add("Ausbreitungsnenner muss 0 oder mindestens 2 sein");
+
+		if (plant.EventDeathResistancePerGrowthStage < 0)
+			errors.Add("Ereignisresistenz darf nicht negativ sein");
+
+		if (plant.AdjacentWaterProductionBonus < 0 ||
+			plant.NeighborSpreadDenominatorReduction < 0)
+		{
+			errors.Add("Effektstärken dürfen nicht negativ sein");
+		}
+
+		if (plant.EffectType ==
+				PlantEffectType.AdjacentPlantsProducePlusOne &&
+			plant.AdjacentWaterProductionBonus <= 0)
+		{
+			errors.Add("Produktionsbonus benötigt eine positive Effektstärke");
+		}
+
+		if (plant.EffectType ==
+				PlantEffectType.SpreadChancePlusOneForNeighbors &&
+			plant.NeighborSpreadDenominatorReduction <= 0)
+		{
+			errors.Add("Ausbreitungsbonus benötigt eine positive Effektstärke");
+		}
 
 		if (plant.AllowedLightLevels == null || plant.AllowedLightLevels.Count == 0)
 		{

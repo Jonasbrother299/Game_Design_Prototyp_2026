@@ -6,5 +6,6 @@
 script = ExtResource("1_event")
 Type = 1
 DisplayName = "Regen"
+SelectionWeight = 1
 WaterModifierPerRound = 3
 Description = "Beim nächsten Rundenende steigt die Wasserproduktion um 3."

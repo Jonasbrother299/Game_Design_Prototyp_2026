@@ -8,6 +8,8 @@
 script = ExtResource("1_plant")
 Type = 3
 DisplayName = "Blume"
+StartingHandCopies = 1
+DrawWeight = 1
 WaterConsumption = 2
 WaterProduction = 2
 GrowthRounds = 2
@@ -15,5 +17,6 @@ GrowthStageCount = 3
 SpreadChanceDenominator = 3
 AllowedLightLevels = Array[int]([0, 1])
 EffectType = 3
+NeighborSpreadDenominatorReduction = 1
 CardImage = ExtResource("2_card")
 PlantScene = ExtResource("3_model")

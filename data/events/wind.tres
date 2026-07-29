@@ -6,5 +6,7 @@
 script = ExtResource("1_event")
 Type = 5
 DisplayName = "Wind"
+SelectionWeight = 1
 EffectType = 1
+SpreadDenominatorReduction = 1
 Description = "Beim nächsten Rundenende erhalten alle ausgewachsenen Pflanzen einmalig eine höhere Ausbreitungschance."

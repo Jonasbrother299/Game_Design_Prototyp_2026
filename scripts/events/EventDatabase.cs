@@ -4,19 +4,12 @@ using System.Collections.Generic;
 
 public static class EventDatabase
 {
-	private static readonly Dictionary<GameEventType, string> ResourcePaths = new()
-	{
-		{ GameEventType.Rain, "res://data/events/rain.tres" },
-		{ GameEventType.HeavyRain, "res://data/events/heavy_rain.tres" },
-		{ GameEventType.Drought, "res://data/events/drought.tres" },
-		{ GameEventType.HeatDay, "res://data/events/heat_day.tres" },
-		{ GameEventType.Wind, "res://data/events/wind.tres" },
-		{ GameEventType.Pests, "res://data/events/pests.tres" }
-	};
+	private static readonly int RequiredEventCount =
+		Enum.GetValues<GameEventType>().Length - 1;
 
 	private static readonly Dictionary<GameEventType, EventDefinition> Events = LoadEvents();
 
-	public static bool IsValid => Events.Count == ResourcePaths.Count;
+	public static bool IsValid => Events.Count == RequiredEventCount;
 
 	public static EventDefinition Get(GameEventType type)
 	{
@@ -32,22 +25,34 @@ public static class EventDatabase
 	private static Dictionary<GameEventType, EventDefinition> LoadEvents()
 	{
 		Dictionary<GameEventType, EventDefinition> events = new();
+		GameConfig config = GameConfig.LoadDefault();
 
-		foreach (KeyValuePair<GameEventType, string> entry in ResourcePaths)
+		foreach (GameEventType expectedType in Enum.GetValues<GameEventType>())
 		{
-			EventDefinition definition = GD.Load<EventDefinition>(entry.Value);
+			if (expectedType == GameEventType.None)
+				continue;
+
+			EventDefinition definition = config.GetEvent(expectedType);
+
 			if (definition == null)
 			{
-				GD.PushError($"EventDatabase: Ressource fehlt oder ist ungültig: {entry.Value}");
+				GD.PushError(
+					$"EventDatabase: Eintrag für {expectedType} fehlt in " +
+					$"{GameConfig.DefaultResourcePath}.");
 				continue;
 			}
 
-			if (!ValidateEvent(definition, entry.Key, entry.Value))
+			string resourcePath =
+				string.IsNullOrWhiteSpace(definition.ResourcePath)
+					? GameConfig.DefaultResourcePath
+					: definition.ResourcePath;
+
+			if (!ValidateEvent(definition, expectedType, resourcePath))
 			{
 				continue;
 			}
 
-			events[entry.Key] = definition;
+			events[expectedType] = definition;
 		}
 
 		return events;
@@ -74,6 +79,12 @@ public static class EventDatabase
 
 		if (definition.DurationRounds <= 0)
 			errors.Add("Dauer muss größer als 0 sein");
+
+		if (definition.SelectionWeight < 0)
+			errors.Add("Auswahlgewicht darf nicht negativ sein");
+
+		if (definition.SpreadDenominatorReduction < 0)
+			errors.Add("Ausbreitungsbonus darf nicht negativ sein");
 
 		if (!Enum.IsDefined(definition.EffectType))
 			errors.Add($"Ereigniseffekt {definition.EffectType} ist ungültig");
@@ -158,6 +169,9 @@ public static class EventDatabase
 			case GameEventType.Wind:
 				if (definition.EffectType != GameEventEffectType.IncreaseSpreadChance)
 					errors.Add("Wind benötigt IncreaseSpreadChance");
+
+				if (definition.SpreadDenominatorReduction <= 0)
+					errors.Add("Wind benötigt einen positiven Ausbreitungsbonus");
 				break;
 
 			case GameEventType.Pests:

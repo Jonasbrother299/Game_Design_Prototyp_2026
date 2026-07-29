@@ -53,9 +53,7 @@ public static class WaterBalanceCalculator
 
 			int consumption = tile.Plant.GetWaterConsumption();
 			int production = tile.Plant.GetWaterProduction();
-			int adjacentBonus = tile.Plant.IsMature
-				? GetAdjacentProductionBonus(boardManager, tile)
-				: 0;
+			int adjacentBonus = GetAdjacentProductionBonus(boardManager, tile);
 
 			totalConsumption += consumption;
 			totalProduction += production + adjacentBonus;
@@ -96,7 +94,7 @@ public static class WaterBalanceCalculator
 		BoardManager boardManager,
 		HexTileData tile)
 	{
-		if (tile.Plant.Definition.Type == PlantType.Oak)
+		if (tile.Plant.Definition.Type is PlantType.Oak or PlantType.Birch)
 			return 0;
 
 		foreach (HexTileData neighbor in boardManager.GetNeighborData(tile.Coord))
@@ -107,7 +105,9 @@ public static class WaterBalanceCalculator
 			if (neighbor.Plant.Definition.EffectType ==
 				PlantEffectType.AdjacentPlantsProducePlusOne)
 			{
-				return 1;
+				return System.Math.Max(
+					neighbor.Plant.Definition.AdjacentWaterProductionBonus,
+					0);
 			}
 		}
 

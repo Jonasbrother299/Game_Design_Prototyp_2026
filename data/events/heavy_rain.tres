@@ -6,6 +6,7 @@
 script = ExtResource("1_event")
 Type = 2
 DisplayName = "Starkregen"
+SelectionWeight = 1
 WaterModifierPerRound = 4
 DurationRounds = 2
 EffectType = 2

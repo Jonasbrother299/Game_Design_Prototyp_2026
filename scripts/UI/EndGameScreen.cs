@@ -215,11 +215,13 @@ public partial class EndGameScreen : Control
 
 	private void RestartGame()
 	{
+		GameManager.SkipTutorialOnNextStart();
 		ChangeScene(MainScenePath, "Partie");
 	}
 
 	private void OpenMainMenu()
 	{
+		GameManager.ClearTutorialSkipRequest();
 		ChangeScene(MainMenuScenePath, "Hauptmenü");
 	}
 

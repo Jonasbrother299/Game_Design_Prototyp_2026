@@ -6,6 +6,7 @@
 script = ExtResource("1_plant")
 Type = 1
 DisplayName = "Eiche"
+DrawWeight = 0
 WaterConsumption = 0
 WaterProduction = 0
 GrowthRounds = 3

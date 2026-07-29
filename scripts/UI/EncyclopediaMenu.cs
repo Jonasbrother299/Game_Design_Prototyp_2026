@@ -267,9 +267,10 @@ public partial class EncyclopediaMenu : Control
 				? "Erzeugt Schatten, sobald die Pflanze ausgewachsen ist."
 				: "Erzeugt sofort Schatten.",
 			PlantEffectType.AdjacentPlantsProducePlusOne =>
-				"Benachbarte Pflanzen produzieren +1 Wasser. Die Haupteiche ist ausgenommen.",
+				$"Benachbarte Pflanzen außer Eichen und Birken produzieren " +
+				$"+{plant.AdjacentWaterProductionBonus} Wasser.",
 			PlantEffectType.SpreadChancePlusOneForNeighbors =>
-				"Benachbarte Pflanzen verbreiten sich leichter.",
+				"Benachbarte Pflanzen außer Blumen verbreiten sich leichter.",
 			_ => "Kein zusätzlicher Effekt."
 		};
 	}
