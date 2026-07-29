@@ -10,6 +10,7 @@ public class GameConfig
 
 	public int CardsPerTurnLimit { get; set; } = 3;
 	public int CardsDrawnPerRound { get; set; } = 1;
+	public int HandDiscardAvailableFromRound { get; set; } = 2;
 
 	public int SpreadCheckInterval { get; set; } = 1;
 	public int EventChanceDenominator { get; set; } = 3;

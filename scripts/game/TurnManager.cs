@@ -12,9 +12,15 @@ public partial class TurnManager : Node
 	public event Action<GrowthPhaseResult> GrowthPhaseResolved;
 	public event Action<EventPhaseResult> EventPhaseResolved;
 	public event Action<GameEventType> EventActivated;
+	public event Action<GameState> GameEnded;
 
 	public GameConfig Config { get; private set; } = new GameConfig();
 	public GameState State { get; private set; }
+	public bool CanDiscardHand =>
+		State != null &&
+		!State.IsGameOver &&
+		State.CurrentRound >= Config.HandDiscardAvailableFromRound &&
+		State.HandCards.Count > 0;
 
 	private readonly RandomNumberGenerator _rng = new();
 	private readonly WaterPhase _waterPhase = new();
@@ -103,6 +109,7 @@ public partial class TurnManager : Node
 
 		if (State.IsGameOver)
 		{
+			GameEnded?.Invoke(State);
 			PrintGameOver();
 			return;
 		}
@@ -188,6 +195,15 @@ public partial class TurnManager : Node
 		State.HandCards.Remove(card);
 
 		PlantPlaced?.Invoke(card.PlantType, tile.Coord);
+		return true;
+	}
+
+	public bool DiscardHand()
+	{
+		if (!CanDiscardHand)
+			return false;
+
+		State.HandCards.Clear();
 		return true;
 	}
 

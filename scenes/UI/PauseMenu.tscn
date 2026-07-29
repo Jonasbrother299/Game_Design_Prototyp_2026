@@ -1,8 +1,14 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/PauseMenu.cs" id="1_pause"]
 [ext_resource type="PackedScene" path="res://scenes/UI/SettingsMenu.tscn" id="2_settings"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EncyclopediaMenu.tscn" id="3_encyclopedia"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/card_place.svg" id="4_card_place"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/mouse_left_drag.svg" id="5_mouse_left"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/mouse_right_drag.svg" id="6_mouse_right"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/mouse_wheel.svg" id="7_mouse_wheel"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/end_turn.svg" id="8_end_turn"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/key_escape.svg" id="9_escape"]
 
 [sub_resource type="StyleBoxFlat" id="StylePausePanel"]
 content_margin_left = 42.0
@@ -340,7 +346,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="ControlsOverlay/CenterContainer"]
-custom_minimum_size = Vector2(720, 560)
+custom_minimum_size = Vector2(820, 600)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StylePausePanel")
 
@@ -358,81 +364,141 @@ horizontal_alignment = 1
 [node name="ControlGrid" type="GridContainer" parent="ControlsOverlay/CenterContainer/Panel/Content"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/h_separation = 25
-theme_override_constants/v_separation = 12
-columns = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 8
+columns = 3
+
+[node name="CardIcon" type="TextureRect" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("4_card_place")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="CardControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
 theme_override_font_sizes/font_size = 19
 text = "Karte platzieren"
+vertical_alignment = 1
 
 [node name="CardInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 19
 text = "Karte mit linker Maustaste auf ein Feld ziehen"
+vertical_alignment = 1
+
+[node name="YawIcon" type="TextureRect" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("5_mouse_left")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="YawControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
 theme_override_font_sizes/font_size = 19
 text = "Kamera drehen"
+vertical_alignment = 1
 
 [node name="YawInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 19
 text = "Freie Fläche mit linker Maustaste ziehen"
+vertical_alignment = 1
+
+[node name="PitchIcon" type="TextureRect" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("6_mouse_right")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="PitchControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
 theme_override_font_sizes/font_size = 19
 text = "Kamera neigen"
+vertical_alignment = 1
 
 [node name="PitchInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 19
 text = "Rechte Maustaste ziehen"
+vertical_alignment = 1
+
+[node name="ZoomIcon" type="TextureRect" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("7_mouse_wheel")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ZoomControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
 theme_override_font_sizes/font_size = 19
 text = "Kamera zoomen"
+vertical_alignment = 1
 
 [node name="ZoomInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 19
 text = "Mausrad"
+vertical_alignment = 1
+
+[node name="RoundIcon" type="TextureRect" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("8_end_turn")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="RoundControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
 theme_override_font_sizes/font_size = 19
 text = "Runde abschließen"
+vertical_alignment = 1
 
 [node name="RoundInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 19
 text = "Button „Runde beenden“"
+vertical_alignment = 1
+
+[node name="PauseIcon" type="TextureRect" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("9_escape")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="PauseControl" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.84, 0.54, 1)
 theme_override_font_sizes/font_size = 19
 text = "Pause"
+vertical_alignment = 1
 
 [node name="PauseInput" type="Label" parent="ControlsOverlay/CenterContainer/Panel/Content/ControlGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
 theme_override_font_sizes/font_size = 19
 text = "Esc"
+vertical_alignment = 1
 
 [node name="ControlsBackButton" type="Button" parent="ControlsOverlay/CenterContainer/Panel/Content"]
 unique_name_in_owner = true

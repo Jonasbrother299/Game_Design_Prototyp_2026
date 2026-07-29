@@ -1,0 +1,280 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/EndGameScreen.cs" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleResultPanel"]
+content_margin_left = 54.0
+content_margin_top = 42.0
+content_margin_right = 54.0
+content_margin_bottom = 44.0
+bg_color = Color(0.025, 0.032, 0.025, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.78, 0.86, 0.47, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleStatsPanel"]
+content_margin_left = 28.0
+content_margin_top = 18.0
+content_margin_right = 28.0
+content_margin_bottom = 18.0
+bg_color = Color(0.055, 0.07, 0.05, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.42, 0.49, 0.3, 0.72)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.07, 0.12, 0.07, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.67, 0.36, 0.78)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.16, 0.24, 0.12, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.87, 0.53, 0.96)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 22.0
+content_margin_top = 12.0
+content_margin_right = 22.0
+content_margin_bottom = 12.0
+bg_color = Color(0.035, 0.07, 0.035, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.87, 0.53, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.94, 0.94, 0.72, 0.96)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[node name="EndGameScreen" type="Control"]
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 200
+theme_override_fonts/font = ExtResource("2_font")
+script = ExtResource("1_script")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.01, 0.015, 0.01, 0.82)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResultPanel" type="PanelContainer" parent="CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(790, 540)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleResultPanel")
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/ResultPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="OutcomeLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 0.47, 1)
+theme_override_font_sizes/font_size = 18
+text = "SIEG"
+horizontal_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.86, 0.47, 1)
+theme_override_font_sizes/font_size = 48
+text = "Ökosystem gerettet"
+horizontal_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="CenterContainer/ResultPanel/Content"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+color = Color(0.5, 0.57, 0.34, 0.7)
+
+[node name="MessageLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 95)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_font_sizes/font_size = 23
+text = "Der Wasserstand hat 50 erreicht. Die alte Eiche kann weiterleben."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="StatsPanel" type="PanelContainer" parent="CenterContainer/ResultPanel/Content"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleStatsPanel")
+
+[node name="StatsGrid" type="GridContainer" parent="CenterContainer/ResultPanel/Content/StatsPanel"]
+layout_mode = 2
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="RoundTitle" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.62, 1)
+theme_override_font_sizes/font_size = 20
+text = "Erreichte Runde"
+
+[node name="RoundValue" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+text = "1"
+horizontal_alignment = 2
+
+[node name="WaterTitle" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.62, 1)
+theme_override_font_sizes/font_size = 20
+text = "Wasserstand"
+
+[node name="WaterValue" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+text = "50 / 50"
+horizontal_alignment = 2
+
+[node name="ButtonSpacer" type="Control" parent="CenterContainer/ResultPanel/Content"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ViewBoardButton" type="Button" parent="CenterContainer/ResultPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+tooltip_text = "Verlustfenster ausblenden und Spielfeld betrachten"
+text = "Spielfeld ansehen"
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/ResultPanel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="RestartButton" type="Button" parent="CenterContainer/ResultPanel/Content/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(290, 62)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Partie neu starten"
+
+[node name="MainMenuButton" type="Button" parent="CenterContainer/ResultPanel/Content/ButtonRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(290, 62)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+text = "Zum Hauptmenü"
+
+[node name="RestoreResultButton" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(300, 58)
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 24.0
+offset_right = 150.0
+offset_bottom = 82.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+tooltip_text = "Zurück zum Ergebnisfenster"
+text = "Zurück zum Ergebnis"

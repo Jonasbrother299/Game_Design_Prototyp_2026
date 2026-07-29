@@ -7,16 +7,44 @@ public partial class GameHub : Control
 
 	[Export] public Button ExitButton;
 
+	[ExportGroup("Water Feedback")]
+	[Export(PropertyHint.Range, "0.0,3.0,0.05")]
+	public float WaterFeedbackDelay = 0.0f;
+
+	[Export(PropertyHint.Range, "0.2,3.0,0.05")]
+	public float WaterLabelDuration = 1.15f;
+
+	[Export] public Font WaterFeedbackFont;
+
+	[Export(PropertyHint.Range, "32,96,1")]
+	public int WaterFeedbackFontSize = 62;
+
+	[Export(PropertyHint.Range, "0,20,1")]
+	public int WaterFeedbackOutlineSize = 9;
+
+	[Export] public Color PositiveWaterColor =
+		new Color(0.32f, 0.76f, 0.66f);
+	[Export] public Color NegativeWaterColor =
+		new Color(0.86f, 0.55f, 0.40f);
+	[Export] public Color WaterFeedbackOutlineColor =
+		new Color(0.08f, 0.12f, 0.10f, 0.92f);
+
 	private TurnManager _turnManager;
 	private BoardManager _boardManager;
 	private EventDisplayUI _eventDisplay;
 	private WaterDisplayUI _waterDisplay;
 	private RoundDisplayUI _roundDisplay;
+	private BaseButton _endTurnButton;
 	private CanvasLayer _rainLensLayer;
 	private RainLensCyaniluxOverlay _rainLensOverlay;
+	private Tween _feedbackTimelineTween;
+	private float _feedbackSequenceEndDelay;
 
 	public override void _Ready()
 	{
+		WaterFeedbackFont ??= GD.Load<Font>(
+			"res://assets/ui/fonts/Eckmannpsych-Medium.ttf");
+
 		if (ExitButton == null)
 			ExitButton = GetNodeOrNull<Button>("ExitButton");
 
@@ -38,6 +66,12 @@ public partial class GameHub : Control
 			_turnManager.EventActivated -= OnEventActivated;
 			_turnManager.WaterPhaseResolved -= OnWaterPhaseResolved;
 			_turnManager.EventPhaseResolved -= OnEventPhaseResolved;
+		}
+
+		if (_feedbackTimelineTween != null &&
+			_feedbackTimelineTween.IsValid())
+		{
+			_feedbackTimelineTween.Kill();
 		}
 	}
 
@@ -102,6 +136,8 @@ public partial class GameHub : Control
 			_roundDisplay.ShowRound(_turnManager.State.CurrentRound);
 		}
 
+		_endTurnButton = GetNodeOrNull<BaseButton>("EndTurnButton");
+
 		_rainLensOverlay =
 			currentScene.GetNodeOrNull<RainLensCyaniluxOverlay>(
 				"RainLensLayer/RainLensRoot/RainLensOverlay");
@@ -132,16 +168,74 @@ public partial class GameHub : Control
 
 	private void OnWaterPhaseResolved(WaterPhaseResult result)
 	{
+		if (_feedbackTimelineTween != null &&
+			_feedbackTimelineTween.IsValid())
+		{
+			_feedbackTimelineTween.Kill();
+		}
+
+		_feedbackSequenceEndDelay =
+			WaterFeedbackDelay + WaterLabelDuration;
+		SetEndTurnLocked(true);
+
 		_eventDisplay?.ShowWaterResult(result);
 		_waterDisplay?.ShowWaterResult(
 			result,
 			_turnManager.Config.WinWaterLimit);
+
+		foreach (PlantWaterResult plantResult in result.Plants)
+		{
+			if (plantResult.NetChange == 0)
+				continue;
+
+			HexTile tile = _boardManager?.GetTileView(plantResult.Coord);
+			Color color = plantResult.NetChange > 0
+				? PositiveWaterColor
+				: NegativeWaterColor;
+
+			tile?.ShowFloatingWaterChange(
+				plantResult.NetChange,
+				color,
+				WaterFeedbackOutlineColor,
+				WaterFeedbackFont,
+				WaterFeedbackFontSize,
+				WaterFeedbackOutlineSize,
+				WaterFeedbackDelay,
+				WaterLabelDuration);
+		}
 	}
 
 	private void OnTurnStarted(int round)
 	{
-		_roundDisplay?.ShowRound(round);
+		ScheduleRoundStartFeedback(round);
 		UpdateWaterPreview();
+	}
+
+	private void ScheduleRoundStartFeedback(int round)
+	{
+		float delay = Mathf.Max(_feedbackSequenceEndDelay, 0.0f);
+
+		if (delay <= 0.01f)
+		{
+			_roundDisplay?.ShowRound(round);
+			SetEndTurnLocked(false);
+			return;
+		}
+
+		_feedbackTimelineTween = CreateTween();
+		_feedbackTimelineTween.TweenInterval(delay);
+		_feedbackTimelineTween.TweenCallback(Callable.From(() =>
+		{
+			_roundDisplay?.ShowRound(round);
+			SetEndTurnLocked(false);
+			_feedbackSequenceEndDelay = 0.0f;
+		}));
+	}
+
+	private void SetEndTurnLocked(bool isLocked)
+	{
+		if (_endTurnButton != null)
+			_endTurnButton.Disabled = isLocked;
 	}
 
 	private void OnPlantPlaced(PlantType plantType, HexCoord coord)

@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" uid="uid://hgcjhepf74dc" path="res://scripts/visuals/GhibliBush.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://d2cd5gtky2agm" path="res://assets/models/Test/Ghibli_Tree.glb" id="2_model"]
+[ext_resource type="Material" path="res://assets/materials/ghibli_bush.tres" id="3_material"]
+
+[node name="GhibliBush" type="Node3D"]
+script = ExtResource("1_script")
+SourceScene = ExtResource("2_model")
+BushMaterial = ExtResource("3_material")
