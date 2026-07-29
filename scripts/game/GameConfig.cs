@@ -47,6 +47,10 @@ public partial class GameConfig : Resource
 	[Export] public EventDefinition Wind;
 	[Export] public EventDefinition Pests;
 
+	public bool EventsUnlocked { get; set; } = false;
+	public bool ForceRainAsFirstEvent { get; set; } = true;
+	public bool HasTriggeredFirstTutorialEvent { get; set; } = false;
+
 	public static GameConfig LoadDefault()
 	{
 		if (_default != null && IsInstanceValid(_default))

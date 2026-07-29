@@ -182,7 +182,7 @@ public partial class TutorialOverlay : Control
 		if (_window == null)
 			return;
 
-		_window.Position = new Vector2(32, 96);
+		_window.Position = new Vector2(32, 140);
 	}
 
 	private void SetBackdropColor(Color color)
