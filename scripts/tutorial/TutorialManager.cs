@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class TutorialManager : Node
 {
@@ -9,6 +10,7 @@ public partial class TutorialManager : Node
 	private GrowthPhaseResult _pendingGrowthResult;
 	private SpreadPhaseResult _pendingSpreadResult;
 	private EventPhaseResult _pendingEventResult;
+	private readonly Dictionary<string, Panel> _highlightFrames = new();
 
 	private enum TutorialStepId
 	{
@@ -208,7 +210,9 @@ public partial class TutorialManager : Node
 
 		if (_currentStep == TutorialStepId.OptionalCardPlay)
 		{
-			HighlightNode("UI/CanvasLayer/CardHand");
+			// Kein Highlight auf CardHand:
+			// Das würde aktuell nur einen großen Kasten um alle Karten erzeugen.
+			// Einzelkarten-Highlights bauen wir später sauber in CardHandUI/CardView.
 			HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
 		}
 	}
@@ -270,7 +274,10 @@ public partial class TutorialManager : Node
 					"Jetzt kannst du so viele weitere Karten spielen, wie du möchtest — von keiner bis zu allen. " +
 					"Wenn du fertig bist, beende die Runde, damit dein Ökosystem sich entwickeln kann."
 				);
-				HighlightNode("UI/CanvasLayer/CardHand");
+
+				// Kein Highlight auf CardHand:
+				// Aktuell wirkt das als großer Kasten / Farbschleier über allen Karten.
+				// Für einzelne Karten bauen wir danach ein eigenes Karten-Highlight.
 				HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
 				break;
 
@@ -313,8 +320,8 @@ public partial class TutorialManager : Node
 				{
 					foreach (PlantSpreadResult spread in _pendingSpreadResult.Spreads)
 					{
-						_boardManager.GetTileView(spread.SourceCoord)?.SetPlacementPreview(true);
-						_boardManager.GetTileView(spread.TargetCoord)?.SetPlacementPreview(true);
+						_boardManager.GetTileView(spread.SourceCoord)?.SetTutorialHighlight(true);
+						_boardManager.GetTileView(spread.TargetCoord)?.SetTutorialHighlight(true);
 					}
 				}
 				break;
@@ -328,7 +335,14 @@ public partial class TutorialManager : Node
 					"Ein Ereignis verändert dein Ökosystem für die nächste Runde. " +
 					"Ab jetzt können am Ende jeder Runde zufällig Ereignisse auftreten — oder auch keines."
 				);
-				HighlightNode("UI/CanvasLayer/GameHub/EventDisplay");
+
+				// EventDisplay hat grundsätzlich die richtige Position und Breite.
+				// Wir lassen deshalb X-Position und Breite unverändert und reduzieren nur die Höhe.
+				// Die Y-Position bleibt oben am EventDisplay ausgerichtet, damit der Kasten nicht darunter rutscht.
+				HighlightNodeWithHeightOverride(
+					"UI/CanvasLayer/GameHub/EventDisplay",
+					163.0f
+				);
 				break;
 
 			case TutorialStepId.PlantDeath:
@@ -343,7 +357,7 @@ public partial class TutorialManager : Node
 				if (_pendingEventResult != null)
 				{
 					foreach (PlantDeathResult death in _pendingEventResult.PlantDeaths)
-						_boardManager.GetTileView(death.Coord)?.SetPlacementPreview(true);
+						_boardManager.GetTileView(death.Coord)?.SetTutorialHighlight(true);
 				}
 				break;
 		}
@@ -507,7 +521,7 @@ public partial class TutorialManager : Node
 			if (plant.PlantType != PlantType.Moss)
 				continue;
 
-			_boardManager.GetTileView(plant.Coord)?.SetPlacementPreview(true);
+			_boardManager.GetTileView(plant.Coord)?.SetTutorialHighlight(true);
 		}
 	}
 
@@ -525,15 +539,78 @@ public partial class TutorialManager : Node
 	{
 		Node node = GetTree().CurrentScene.GetNodeOrNull<Node>(path);
 
-		if (node is not CanvasItem canvasItem)
+		if (node is not Control targetControl)
 			return;
 
-		Tween tween = CreateTween();
-		tween.TweenProperty(canvasItem, "modulate", new Color(1.0f, 0.9f, 0.5f), 0.45f)
-			.SetTrans(Tween.TransitionType.Sine)
-			.SetEase(Tween.EaseType.InOut);
+		if (_overlay == null)
+			return;
 
-		tween.SetLoops(4);
+		ClearHighlightedNode(path);
+
+		Rect2 targetRect = targetControl.GetGlobalRect();
+
+		CreateHighlightFrame(
+			path,
+			targetRect.Position - new Vector2(8, 8),
+			targetRect.Size + new Vector2(16, 16)
+		);
+	}
+
+	private void HighlightNodeWithHeightOverride(string path, float height)
+	{
+		Node node = GetTree().CurrentScene.GetNodeOrNull<Node>(path);
+
+		if (node is not Control targetControl)
+			return;
+
+		if (_overlay == null)
+			return;
+
+		ClearHighlightedNode(path);
+
+		Rect2 targetRect = targetControl.GetGlobalRect();
+
+		Vector2 finalPosition = new Vector2(
+			targetRect.Position.X - 8.0f,
+			targetRect.Position.Y - 8.0f
+		);
+
+		Vector2 finalSize = new Vector2(
+			targetRect.Size.X + 16.0f,
+			height
+		);
+
+		CreateHighlightFrame(path, finalPosition, finalSize);
+	}
+
+	private void CreateHighlightFrame(string path, Vector2 position, Vector2 size)
+	{
+		Panel highlightFrame = new Panel();
+		highlightFrame.Name = "TutorialHighlightFrame";
+		highlightFrame.MouseFilter = Control.MouseFilterEnum.Ignore;
+		highlightFrame.ZIndex = 100;
+		highlightFrame.Position = position;
+		highlightFrame.Size = size;
+		highlightFrame.Modulate = Colors.White;
+
+		StyleBoxFlat style = new StyleBoxFlat();
+		style.BgColor = new Color(1, 1, 1, 0.0f);
+		style.BorderColor = new Color(1, 1, 1, 0.55f);
+		style.BorderWidthLeft = 3;
+		style.BorderWidthTop = 3;
+		style.BorderWidthRight = 3;
+		style.BorderWidthBottom = 3;
+		style.CornerRadiusTopLeft = 12;
+		style.CornerRadiusTopRight = 12;
+		style.CornerRadiusBottomRight = 12;
+		style.CornerRadiusBottomLeft = 12;
+		style.ShadowColor = new Color(1, 1, 1, 0.18f);
+		style.ShadowSize = 8;
+
+		highlightFrame.AddThemeStyleboxOverride("panel", style);
+
+		_overlay.AddChild(highlightFrame);
+		_highlightFrames[path] = highlightFrame;
 	}
 
 	private void HighlightCenterTile()
@@ -548,7 +625,7 @@ public partial class TutorialManager : Node
 		if (tileView == null)
 			return;
 
-		tileView.SetPlacementPreview(true);
+		tileView.SetTutorialHighlight(true);
 	}
 
 	private void HighlightFirstPlayableTileFor(PlantType plantType)
@@ -569,7 +646,7 @@ public partial class TutorialManager : Node
 		if (preferredTileData != null && preferredTileData.CanPlacePlant(plant))
 		{
 			_requiredMossPlacementCoord = preferredCoord;
-			board.GetTileView(preferredCoord)?.SetPlacementPreview(true);
+			board.GetTileView(preferredCoord)?.SetTutorialHighlight(true);
 			return;
 		}
 
@@ -580,10 +657,21 @@ public partial class TutorialManager : Node
 			if (tileData != null && tileData.CanPlacePlant(plant))
 			{
 				_requiredMossPlacementCoord = coord;
-				board.GetTileView(coord)?.SetPlacementPreview(true);
+				board.GetTileView(coord)?.SetTutorialHighlight(true);
 				return;
 			}
 		}
+	}
+
+	private void ClearAllHighlightFrames()
+	{
+		foreach (Panel highlightFrame in _highlightFrames.Values)
+		{
+			if (IsInstanceValid(highlightFrame))
+				highlightFrame.QueueFree();
+		}
+
+		_highlightFrames.Clear();
 	}
 
 	private void ClearHighlights()
@@ -593,21 +681,34 @@ public partial class TutorialManager : Node
 		if (board != null)
 		{
 			foreach (HexCoord coord in board.BoardData.Tiles.Keys)
-				board.GetTileView(coord)?.ClearPlacementPreview();
+			{
+				HexTile tileView = board.GetTileView(coord);
+
+				if (tileView == null)
+					continue;
+
+				tileView.ClearTutorialHighlight();
+				tileView.ClearPlacementPreview();
+			}
 		}
 
 		ClearHighlightedNode("UI/CanvasLayer/GameHub/WaterLabel");
 		ClearHighlightedNode("UI/CanvasLayer/GameHub/EndTurnButton");
 		ClearHighlightedNode("UI/CanvasLayer/CardHand");
 		ClearHighlightedNode("UI/CanvasLayer/GameHub/EventDisplay");
+
+		ClearAllHighlightFrames();
 	}
 
 	private void ClearHighlightedNode(string path)
 	{
-		Node node = GetTree().CurrentScene.GetNodeOrNull<Node>(path);
+		if (!_highlightFrames.TryGetValue(path, out Panel highlightFrame))
+			return;
 
-		if (node is CanvasItem canvasItem)
-			canvasItem.Modulate = Colors.White;
+		if (IsInstanceValid(highlightFrame))
+			highlightFrame.QueueFree();
+
+		_highlightFrames.Remove(path);
 	}
 
 	private void EndTutorial()

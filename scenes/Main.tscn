@@ -239,10 +239,16 @@ text = "Hand abwerfen"
 
 [node name="TutorialOverlay" parent="UI/CanvasLayer" unique_id=269973507 instance=ExtResource("9_tutorial")]
 
-[node name="PauseMenu" parent="UI/CanvasLayer" unique_id=1719965911 instance=ExtResource("10_pause")]
+[node name="PauseMenuLayer" type="CanvasLayer" parent="UI" unique_id=1719965912]
+layer = 100
+
+[node name="PauseMenu" parent="UI/PauseMenuLayer" unique_id=1719965911 instance=ExtResource("10_pause")]
 visible = false
 
-[node name="EndGameScreen" parent="UI/CanvasLayer" unique_id=995635881 instance=ExtResource("16_end_game")]
+[node name="EndGameLayer" type="CanvasLayer" parent="UI" unique_id=995635882]
+layer = 110
+
+[node name="EndGameScreen" parent="UI/EndGameLayer" unique_id=995635881 instance=ExtResource("16_end_game")]
 
 [node name="RainLensLayer" parent="." unique_id=802075878 instance=ExtResource("7_jlsqs")]
 visible = false
