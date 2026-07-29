@@ -175,20 +175,36 @@ public sealed class EventPhase
 
 	private GameEventType? TryActivateEventForNextRound(TurnPhaseContext context)
 	{
+		if (!context.Config.EventsUnlocked)
+			return null;
+
 		if (context.State.ActiveEvents.Count > 0 ||
 			context.Config.EventChanceDenominator <= 0)
 		{
 			return null;
 		}
 
-		if (context.Random.RandiRange(1, context.Config.EventChanceDenominator) != 1)
-			return null;
+		GameEventType eventType;
 
-		GameEventType? eventType = SelectRandomEvent(context);
-		if (!eventType.HasValue)
-			return null;
+		if (context.Config.ForceRainAsFirstEvent &&
+			!context.Config.HasTriggeredFirstTutorialEvent)
+		{
+			eventType = GameEventType.Rain;
+			context.Config.HasTriggeredFirstTutorialEvent = true;
+		}
+		else
+		{
+			if (context.Random.RandiRange(1, context.Config.EventChanceDenominator) != 1)
+				return null;
 
-		EventDefinition definition = EventDatabase.Get(eventType.Value);
+			GameEventType? selectedEvent = SelectRandomEvent(context);
+			if (!selectedEvent.HasValue)
+				return null;
+
+			eventType = selectedEvent.Value;
+		}
+
+		EventDefinition definition = EventDatabase.Get(eventType);
 		if (definition == null)
 			return null;
 

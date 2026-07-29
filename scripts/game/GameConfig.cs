@@ -16,4 +16,8 @@ public class GameConfig
 	public int EventChanceDenominator { get; set; } = 3;
 	public int MonocultureMinimumPlantCount { get; set; } = 3;
 	public int DeadPlantBlockedRounds { get; set; } = 2;
+	
+	public bool EventsUnlocked { get; set; } = false;
+	public bool ForceRainAsFirstEvent { get; set; } = true;
+	public bool HasTriggeredFirstTutorialEvent { get; set; } = false;
 }
