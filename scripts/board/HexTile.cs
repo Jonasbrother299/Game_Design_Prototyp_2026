@@ -39,6 +39,19 @@ public partial class HexTile : Node3D
 	public float FlowerModelScale { get; private set; } = 0.38f;
 	public int MatureFlowerCount { get; private set; } = 4;
 	public float BirchModelScale { get; private set; } = 0.18f;
+	public Color TreeShadowColor { get; private set; } =
+		new Color(0.055f, 0.08f, 0.045f, 0.66f);
+	public float StartingOakShadowSize { get; private set; } = 5.4f;
+	public Vector2 StartingOakShadowOffset { get; private set; } =
+		new Vector2(0.0f, 0.45f);
+	public float BirchShadowSize { get; private set; } = 2.8f;
+	public Vector2 BirchShadowOffset { get; private set; } =
+		new Vector2(0.0f, 0.18f);
+	public Color SunTileTint { get; private set; } = Colors.White;
+	public Color PartialShadeTileTint { get; private set; } =
+		new Color(0.82f, 0.91f, 0.80f);
+	public Color ShadeTileTint { get; private set; } =
+		new Color(0.62f, 0.74f, 0.64f);
 
 	public void ConfigureStartingOakScale(float scale)
 	{
@@ -76,6 +89,30 @@ public partial class HexTile : Node3D
 		BirchModelScale = Mathf.Max(0.01f, modelScale);
 	}
 
+	public void ConfigureTreeShadowVisual(
+		Color shadowColor,
+		float startingOakShadowSize,
+		Vector2 startingOakShadowOffset,
+		float birchShadowSize,
+		Vector2 birchShadowOffset)
+	{
+		TreeShadowColor = shadowColor;
+		StartingOakShadowSize = Mathf.Max(0.1f, startingOakShadowSize);
+		StartingOakShadowOffset = startingOakShadowOffset;
+		BirchShadowSize = Mathf.Max(0.1f, birchShadowSize);
+		BirchShadowOffset = birchShadowOffset;
+	}
+
+	public void ConfigureLightVisuals(
+		Color sunTileTint,
+		Color partialShadeTileTint,
+		Color shadeTileTint)
+	{
+		SunTileTint = sunTileTint;
+		PartialShadeTileTint = partialShadeTileTint;
+		ShadeTileTint = shadeTileTint;
+	}
+
 	public void Setup(HexTileData data)
 	{
 		Data = data;
@@ -102,6 +139,80 @@ public partial class HexTile : Node3D
 		SetupUniqueTileMaterial();
 		EnsureCollision();
 		UpdateVisualState();
+	}
+
+	public void ShowFloatingWaterChange(
+		int amount,
+		Color color,
+		Color outlineColor,
+		Font font,
+		int fontSize,
+		int outlineSize,
+		float delaySeconds,
+		float durationSeconds)
+	{
+		if (amount == 0)
+			return;
+
+		Label3D label = new Label3D
+		{
+			Name = "WaterChangeFeedback",
+			Text = amount > 0 ? $"+{amount}" : amount.ToString(),
+			Position = new Vector3(0.0f, 1.35f, 0.0f),
+			Font = font,
+			FontSize = Mathf.Clamp(fontSize, 32, 96),
+			OutlineSize = Mathf.Clamp(outlineSize, 0, 20),
+			PixelSize = 0.0065f,
+			Modulate = color,
+			OutlineModulate = outlineColor,
+			Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+			NoDepthTest = true,
+			Visible = false,
+			Scale = new Vector3(0.84f, 0.84f, 0.84f)
+		};
+
+		AddChild(label);
+
+		float delay = Mathf.Max(delaySeconds, 0.0f);
+		float duration = Mathf.Max(durationSeconds, 0.2f);
+		Vector3 targetPosition = label.Position + new Vector3(0.0f, 0.65f, 0.0f);
+
+		Tween tween = CreateTween();
+		if (delay > 0.0f)
+			tween.TweenInterval(delay);
+
+		tween.TweenCallback(Callable.From(() =>
+		{
+			if (IsInstanceValid(label))
+				label.Visible = true;
+		}));
+
+		tween.SetParallel(true);
+		tween.TweenProperty(label, "position", targetPosition, duration)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(
+				label,
+				"scale",
+				Vector3.One,
+				Mathf.Min(duration * 0.35f, 0.32f))
+			.SetTrans(Tween.TransitionType.Back)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(
+				label,
+				"transparency",
+				1.0f,
+				duration * 0.55f)
+			.SetDelay(duration * 0.45f)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.In);
+
+		tween.SetParallel(false);
+		tween.TweenCallback(Callable.From(() =>
+		{
+			if (IsInstanceValid(label))
+				label.QueueFree();
+		}));
 	}
 
 	private void SetupPlacementIndicator()
@@ -474,39 +585,49 @@ void fragment() {
 			GD.Print($"{Name} | Light: {Data.LightLevel} | Plant: {Data.Plant.Definition.DisplayName}");
 		}
 	}
-private void UpdateTileMaterial()
-{
-	if (_tileMesh == null || _tileMesh.Mesh == null)
+	private void UpdateTileMaterial()
 	{
-		_tileMesh = FindRenderableTileMesh();
+		if (_tileMesh == null || _tileMesh.Mesh == null)
+		{
+			_tileMesh = FindRenderableTileMesh();
+		}
+
+		if (_tileMesh == null)
+		{
+			GD.PrintErr($"{Name}: Cannot apply grass texture because tile mesh is null.");
+			return;
+		}
+
+		Texture2D grassTexture = GD.Load<Texture2D>(
+			"res://assets/textures/grass/grass.tga");
+
+		if (grassTexture == null)
+		{
+			GD.PrintErr($"{Name}: Grass texture could not be loaded.");
+			return;
+		}
+
+		_tileMaterial = new StandardMaterial3D();
+		_tileMaterial.AlbedoTexture = grassTexture;
+		_tileMaterial.AlbedoColor = Data.IsBlocked
+			? BlockedTileTint
+			: GetLightLevelTint();
+		_tileMaterial.Roughness = 1.0f;
+		_tileMaterial.Metallic = 0.0f;
+		_tileMaterial.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
+
+		_tileMesh.MaterialOverride = _tileMaterial;
 	}
 
-	if (_tileMesh == null)
+	private Color GetLightLevelTint()
 	{
-		GD.PrintErr($"{Name}: Cannot apply grass texture because tile mesh is null.");
-		return;
+		return Data.LightLevel switch
+		{
+			LightLevel.PartialShade => PartialShadeTileTint,
+			LightLevel.Shade => ShadeTileTint,
+			_ => SunTileTint
+		};
 	}
-
-	Texture2D grassTexture = GD.Load<Texture2D>("res://assets/textures/grass/grass.tga");
-
-	if (grassTexture == null)
-	{
-		GD.PrintErr($"{Name}: Grass texture could not be loaded.");
-		return;
-	}
-
-	_tileMaterial = new StandardMaterial3D();
-	_tileMaterial.AlbedoTexture = grassTexture;
-	_tileMaterial.AlbedoColor = Data.IsBlocked
-		? BlockedTileTint
-		: Colors.White;
-	_tileMaterial.Roughness = 1.0f;
-	_tileMaterial.Metallic = 0.0f;
-	_tileMaterial.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
-
-	_tileMesh.MaterialOverride = _tileMaterial;
-
-}
 
 	private void RebuildPlantVisual()
 	{
@@ -632,7 +753,8 @@ private Node3D CreatePlantVisual(
 	Node3D factoryVisual = PlantVisualFactory.CreateVisual(
 		plant,
 		this,
-		animateGrowth);
+		animateGrowth,
+		showTreeShadow: animateGrowth);
 
 	 if (factoryVisual != null)
 	{

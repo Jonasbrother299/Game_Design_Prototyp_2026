@@ -6,6 +6,7 @@ public partial class GameManager : Node
 	private TurnManager _turnManager;
 	private CardHandUI _cardHand;
 	private BaseButton _endTurnButton;
+	private BaseButton _discardHandButton;
 	private HexTile _currentPreviewTile;
 	private TutorialManager _tutorialManager;
 	private string _lastDebugMessage = "";
@@ -39,6 +40,7 @@ public partial class GameManager : Node
 
 	ConnectCardHand();
 	ConnectEndTurnButton();
+	ConnectDiscardHandButton();
 	StartTutorial();
 	}
 
@@ -110,6 +112,11 @@ private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 		{
 			_endTurnButton.Pressed -= OnEndTurnButtonPressed;
 		}
+
+		if (_discardHandButton != null)
+		{
+			_discardHandButton.Pressed -= OnDiscardHandButtonPressed;
+		}
 	}
 private void ConnectEndTurnButton()
 {
@@ -128,6 +135,23 @@ private void ConnectEndTurnButton()
 	GD.Print("EndTurnButton connected.");
 }
 
+private void ConnectDiscardHandButton()
+{
+	_discardHandButton = FindNodeByName<BaseButton>(
+		GetTree().CurrentScene,
+		"DiscardHandButton");
+
+	if (_discardHandButton == null)
+	{
+		GD.PrintErr(
+			"DiscardHandButton not found. " +
+			"Make sure the button node is named DiscardHandButton.");
+		return;
+	}
+
+	_discardHandButton.Pressed += OnDiscardHandButtonPressed;
+	UpdateDiscardHandButtonState();
+}
 
 private void OnEndTurnButtonPressed()
 {
@@ -148,6 +172,27 @@ private void OnEndTurnButtonPressed()
 
 	_turnManager.EndTurn();
 	_cardHand?.SetCards(_turnManager.State.HandCards);
+	UpdateDiscardHandButtonState();
+}
+
+private void OnDiscardHandButtonPressed()
+{
+	if (_turnManager == null || !_turnManager.DiscardHand())
+		return;
+
+	ClearCurrentPreview();
+	_cardHand?.SetCards(_turnManager.State.HandCards);
+	UpdateDiscardHandButtonState();
+}
+
+private void UpdateDiscardHandButtonState()
+{
+	if (_discardHandButton == null)
+		return;
+
+	_discardHandButton.Disabled =
+		_turnManager == null ||
+		!_turnManager.CanDiscardHand;
 }
 
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
@@ -186,6 +231,7 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 		if (wasPlaced)
 		{
 			_cardHand?.CommitDraggedCardPlacement();
+			UpdateDiscardHandButtonState();
 		}
 
 		ClearCurrentPreview();

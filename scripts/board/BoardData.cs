@@ -6,7 +6,7 @@ public class BoardData
 
 	public IReadOnlyDictionary<HexCoord, HexTileData> Tiles => _tiles;
 
-	public void Generate(int radius)
+	public void Generate(int radius, HexCoord center)
 	{
 		_tiles.Clear();
 
@@ -17,6 +17,30 @@ public class BoardData
 
 			for (int r = r1; r <= r2; r++)
 			{
+				HexCoord coord = new HexCoord(
+					q + center.Q,
+					r + center.R);
+				_tiles.Add(coord, new HexTileData(coord));
+			}
+		}
+	}
+
+	public void GenerateRectangle(int columns, int rows)
+	{
+		_tiles.Clear();
+
+		int safeColumns = System.Math.Max(columns, 1);
+		int safeRows = System.Math.Max(rows, 1);
+		int firstQ = -(safeColumns / 2);
+
+		for (int column = 0; column < safeColumns; column++)
+		{
+			int q = firstQ + column;
+			int columnOffset = (int)System.Math.Floor(q / 2.0);
+
+			for (int row = 0; row < safeRows; row++)
+			{
+				int r = row - columnOffset;
 				HexCoord coord = new HexCoord(q, r);
 				_tiles.Add(coord, new HexTileData(coord));
 			}

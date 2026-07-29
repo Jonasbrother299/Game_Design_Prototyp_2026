@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://3m6vgxyfuv8n"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" path="res://assets/cards/card_birke.png" id="2_card"]
+[ext_resource type="Texture2D" uid="uid://r31jyv52s4jm" path="res://assets/cards/card_birke.png" id="2_card"]
 [ext_resource type="PackedScene" uid="uid://bgyebtrvvcpor" path="res://scenes/board/plants/Birch.tscn" id="2_esn6p"]
 
 [resource]

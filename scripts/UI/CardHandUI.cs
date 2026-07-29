@@ -23,6 +23,19 @@ public partial class CardHandUI : Control
 
 	[Export] public float HoverHitboxGrow = 18.0f;
 
+	[ExportGroup("Deal Animation")]
+	[Export(PropertyHint.Range, "0.05,1.0,0.01")]
+	public float DealDuration = 0.28f;
+
+	[Export(PropertyHint.Range, "0.0,0.3,0.01")]
+	public float DealStagger = 0.08f;
+
+	[Export(PropertyHint.Range, "0.0,300.0,1.0")]
+	public float DealStartYOffset = 90.0f;
+
+	[Export(PropertyHint.Range, "0.5,1.0,0.01")]
+	public float DealStartScale = 0.82f;
+
 	private const float DragScale = 0.45f;
 
 	private const int HoverZIndex = 100;
@@ -130,44 +143,116 @@ public partial class CardHandUI : Control
 
 	public void SetCards(IReadOnlyList<CardData> cards)
 	{
-		foreach (Node child in GetChildren())
-			child.QueueFree();
+		if (MatchesCurrentCards(cards))
+			return;
+
+		ResetInteractionState();
+
+		List<TextureRect> previousCards = new List<TextureRect>(_cards);
+		List<TextureRect> orderedCards = new List<TextureRect>();
+		List<TextureRect> addedCards = new List<TextureRect>();
+		HashSet<TextureRect> reusedCards = new HashSet<TextureRect>();
+
+		if (cards != null)
+		{
+			for (int i = 0; i < cards.Count; i++)
+			{
+				CardData cardData = cards[i];
+
+				if (cardData?.CardImage == null)
+				{
+					GD.PrintErr(
+						$"Card image not found for hand card at index {i}.");
+					continue;
+				}
+
+				TextureRect card = FindExistingCard(
+					previousCards,
+					reusedCards,
+					cardData);
+
+				if (card == null)
+				{
+					card = CreateCard(cardData);
+					addedCards.Add(card);
+				}
+				else
+				{
+					reusedCards.Add(card);
+				}
+
+				orderedCards.Add(card);
+			}
+		}
+
+		foreach (TextureRect previousCard in previousCards)
+		{
+			if (!reusedCards.Contains(previousCard))
+				RemoveCardVisual(previousCard);
+		}
 
 		_cards.Clear();
-		_cardDataByCard.Clear();
-		_tweens.Clear();
-		_basePositions.Clear();
-		_baseRotations.Clear();
-		_baseZIndexes.Clear();
+		_cards.AddRange(orderedCards);
 
+		LayoutRefreshedHand(addedCards);
+	}
+
+	private bool MatchesCurrentCards(IReadOnlyList<CardData> cards)
+	{
+		int requestedCount = cards?.Count ?? 0;
+		if (_cards.Count != requestedCount)
+			return false;
+
+		for (int i = 0; i < requestedCount; i++)
+		{
+			if (!_cardDataByCard.TryGetValue(
+					_cards[i],
+					out CardData currentCardData))
+			{
+				return false;
+			}
+
+			if (!ReferenceEquals(currentCardData, cards[i]))
+				return false;
+		}
+
+		return true;
+	}
+
+	private void ResetInteractionState()
+	{
 		_hoveredCard = null;
-
 		_selectedCard = null;
 		_selectedPlantType = null;
-
 		_draggedCard = null;
 		_draggedPlantType = null;
 		_isDragging = false;
 		_removeDraggedCardAfterRelease = false;
-
-		if (cards == null)
-			return;
-
-		for (int i = 0; i < cards.Count; i++)
-		{
-			CardData cardData = cards[i];
-
-			if (cardData?.CardImage == null)
-			{
-				GD.PrintErr($"Card image not found for hand card at index {i}.");
-				continue;
-			}
-
-			CreateCard(cardData, i, cards.Count);
-		}
 	}
 
-	private void CreateCard(CardData cardData, int index, int totalCards)
+	private TextureRect FindExistingCard(
+		IReadOnlyList<TextureRect> previousCards,
+		HashSet<TextureRect> reusedCards,
+		CardData cardData)
+	{
+		foreach (TextureRect card in previousCards)
+		{
+			if (reusedCards.Contains(card))
+				continue;
+
+			if (_cardDataByCard.TryGetValue(
+					card,
+					out CardData existingCardData) &&
+				ReferenceEquals(existingCardData, cardData))
+			{
+				return card;
+			}
+		}
+
+		return null;
+	}
+
+	private TextureRect CreateCard(CardData cardData)
 	{
 		TextureRect card = new TextureRect();
 
@@ -182,29 +267,113 @@ public partial class CardHandUI : Control
 		card.MouseFilter = MouseFilterEnum.Ignore;
 		card.ZAsRelative = false;
 
-		float centerIndex = (totalCards - 1) / 2.0f;
-		float relativeIndex = index - centerIndex;
-
-		Vector2 viewportSize = GetViewportRect().Size;
-
-		float centerX = viewportSize.X / 2.0f - CardSize.X / 2.0f;
-		float baseX = centerX + relativeIndex * CardSpacing;
-		float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
-
-		Vector2 basePosition = new Vector2(baseX, baseY);
-		float baseRotation = relativeIndex * FanRotationDegrees;
-
-		card.Position = basePosition;
-		card.RotationDegrees = baseRotation;
-		card.ZIndex = index;
-
-		_cards.Add(card);
 		_cardDataByCard[card] = cardData;
-		_basePositions[card] = basePosition;
-		_baseRotations[card] = baseRotation;
-		_baseZIndexes[card] = index;
 
 		AddChild(card);
+		return card;
+	}
+
+	private void LayoutRefreshedHand(IReadOnlyList<TextureRect> addedCards)
+	{
+		HashSet<TextureRect> addedCardSet =
+			new HashSet<TextureRect>(addedCards);
+		int totalCards = _cards.Count;
+		int addedCardIndex = 0;
+
+		if (totalCards == 0)
+			return;
+
+		Vector2 viewportSize = GetViewportRect().Size;
+		float centerIndex = (totalCards - 1) / 2.0f;
+
+		for (int i = 0; i < totalCards; i++)
+		{
+			TextureRect card = _cards[i];
+			float relativeIndex = i - centerIndex;
+			float centerX = viewportSize.X / 2.0f - CardSize.X / 2.0f;
+			float baseX = centerX + relativeIndex * CardSpacing;
+			float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
+			Vector2 basePosition = new Vector2(baseX, baseY);
+			float baseRotation = relativeIndex * FanRotationDegrees;
+
+			_basePositions[card] = basePosition;
+			_baseRotations[card] = baseRotation;
+			_baseZIndexes[card] = i;
+			card.ZIndex = i;
+
+			if (addedCardSet.Contains(card))
+			{
+				AnimateCardIntoHand(card, addedCardIndex);
+				addedCardIndex++;
+			}
+			else
+			{
+				SetCardToBaseState(card);
+			}
+		}
+
+		RestoreDefaultChildOrder();
+	}
+
+	private void SetCardToBaseState(TextureRect card)
+	{
+		if (_tweens.TryGetValue(card, out Tween oldTween))
+		{
+			oldTween.Kill();
+			_tweens.Remove(card);
+		}
+
+		card.Position = _basePositions[card];
+		card.RotationDegrees = _baseRotations[card];
+		card.Scale = Vector2.One;
+		card.Modulate = Colors.White;
+		card.ZIndex = _baseZIndexes[card];
+	}
+
+	private void RemoveCardVisual(TextureRect card)
+	{
+		if (_tweens.TryGetValue(card, out Tween oldTween))
+		{
+			oldTween.Kill();
+			_tweens.Remove(card);
+		}
+
+		_cardDataByCard.Remove(card);
+		_basePositions.Remove(card);
+		_baseRotations.Remove(card);
+		_baseZIndexes.Remove(card);
+		card.QueueFree();
+	}
+
+	private void AnimateCardIntoHand(TextureRect card, int index)
+	{
+		Vector2 targetPosition = _basePositions[card];
+		float targetRotation = _baseRotations[card];
+
+		card.Position = targetPosition + new Vector2(0.0f, DealStartYOffset);
+		card.Scale = new Vector2(DealStartScale, DealStartScale);
+		card.RotationDegrees = targetRotation;
+		card.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+
+		Tween tween = CreateTween();
+		tween.SetParallel(true);
+
+		float delay = Mathf.Max(index, 0) * DealStagger;
+
+		tween.TweenProperty(card, "position", targetPosition, DealDuration)
+			.SetDelay(delay)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(card, "scale", Vector2.One, DealDuration)
+			.SetDelay(delay)
+			.SetTrans(Tween.TransitionType.Back)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(card, "modulate", Colors.White, DealDuration * 0.7f)
+			.SetDelay(delay)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.Out);
+
+		_tweens[card] = tween;
 	}
 
 	public void CommitDraggedCardPlacement()
