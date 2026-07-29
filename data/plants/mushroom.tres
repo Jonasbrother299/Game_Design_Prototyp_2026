@@ -10,6 +10,8 @@
 script = ExtResource("1_plant")
 Type = 4
 DisplayName = "Pilz"
+StartingHandCopies = 1
+DrawWeight = 1
 WaterConsumption = 1
 WaterProduction = 1
 GrowthRounds = 3
@@ -17,5 +19,6 @@ GrowthStageCount = 4
 SpreadChanceDenominator = 3
 AllowedLightLevels = Array[int]([1, 2])
 EffectType = 2
+AdjacentWaterProductionBonus = 1
 CardImage = ExtResource("2_card")
 GrowthStageScenes = Array[PackedScene]([ExtResource("3_stage_1"), ExtResource("4_stage_2"), ExtResource("5_stage_3")])

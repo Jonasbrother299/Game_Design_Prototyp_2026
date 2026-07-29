@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="17_drought_effect"]
 [ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="18_ui_font"]
 [ext_resource type="Script" uid="uid://gsrfwgwox6jb" path="res://scripts/visuals/GhibliBushBackdrop.cs" id="19_bush_backdrop"]
+[ext_resource type="Resource" path="res://data/balance/game_balance.tres" id="20_balance"]
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 1
@@ -104,11 +105,12 @@ corner_radius_bottom_left = 12
 [node name="BoardManager" type="Node3D" parent="." unique_id=986564341]
 transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0, 0)
 script = ExtResource("1_0bbpv")
-Radius = 4
+Balance = ExtResource("20_balance")
 HexSize = 1.01
 
 [node name="TurnManager" type="Node3D" parent="." unique_id=1470133694]
 script = ExtResource("1_elqb8")
+Config = ExtResource("20_balance")
 
 [node name="GameManager" type="Node3D" parent="." unique_id=463986510]
 script = ExtResource("3_rarhs")

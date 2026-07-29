@@ -93,19 +93,28 @@ public sealed class SpreadPhase
 	{
 		int denominator = sourceTile.Plant.Definition.SpreadChanceDenominator;
 
-		if (HasFlowerBonus(context.BoardManager, sourceTile))
-			denominator--;
+		denominator -= GetNeighborSpreadReduction(
+			context.BoardManager,
+			sourceTile);
 
-		if (HasWindBonus(context.State.ActiveEvents))
-			denominator--;
+		denominator -= GetEventSpreadReduction(context.State.ActiveEvents);
 
-		return Mathf.Max(denominator, 2);
+		return Mathf.Max(
+			denominator,
+			System.Math.Max(
+				context.Config.MinimumSpreadChanceDenominator,
+				2));
 	}
 
-	private static bool HasFlowerBonus(
+	private static int GetNeighborSpreadReduction(
 		BoardManager boardManager,
 		HexTileData sourceTile)
 	{
+		if (sourceTile.Plant.Definition.Type == PlantType.Flower)
+			return 0;
+
+		int reduction = 0;
+
 		foreach (HexTileData neighbor in boardManager.GetNeighborData(sourceTile.Coord))
 		{
 			if (neighbor.Plant == null || !neighbor.Plant.IsMature)
@@ -114,25 +123,33 @@ public sealed class SpreadPhase
 			if (neighbor.Plant.Definition.EffectType ==
 				PlantEffectType.SpreadChancePlusOneForNeighbors)
 			{
-				return true;
+				reduction = System.Math.Max(
+					reduction,
+					neighbor.Plant.Definition
+						.NeighborSpreadDenominatorReduction);
 			}
 		}
 
-		return false;
+		return System.Math.Max(reduction, 0);
 	}
 
-	private static bool HasWindBonus(List<ActiveGameEvent> activeEvents)
+	private static int GetEventSpreadReduction(
+		List<ActiveGameEvent> activeEvents)
 	{
+		int reduction = 0;
+
 		foreach (ActiveGameEvent activeEvent in activeEvents)
 		{
 			if (activeEvent.Definition.EffectType ==
 				GameEventEffectType.IncreaseSpreadChance)
 			{
-				return true;
+				reduction = System.Math.Max(
+					reduction,
+					activeEvent.Definition.SpreadDenominatorReduction);
 			}
 		}
 
-		return false;
+		return System.Math.Max(reduction, 0);
 	}
 
 	private static List<HexTileData> GetValidSpreadTargets(

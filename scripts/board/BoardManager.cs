@@ -3,18 +3,12 @@ using System.Collections.Generic;
 
 public partial class BoardManager : Node3D
 {
+	[ExportGroup("Balance")]
+	[Export] public GameConfig Balance = GameConfig.LoadDefault();
+
+	[ExportGroup("Board Visual")]
 	[Export] public PackedScene HexTileScene;
-	[Export] public int Radius = 2;
 	[Export] public float HexSize = 1.0f;
-
-	[ExportGroup("Board Layout")]
-	[Export] public bool UseRectangularLayout = true;
-
-	[Export(PropertyHint.Range, "3,15,2")]
-	public int BoardColumns = 9;
-
-	[Export(PropertyHint.Range, "3,15,1")]
-	public int BoardRows = 7;
 
 	[ExportGroup("Starting Oak Visual")]
 	[Export(PropertyHint.Range, "0.05,2.0,0.01")]
@@ -88,13 +82,19 @@ public partial class BoardManager : Node3D
 	{
 		ClearBoard();
 
-		if (UseRectangularLayout)
+		GameConfig balance = Balance ?? GameConfig.LoadDefault();
+
+		if (balance.UseRectangularBoard)
 		{
-			BoardData.GenerateRectangle(BoardColumns, BoardRows);
+			BoardData.GenerateRectangle(
+				balance.BoardColumns,
+				balance.BoardRows);
 		}
 		else
 		{
-			BoardData.Generate(Radius, new HexCoord(0, 0));
+			BoardData.Generate(
+				balance.BoardRadius,
+				new HexCoord(0, 0));
 		}
 
 		UpdateBoardWorldCenter();

@@ -23,11 +23,25 @@ public sealed class EventPhase
 	public GameEventType? SelectRandomEvent(TurnPhaseContext context)
 	{
 		List<EventDefinition> events = EventDatabase.GetAll();
-		if (events.Count == 0)
+		int totalWeight = 0;
+
+		foreach (EventDefinition definition in events)
+			totalWeight += System.Math.Max(definition.SelectionWeight, 0);
+
+		if (totalWeight <= 0)
 			return null;
 
-		int index = context.Random.RandiRange(0, events.Count - 1);
-		return events[index].Type;
+		int selection = context.Random.RandiRange(1, totalWeight);
+
+		foreach (EventDefinition definition in events)
+		{
+			selection -= System.Math.Max(definition.SelectionWeight, 0);
+
+			if (selection <= 0)
+				return definition.Type;
+		}
+
+		return null;
 	}
 
 	private static List<PlantDeathResult> ApplyEventDeathRisks(
@@ -93,7 +107,9 @@ public sealed class EventPhase
 				return 0;
 			}
 
-			return definition.SeedlingDeathChanceDenominator;
+			return ApplyGrowthStageDeathResistance(
+				definition.SeedlingDeathChanceDenominator,
+				tile);
 		}
 
 		if (definition.MatureDeathChanceDenominator <= 0)
@@ -102,7 +118,23 @@ public sealed class EventPhase
 		if (definition.MatureDeathRequiresMonoculture && !isMonoculture)
 			return 0;
 
-		return definition.MatureDeathChanceDenominator;
+		return ApplyGrowthStageDeathResistance(
+			definition.MatureDeathChanceDenominator,
+			tile);
+	}
+
+	private static int ApplyGrowthStageDeathResistance(
+		int denominator,
+		HexTileData tile)
+	{
+		int resistancePerStage = System.Math.Max(
+			tile.Plant.Definition.EventDeathResistancePerGrowthStage,
+			0);
+		int completedGrowthStages = System.Math.Max(
+			tile.Plant.VisualGrowthStage - 1,
+			0);
+
+		return denominator + resistancePerStage * completedGrowthStages;
 	}
 
 	private static bool IsPartOfMonoculture(
