@@ -7,6 +7,10 @@ public partial class CameraRigController : Node3D
 		"gameplay/camera_sensitivity_multiplier";
 	private const string ZoomSensitivitySetting =
 		"gameplay/zoom_sensitivity_multiplier";
+	private const string TileFocusDistanceSetting =
+		"gameplay/tile_focus_distance";
+	private const string BoardOverviewDistanceSetting =
+		"gameplay/board_overview_distance_multiplier";
 	private const string InvertVerticalSetting =
 		"gameplay/invert_vertical_camera";
 
@@ -32,6 +36,8 @@ public partial class CameraRigController : Node3D
 	public float FocusMinDistance = 8.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float FocusMaxDistance = 24.0f;
+	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
+	public float FocusDistance = 14.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float EdgeFocusMaxDistance = 12.0f;
 	[Export(PropertyHint.Range, "0.0,1.0,0.05")]
@@ -251,7 +257,7 @@ public partial class CameraRigController : Node3D
 		float minPitch = Mathf.DegToRad(GetMinimumPitchDegrees());
 		float maxPitch = Mathf.DegToRad(GetMaximumPitchDegrees());
 		float focusDistance = Mathf.Clamp(
-			_targetDistance,
+			GetConfiguredFocusDistance(),
 			GetMinimumDistance(),
 			GetMaximumDistanceForPitch(_targetPitch));
 
@@ -517,7 +523,7 @@ public partial class CameraRigController : Node3D
 		if (_isBoardOverviewActive)
 		{
 			maximumDistance *= Mathf.Clamp(
-				OverviewDistanceMultiplier,
+				GetConfiguredOverviewDistanceMultiplier(),
 				0.5f,
 				1.5f);
 		}
@@ -834,6 +840,20 @@ public partial class CameraRigController : Node3D
 			ProjectSettings.GetSetting(settingName, 1.0f).AsSingle(),
 			0.5f,
 			2.0f);
+	}
+
+	private float GetConfiguredFocusDistance()
+	{
+		return ProjectSettings
+			.GetSetting(TileFocusDistanceSetting, FocusDistance)
+			.AsSingle();
+	}
+
+	private float GetConfiguredOverviewDistanceMultiplier()
+	{
+		return ProjectSettings
+			.GetSetting(BoardOverviewDistanceSetting, OverviewDistanceMultiplier)
+			.AsSingle();
 	}
 
 	private static bool GetInvertVerticalSetting()

@@ -1,0 +1,294 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/MenuMusicPlayer.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="2_ivy"]
+
+[sub_resource type="StyleBoxFlat" id="PlayerPanelStyle"]
+content_margin_left = 30.0
+content_margin_top = 24.0
+content_margin_right = 30.0
+content_margin_bottom = 24.0
+bg_color = Color(0.89, 0.77, 0.59, 0.97)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.29, 0.125, 0.07, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0.015, 0.025, 0.012, 0.72)
+shadow_size = 16
+shadow_offset = Vector2(4, 8)
+
+[sub_resource type="StyleBoxFlat" id="CoverStyle"]
+bg_color = Color(0.29, 0.125, 0.07, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.43, 0.53, 0.27, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="ProgressBackgroundStyle"]
+bg_color = Color(0.27, 0.115, 0.06, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.075, 0.035, 0.95)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ProgressFillStyle"]
+bg_color = Color(0.49, 0.56, 0.27, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.27, 0.34, 0.15, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="MenuMusicPlayer" type="PanelContainer"]
+custom_minimum_size = Vector2(760, 350)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -832.0
+offset_top = -428.0
+offset_right = -72.0
+offset_bottom = -78.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("PlayerPanelStyle")
+script = ExtResource("1_script")
+
+[node name="Content" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderRow" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Eyebrow" type="Label" parent="Content/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_font_sizes/font_size = 22
+text = "MUSIKPLAYER"
+
+[node name="HeaderSpacer" type="Control" parent="Content/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CollapseButton" type="Button" parent="Content/HeaderRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(172, 42)
+layout_mode = 2
+tooltip_text = "Musikplayer einklappen"
+theme_override_font_sizes/font_size = 17
+text = "EINKLAPPEN  ›"
+
+[node name="HeaderSeparator" type="HSeparator" parent="Content"]
+layout_mode = 2
+
+[node name="TrackRow" type="HBoxContainer" parent="Content"]
+custom_minimum_size = Vector2(0, 138)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Cover" type="PanelContainer" parent="Content/TrackRow"]
+custom_minimum_size = Vector2(138, 138)
+layout_mode = 2
+theme_override_styles/panel = SubResource("CoverStyle")
+
+[node name="CoverImage" type="TextureRect" parent="Content/TrackRow/Cover"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_top = 7.0
+offset_right = -7.0
+offset_bottom = -7.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoverFallback" type="Label" parent="Content/TrackRow/Cover"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.95, 0.86, 0.69, 1)
+theme_override_colors/font_outline_color = Color(0.18, 0.075, 0.035, 0.95)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 54
+text = "♫"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Ivy" type="TextureRect" parent="Content/TrackRow/Cover"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -88.0
+offset_top = -42.0
+offset_right = -8.0
+offset_bottom = -7.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.78)
+texture = ExtResource("2_ivy")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
+flip_v = true
+
+[node name="TrackInfo" type="VBoxContainer" parent="Content/TrackRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TrackTitle" type="Label" parent="Content/TrackRow/TrackInfo"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_font_sizes/font_size = 28
+text = "KEIN TITEL AUSGEWÄHLT"
+text_overrun_behavior = 3
+
+[node name="TrackArtist" type="Label" parent="Content/TrackRow/TrackInfo"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31, 0.19, 0.115, 1)
+theme_override_font_sizes/font_size = 20
+text = "Musikdateien folgen"
+text_overrun_behavior = 3
+
+[node name="ControlSpacer" type="Control" parent="Content/TrackRow/TrackInfo"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Controls" type="HBoxContainer" parent="Content/TrackRow/TrackInfo"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PreviousButton" type="Button" parent="Content/TrackRow/TrackInfo/Controls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(54, 46)
+layout_mode = 2
+tooltip_text = "Vorheriger Titel"
+theme_override_font_sizes/font_size = 22
+text = "◀"
+
+[node name="StopButton" type="Button" parent="Content/TrackRow/TrackInfo/Controls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(58, 46)
+layout_mode = 2
+tooltip_text = "Musik anhalten"
+theme_override_font_sizes/font_size = 20
+text = "■"
+
+[node name="NextButton" type="Button" parent="Content/TrackRow/TrackInfo/Controls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(54, 46)
+layout_mode = 2
+tooltip_text = "Nächster Titel"
+theme_override_font_sizes/font_size = 22
+text = "▶"
+
+[node name="MuteButton" type="Button" parent="Content/TrackRow/TrackInfo/Controls"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(208, 46)
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Musik stummschalten"
+theme_override_font_sizes/font_size = 18
+text = "♪ WALDKLANG AN"
+
+[node name="TrackProgress" type="ProgressBar" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+theme_override_styles/background = SubResource("ProgressBackgroundStyle")
+theme_override_styles/fill = SubResource("ProgressFillStyle")
+
+[node name="TimeRow" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+
+[node name="ElapsedTimeLabel" type="Label" parent="Content/TimeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31, 0.19, 0.115, 1)
+theme_override_font_sizes/font_size = 18
+text = "00:00"
+
+[node name="TimeSpacer" type="Control" parent="Content/TimeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="DurationLabel" type="Label" parent="Content/TimeRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31, 0.19, 0.115, 1)
+theme_override_font_sizes/font_size = 18
+text = "00:00"
+horizontal_alignment = 2
+
+[node name="CollapsedContent" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="CollapsedTrackTitle" type="Label" parent="CollapsedContent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_font_sizes/font_size = 21
+text = "MUSIKPLAYER"
+text_overrun_behavior = 3
+vertical_alignment = 1
+
+[node name="ExpandButton" type="Button" parent="CollapsedContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(154, 42)
+layout_mode = 2
+tooltip_text = "Musikplayer ausklappen"
+theme_override_font_sizes/font_size = 17
+text = "ÖFFNEN  ‹"
+
+[node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+bus = &"Music"

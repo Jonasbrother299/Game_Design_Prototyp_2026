@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://ifs463km2wex"]
+[gd_scene load_steps=12 format=3 uid="uid://ifs463km2wex"]
 
 [ext_resource type="Script" uid="uid://dsiubbb3giavj" path="res://scripts/UI/MainMenu.cs" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/images/LoadingScreen.png" id="2_background"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/UI/MenuCardMotion.cs" id="7_motion"]
 [ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="8_ivy"]
 [ext_resource type="PackedScene" path="res://scenes/UI/AchievementMenu.tscn" id="9_achievements"]
+[ext_resource type="PackedScene" path="res://scenes/UI/MenuMusicPlayer.tscn" id="10_music_player"]
 
 [sub_resource type="StyleBoxFlat" id="MenuPanelStyle"]
 content_margin_left = 42.0
@@ -305,6 +306,8 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 15
 text = "PLAYTEST-BUILD"
 horizontal_alignment = 2
+
+[node name="MenuMusicPlayer" parent="." instance=ExtResource("10_music_player")]
 
 [node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
 visible = false

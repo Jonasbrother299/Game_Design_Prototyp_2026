@@ -19,6 +19,10 @@ public partial class SettingsMenu : Control
 		"gameplay/camera_sensitivity_multiplier";
 	private const string ZoomSensitivitySetting =
 		"gameplay/zoom_sensitivity_multiplier";
+	private const string TileFocusDistanceSetting =
+		"gameplay/tile_focus_distance";
+	private const string BoardOverviewDistanceSetting =
+		"gameplay/board_overview_distance_multiplier";
 	private const string InvertVerticalSetting =
 		"gameplay/invert_vertical_camera";
 
@@ -50,6 +54,10 @@ public partial class SettingsMenu : Control
 	private Label _cameraSensitivityValue;
 	private HSlider _zoomSensitivitySlider;
 	private Label _zoomSensitivityValue;
+	private HSlider _tileFocusDistanceSlider;
+	private Label _tileFocusDistanceValue;
+	private HSlider _boardOverviewDistanceSlider;
+	private Label _boardOverviewDistanceValue;
 	private CheckButton _invertVerticalToggle;
 	private Button _backButton;
 
@@ -78,6 +86,10 @@ public partial class SettingsMenu : Control
 		_cameraSensitivityValue = GetNode<Label>("%CameraSensitivityValue");
 		_zoomSensitivitySlider = GetNode<HSlider>("%ZoomSensitivitySlider");
 		_zoomSensitivityValue = GetNode<Label>("%ZoomSensitivityValue");
+		_tileFocusDistanceSlider = GetNode<HSlider>("%TileFocusDistanceSlider");
+		_tileFocusDistanceValue = GetNode<Label>("%TileFocusDistanceValue");
+		_boardOverviewDistanceSlider = GetNode<HSlider>("%BoardOverviewDistanceSlider");
+		_boardOverviewDistanceValue = GetNode<Label>("%BoardOverviewDistanceValue");
 		_invertVerticalToggle = GetNode<CheckButton>("%InvertVerticalToggle");
 		_backButton = GetNode<Button>("%BackButton");
 
@@ -97,6 +109,8 @@ public partial class SettingsMenu : Control
 		_resolutionOptions.ItemSelected += OnResolutionSelected;
 		_cameraSensitivitySlider.ValueChanged += OnControlSettingChanged;
 		_zoomSensitivitySlider.ValueChanged += OnControlSettingChanged;
+		_tileFocusDistanceSlider.ValueChanged += OnControlSettingChanged;
+		_boardOverviewDistanceSlider.ValueChanged += OnControlSettingChanged;
 		_invertVerticalToggle.Toggled += OnInvertVerticalToggled;
 		_backButton.Pressed += Close;
 	}
@@ -151,6 +165,8 @@ public partial class SettingsMenu : Control
 		bool hasSavedResolution = false;
 		float cameraSensitivity = 1.0f;
 		float zoomSensitivity = 1.0f;
+		float tileFocusDistance = 14.0f;
+		float boardOverviewDistance = 0.875f;
 		bool invertVertical = false;
 
 		ConfigFile config = new ConfigFile();
@@ -184,6 +200,12 @@ public partial class SettingsMenu : Control
 			zoomSensitivity = config
 				.GetValue("controls", "zoom_sensitivity", zoomSensitivity)
 				.AsSingle();
+			tileFocusDistance = config
+				.GetValue("controls", "tile_focus_distance", tileFocusDistance)
+				.AsSingle();
+			boardOverviewDistance = config
+				.GetValue("controls", "board_overview_distance", boardOverviewDistance)
+				.AsSingle();
 			invertVertical = config
 				.GetValue("controls", "invert_vertical", invertVertical)
 				.AsBool();
@@ -195,7 +217,12 @@ public partial class SettingsMenu : Control
 		ApplyMasterMute(muted);
 		ApplyFullscreen(fullscreen);
 		ApplyVsync(vsyncEnabled);
-		ApplyControlSettings(cameraSensitivity, zoomSensitivity, invertVertical);
+		ApplyControlSettings(
+			cameraSensitivity,
+			zoomSensitivity,
+			tileFocusDistance,
+			boardOverviewDistance,
+			invertVertical);
 
 		int resolutionIndex = FindClosestResolutionIndex(windowSize);
 		_resolutionOptions.Select(resolutionIndex);
@@ -212,6 +239,9 @@ public partial class SettingsMenu : Control
 		_vsyncToggle.ButtonPressed = vsyncEnabled;
 		_cameraSensitivitySlider.Value = ToSensitivityPercent(cameraSensitivity);
 		_zoomSensitivitySlider.Value = ToSensitivityPercent(zoomSensitivity);
+		_tileFocusDistanceSlider.Value = Mathf.Clamp(tileFocusDistance, 8.0f, 24.0f);
+		_boardOverviewDistanceSlider.Value =
+			ToOverviewDistancePercent(boardOverviewDistance);
 		_invertVerticalToggle.ButtonPressed = invertVertical;
 		UpdateVolumeLabels();
 		UpdateControlLabels();
@@ -247,6 +277,14 @@ public partial class SettingsMenu : Control
 			"controls",
 			"zoom_sensitivity",
 			(float)(_zoomSensitivitySlider.Value / 100.0));
+		config.SetValue(
+			"controls",
+			"tile_focus_distance",
+			(float)_tileFocusDistanceSlider.Value);
+		config.SetValue(
+			"controls",
+			"board_overview_distance",
+			(float)(_boardOverviewDistanceSlider.Value / 100.0));
 		config.SetValue(
 			"controls",
 			"invert_vertical",
@@ -328,6 +366,8 @@ public partial class SettingsMenu : Control
 		ApplyControlSettings(
 			(float)(_cameraSensitivitySlider.Value / 100.0),
 			(float)(_zoomSensitivitySlider.Value / 100.0),
+			(float)_tileFocusDistanceSlider.Value,
+			(float)(_boardOverviewDistanceSlider.Value / 100.0),
 			_invertVerticalToggle.ButtonPressed);
 	}
 
@@ -350,6 +390,8 @@ public partial class SettingsMenu : Control
 	{
 		_cameraSensitivityValue.Text = FormatPercent(_cameraSensitivitySlider.Value);
 		_zoomSensitivityValue.Text = FormatPercent(_zoomSensitivitySlider.Value);
+		_tileFocusDistanceValue.Text = FormatDistance(_tileFocusDistanceSlider.Value);
+		_boardOverviewDistanceValue.Text = FormatPercent(_boardOverviewDistanceSlider.Value);
 	}
 
 	private Vector2I GetSelectedResolution()
@@ -470,6 +512,8 @@ public partial class SettingsMenu : Control
 	private static void ApplyControlSettings(
 		float cameraSensitivity,
 		float zoomSensitivity,
+		float tileFocusDistance,
+		float boardOverviewDistance,
 		bool invertVertical)
 	{
 		ProjectSettings.SetSetting(
@@ -478,6 +522,12 @@ public partial class SettingsMenu : Control
 		ProjectSettings.SetSetting(
 			ZoomSensitivitySetting,
 			Mathf.Clamp(zoomSensitivity, 0.5f, 2.0f));
+		ProjectSettings.SetSetting(
+			TileFocusDistanceSetting,
+			Mathf.Clamp(tileFocusDistance, 8.0f, 24.0f));
+		ProjectSettings.SetSetting(
+			BoardOverviewDistanceSetting,
+			Mathf.Clamp(boardOverviewDistance, 0.5f, 1.5f));
 		ProjectSettings.SetSetting(InvertVerticalSetting, invertVertical);
 	}
 
@@ -491,8 +541,18 @@ public partial class SettingsMenu : Control
 		return Mathf.Clamp(sensitivity, 0.5f, 2.0f) * 100.0f;
 	}
 
+	private static float ToOverviewDistancePercent(float distanceMultiplier)
+	{
+		return Mathf.Clamp(distanceMultiplier, 0.5f, 1.5f) * 100.0f;
+	}
+
 	private static string FormatPercent(double value)
 	{
 		return $"{Mathf.RoundToInt(value)} %";
+	}
+
+	private static string FormatDistance(double value)
+	{
+		return $"{value:0.0}";
 	}
 }

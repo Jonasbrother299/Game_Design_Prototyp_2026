@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public partial class GameManager : Node
 {
-	private const float TileFocusClickThreshold = 6.0f;
 	private const int MassPlantDeathThreshold = 15;
 	private static bool _skipTutorialOnNextStart;
 
@@ -22,9 +21,8 @@ public partial class GameManager : Node
 	private readonly HashSet<int> _recordedMassPlantDeathRounds = new();
 	private string _lastDebugMessage = "";
 	private bool _isCardDragActive;
+	private bool _isDayNightPresentationLocked;
 	private bool _hasRecordedCompletedGame;
-	private bool _isTileFocusClickCandidate;
-	private Vector2 _tileFocusPressPosition;
 
 	public override void _Ready()
 	{
@@ -129,49 +127,48 @@ public partial class GameManager : Node
 
 	public override void _UnhandledInput(InputEvent inputEvent)
 	{
-		if (inputEvent is InputEventMouseMotion mouseMotion)
-		{
-			if (_isTileFocusClickCandidate &&
-				mouseMotion.Position.DistanceTo(_tileFocusPressPosition) >
-				TileFocusClickThreshold)
-			{
-				_isTileFocusClickCandidate = false;
-			}
-
+		if (_isDayNightPresentationLocked)
 			return;
-		}
 
 		if (inputEvent is not InputEventMouseButton mouseButton ||
-			mouseButton.ButtonIndex != MouseButton.Left)
-		{
-			return;
-		}
-
-		if (mouseButton.Pressed)
-		{
-			_isTileFocusClickCandidate = CanFocusTileFromMouse();
-			_tileFocusPressPosition = mouseButton.Position;
-			return;
-		}
-
-		bool shouldFocusTile =
-			_isTileFocusClickCandidate &&
-			mouseButton.Position.DistanceTo(_tileFocusPressPosition) <=
-			TileFocusClickThreshold &&
-			CanFocusTileFromMouse();
-		_isTileFocusClickCandidate = false;
-
-		if (!shouldFocusTile)
+			mouseButton.ButtonIndex != MouseButton.Left ||
+			!mouseButton.Pressed)
 			return;
 
-		HexTile clickedTile = IsMainTreeVisualUnderMouse(mouseButton.Position)
+		if (!CanFocusTileFromMouse())
+			return;
+
+		bool isMainTree = IsMainTreeVisualUnderMouse(mouseButton.Position);
+		HexTile clickedTile = isMainTree
 			? _mainTreeTile
 			: GetHexTileUnderMouse(mouseButton.Position);
 
-		if (clickedTile == null || !_cameraRig.FocusTile(clickedTile))
+		if (clickedTile == null)
+			return;
+
+		isMainTree = isMainTree || clickedTile == _mainTreeTile;
+		if (isMainTree ? !mouseButton.DoubleClick : mouseButton.DoubleClick)
+			return;
+
+		if (!_cameraRig.FocusTile(clickedTile))
 			return;
 
 		GetViewport().SetInputAsHandled();
+	}
+
+	public void SetDayNightPresentationInputLocked(bool isLocked)
+	{
+		if (_isDayNightPresentationLocked == isLocked)
+			return;
+
+		_isDayNightPresentationLocked = isLocked;
+		_cardHand?.SetInteractionEnabled(!isLocked);
+		_cameraRig?.SetInteractionEnabled(!isLocked);
+
+		if (isLocked)
+			ClearCurrentPreview();
+
+		UpdateDiscardHandButtonState();
 	}
 
 	private void ConfigureCameraRig()
@@ -482,6 +479,9 @@ private void ConnectDiscardHandButton()
 
 private void OnEndTurnButtonPressed()
 {
+	if (_isDayNightPresentationLocked)
+		return;
+
 	if (_turnManager == null)
 		return;
 
@@ -504,6 +504,9 @@ private void OnEndTurnButtonPressed()
 
 private void OnDiscardHandButtonPressed()
 {
+	if (_isDayNightPresentationLocked)
+		return;
+
 	if (_turnManager == null || !_turnManager.DiscardHand())
 		return;
 
@@ -518,6 +521,7 @@ private void UpdateDiscardHandButtonState()
 		return;
 
 	_discardHandButton.Disabled =
+		_isDayNightPresentationLocked ||
 		_turnManager == null ||
 		!_turnManager.CanDiscardHand;
 }
@@ -525,7 +529,6 @@ private void UpdateDiscardHandButtonState()
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 {
 	_isCardDragActive = true;
-	_isTileFocusClickCandidate = false;
 	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
 
 	if (hoveredTile == null)
@@ -547,17 +550,15 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 
 	private void OnPlantCardDragCanceled()
 	{
-		_isCardDragActive = false;
-		_isTileFocusClickCandidate = false;
-		ClearCurrentPreview();
+	_isCardDragActive = false;
+	ClearCurrentPreview();
 		_tutorialManager?.RefreshTutorialHighlights();
 	}
 
 	private void OnPlantCardDragReleased(PlantType plantType, Vector2 mousePosition)
 	{
-		_isCardDragActive = false;
-		_isTileFocusClickCandidate = false;
-		HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
+	_isCardDragActive = false;
+	HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
 
 		bool wasPlaced = TryPlacePlantOnReleasedTile(plantType, releasedTile);
 
