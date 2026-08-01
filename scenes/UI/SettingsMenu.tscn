@@ -511,6 +511,88 @@ text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
+[node name="TileFocusDistanceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 27
+text = "Fokusabstand"
+
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 22
+text = "Legt fest, wie nah die Kamera nach dem Doppelklick am Feld endet."
+
+[node name="TileFocusDistanceSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 8.0
+max_value = 24.0
+step = 0.5
+value = 14.0
+
+[node name="TileFocusDistanceValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 24
+text = "14.0"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="BoardOverviewDistanceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 27
+text = "Übersichtsabstand"
+
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 22
+text = "Legt den Abstand der Boardübersicht nach einem Eichen-Doppelklick fest."
+
+[node name="BoardOverviewDistanceSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 50.0
+max_value = 150.0
+step = 2.5
+value = 87.5
+
+[node name="BoardOverviewDistanceValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 24
+text = "88 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="InvertRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
 custom_minimum_size = Vector2(0, 76)
 layout_mode = 2

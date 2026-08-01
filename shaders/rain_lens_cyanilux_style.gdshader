@@ -4,8 +4,8 @@ render_mode unshaded, blend_mix;
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
 
 uniform float intensity : hint_range(0.0, 1.0) = 0.80;
-uniform float drop_scale : hint_range(5.0, 100.0) = 28.0;
-uniform float drop_density : hint_range(0.0, 1.0) = 0.18;
+uniform float drop_scale : hint_range(5.0, 100.0) = 22.0;
+uniform float drop_density : hint_range(0.0, 1.0) = 0.13;
 uniform float speed : hint_range(0.0, 2.0) = 0.18;
 
 uniform float drop_radius : hint_range(0.01, 0.30) = 0.135;
@@ -39,7 +39,7 @@ effect_uv.y += sin(effect_uv.x * 17.0 + TIME * 0.05) * 0.010;
 
 vec3 base = textureLod(screen_texture, screen_uv, 0.0).rgb;
 
-vec2 grid_uv = effect_uv * vec2(drop_scale * 0.82, drop_scale * 1.28);
+vec2 grid_uv = effect_uv * vec2(drop_scale * 0.86, drop_scale * 1.05);
 vec2 cell_id = floor(grid_uv);
 vec2 cell_uv = fract(grid_uv) - 0.5;
 

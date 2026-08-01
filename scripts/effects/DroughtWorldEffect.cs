@@ -3,6 +3,18 @@ using System.Collections.Generic;
 
 public partial class DroughtWorldEffect : WorldEnvironment
 {
+	private const float DimmingDuration = 1.80f;
+	private const float NightHoldDuration = 1.50f;
+	private const float SunriseMoonPhaseDuration = 1.25f;
+	private const float BrighteningDuration = 1.80f;
+	private const float SunriseDuration =
+		SunriseMoonPhaseDuration +
+		BrighteningDuration;
+	private const float DayNightCycleDuration =
+		DimmingDuration +
+		NightHoldDuration +
+		SunriseDuration;
+
 	private enum WorldLook
 	{
 		Normal,
@@ -57,15 +69,20 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	private TurnManager _turnManager;
 	private DirectionalLight3D _directionalLight;
 	private Tween _transitionTween;
+	private Tween _dayNightTween;
 
 	private Color _baseBackgroundColor;
 	private Color _baseAmbientColor;
 	private Color _baseLightColor = Colors.White;
 	private bool _baseAdjustmentEnabled;
+	private float _baseAmbientEnergy;
+	private float _baseLightEnergy = 1.0f;
 	private float _baseBrightness;
 	private float _baseContrast;
 	private float _baseSaturation;
 	private WorldLook _currentLook = WorldLook.Normal;
+	private WorldLook _requestedLook = WorldLook.Normal;
+	private bool _isDayNightCycleActive;
 
 	public override void _Ready()
 	{
@@ -110,6 +127,8 @@ public partial class DroughtWorldEffect : WorldEnvironment
 
 		if (_transitionTween != null && _transitionTween.IsValid())
 			_transitionTween.Kill();
+		if (_dayNightTween != null && _dayNightTween.IsValid())
+			_dayNightTween.Kill();
 	}
 
 	public void RefreshFromRestoredState()
@@ -117,7 +136,73 @@ public partial class DroughtWorldEffect : WorldEnvironment
 		if (_turnManager?.State == null)
 			return;
 
+		CancelDayNightCycle();
 		ApplyLook(GetLook(_turnManager.State.ActiveEvents), immediate: true);
+	}
+
+	public float PlayDayNightCycle()
+	{
+		if (Environment == null)
+			return 0.0f;
+
+		if (_transitionTween != null && _transitionTween.IsValid())
+			_transitionTween.Kill();
+		if (_dayNightTween != null && _dayNightTween.IsValid())
+			_dayNightTween.Kill();
+
+		_isDayNightCycleActive = true;
+		Environment.AdjustmentEnabled = true;
+
+		Color startingBackground = Environment.BackgroundColor;
+		Color startingAmbient = Environment.AmbientLightColor;
+		Color startingLight = _directionalLight?.LightColor ?? _baseLightColor;
+		float startingAmbientEnergy = Environment.AmbientLightEnergy;
+		float startingLightEnergy = _directionalLight?.LightEnergy ?? _baseLightEnergy;
+		float startingBrightness = Environment.AdjustmentBrightness;
+		float startingContrast = Environment.AdjustmentContrast;
+		float startingSaturation = Environment.AdjustmentSaturation;
+
+		_dayNightTween = CreateTween()
+			.SetPauseMode(Tween.TweenPauseMode.Process)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
+		AppendDayCycleLook(
+			new Color(0.055f, 0.10f, 0.24f),
+			new Color(0.16f, 0.28f, 0.50f),
+			new Color(0.46f, 0.58f, 1.0f),
+			0.32f,
+			0.36f,
+			0.80f,
+			1.04f,
+			0.86f,
+			DimmingDuration);
+		_dayNightTween.TweenInterval(NightHoldDuration);
+		_dayNightTween.TweenInterval(SunriseMoonPhaseDuration);
+		AppendDayCycleLook(
+			startingBackground,
+			startingAmbient,
+			startingLight,
+			startingAmbientEnergy,
+			startingLightEnergy,
+			startingBrightness,
+			startingContrast,
+			startingSaturation,
+			BrighteningDuration);
+		_dayNightTween.TweenCallback(Callable.From(FinishDayNightCycle));
+
+		return DayNightCycleDuration;
+	}
+
+	public void CancelDayNightCycle()
+	{
+		if (_dayNightTween != null && _dayNightTween.IsValid())
+			_dayNightTween.Kill();
+
+		if (!_isDayNightCycleActive)
+			return;
+
+		_isDayNightCycleActive = false;
+		ApplyLook(_requestedLook, immediate: true);
 	}
 
 	private void SaveBaseLook()
@@ -125,12 +210,16 @@ public partial class DroughtWorldEffect : WorldEnvironment
 		_baseBackgroundColor = Environment.BackgroundColor;
 		_baseAmbientColor = Environment.AmbientLightColor;
 		_baseAdjustmentEnabled = Environment.AdjustmentEnabled;
+		_baseAmbientEnergy = Environment.AmbientLightEnergy;
 		_baseBrightness = Environment.AdjustmentBrightness;
 		_baseContrast = Environment.AdjustmentContrast;
 		_baseSaturation = Environment.AdjustmentSaturation;
 
 		if (_directionalLight != null)
+		{
 			_baseLightColor = _directionalLight.LightColor;
+			_baseLightEnergy = _directionalLight.LightEnergy;
+		}
 	}
 
 	private void OnTurnStarted(int round)
@@ -156,12 +245,19 @@ public partial class DroughtWorldEffect : WorldEnvironment
 		ApplyLook(WorldLook.Normal, immediate: true);
 	}
 
-	private void ApplyLook(WorldLook look, bool immediate = false)
+	private void ApplyLook(
+		WorldLook look,
+		bool immediate = false,
+		bool force = false)
 	{
 		if (Environment == null)
 			return;
 
-		if (!immediate && _currentLook == look)
+		_requestedLook = look;
+		if (_isDayNightCycleActive)
+			return;
+
+		if (!immediate && !force && _currentLook == look)
 			return;
 
 		_currentLook = look;
@@ -273,6 +369,72 @@ public partial class DroughtWorldEffect : WorldEnvironment
 
 		if (_directionalLight != null)
 			_directionalLight.LightColor = lightColor;
+	}
+
+	private void AppendDayCycleLook(
+		Color backgroundColor,
+		Color ambientColor,
+		Color lightColor,
+		float ambientEnergy,
+		float lightEnergy,
+		float brightness,
+		float contrast,
+		float saturation,
+		float duration)
+	{
+		_dayNightTween.SetParallel(true);
+		_dayNightTween.TweenProperty(
+			Environment,
+			"background_color",
+			backgroundColor,
+			duration);
+		_dayNightTween.TweenProperty(
+			Environment,
+			"ambient_light_color",
+			ambientColor,
+			duration);
+		_dayNightTween.TweenProperty(
+			Environment,
+			"ambient_light_energy",
+			ambientEnergy,
+			duration);
+		_dayNightTween.TweenProperty(
+			Environment,
+			"adjustment_brightness",
+			brightness,
+			duration);
+		_dayNightTween.TweenProperty(
+			Environment,
+			"adjustment_contrast",
+			contrast,
+			duration);
+		_dayNightTween.TweenProperty(
+			Environment,
+			"adjustment_saturation",
+			saturation,
+			duration);
+
+		if (_directionalLight != null)
+		{
+			_dayNightTween.TweenProperty(
+				_directionalLight,
+				"light_color",
+				lightColor,
+				duration);
+			_dayNightTween.TweenProperty(
+				_directionalLight,
+				"light_energy",
+				lightEnergy,
+				duration);
+		}
+
+		_dayNightTween.SetParallel(false);
+	}
+
+	private void FinishDayNightCycle()
+	{
+		_isDayNightCycleActive = false;
+		ApplyLook(_requestedLook, force: true);
 	}
 
 	private void RestoreAdjustmentStateIfNormal()

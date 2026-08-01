@@ -36,7 +36,6 @@ public partial class PauseMenu : Control
 	private EncyclopediaMenu _encyclopediaMenu;
 	private GameHub _gameHub;
 	private TurnManager _turnManager;
-	private CameraRigController _cameraRig;
 	private PendingAction _pendingAction;
 
 	public override void _Ready()
@@ -84,8 +83,6 @@ public partial class PauseMenu : Control
 			GD.PushWarning("PauseMenu: GameHub fehlt.");
 
 		_turnManager = GetTree().CurrentScene?.GetNodeOrNull<TurnManager>("TurnManager");
-		_cameraRig = GetTree().CurrentScene?.GetNodeOrNull<CameraRigController>(
-			"CameraRig");
 		Hide();
 	}
 
@@ -104,11 +101,6 @@ public partial class PauseMenu : Control
 			_settingsMenu.Close();
 		else if (Visible)
 			ClosePauseMenu();
-		else if (_cameraRig != null && _cameraRig.ClearTileFocus())
-		{
-			GetViewport().SetInputAsHandled();
-			return;
-		}
 		else
 			OpenPauseMenu();
 

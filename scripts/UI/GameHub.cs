@@ -3,6 +3,18 @@ using System.Collections.Generic;
 
 public partial class GameHub : Control
 {
+	private const float DimmingDuration = 1.80f;
+	private const float NightHoldDuration = 1.50f;
+	private const float SunriseMoonPhaseDuration = 1.25f;
+	private const float BrighteningDuration = 1.80f;
+	private const float SunriseDuration =
+		SunriseMoonPhaseDuration +
+		BrighteningDuration;
+	private const float DayNightTransitionDuration =
+		DimmingDuration +
+		NightHoldDuration +
+		SunriseDuration;
+
 	[Signal]
 	public delegate void MenuRequestedEventHandler();
 
@@ -36,9 +48,14 @@ public partial class GameHub : Control
 	private WaterDisplayUI _waterDisplay;
 	private RoundDisplayUI _roundDisplay;
 	private BaseButton _endTurnButton;
+	private ColorRect _dayNightOverlay;
+	private DayCycleDisplayUI _dayCycleDisplay;
+	private DroughtWorldEffect _droughtWorldEffect;
+	private GameManager _gameManager;
 	private CanvasLayer _rainLensLayer;
 	private RainLensCyaniluxOverlay _rainLensOverlay;
 	private Tween _feedbackTimelineTween;
+	private Tween _dayNightTransitionTween;
 	private float _feedbackSequenceEndDelay;
 	private CanvasLayer _saveFeedbackLayer;
 	private PanelContainer _saveFeedbackPanel;
@@ -83,12 +100,19 @@ public partial class GameHub : Control
 			_turnManager.EventActivated -= OnEventActivated;
 			_turnManager.WaterPhaseResolved -= OnWaterPhaseResolved;
 			_turnManager.EventPhaseResolved -= OnEventPhaseResolved;
+			_turnManager.EndTurnRequested -= OnEndTurnRequested;
 		}
 
 		if (_feedbackTimelineTween != null &&
 			_feedbackTimelineTween.IsValid())
 		{
 			_feedbackTimelineTween.Kill();
+		}
+
+		if (_dayNightTransitionTween != null &&
+			_dayNightTransitionTween.IsValid())
+		{
+			_dayNightTransitionTween.Kill();
 		}
 
 		if (_saveFeedbackTween != null && _saveFeedbackTween.IsValid())
@@ -161,6 +185,11 @@ public partial class GameHub : Control
 		}
 
 		_endTurnButton = GetNodeOrNull<BaseButton>("EndTurnButton");
+		_dayNightOverlay = GetNodeOrNull<ColorRect>("DayNightOverlay");
+		_dayCycleDisplay = GetNodeOrNull<DayCycleDisplayUI>("DayCycleDisplay");
+		_droughtWorldEffect =
+			currentScene.GetNodeOrNull<DroughtWorldEffect>("WorldEnvironment");
+		_gameManager = currentScene.GetNodeOrNull<GameManager>("GameManager");
 
 		_rainLensOverlay =
 			currentScene.GetNodeOrNull<RainLensCyaniluxOverlay>(
@@ -172,6 +201,7 @@ public partial class GameHub : Control
 		_turnManager.EventActivated += OnEventActivated;
 		_turnManager.WaterPhaseResolved += OnWaterPhaseResolved;
 		_turnManager.EventPhaseResolved += OnEventPhaseResolved;
+		_turnManager.EndTurnRequested += OnEndTurnRequested;
 		RefreshFromRestoredState();
 	}
 
@@ -187,6 +217,7 @@ public partial class GameHub : Control
 		}
 
 		_feedbackSequenceEndDelay = 0.0f;
+		ResetDayNightPresentation();
 		_waterDisplay?.ShowCurrentState(
 			_turnManager.State.Water,
 			_turnManager.Config.WinWaterLimit);
@@ -276,6 +307,10 @@ public partial class GameHub : Control
 		if (eventType == GameEventType.Rain ||
 			eventType == GameEventType.HeavyRain)
 		{
+			_dayCycleDisplay?.SetWeather(
+				hasRain: true,
+				hasHeavyRain: eventType == GameEventType.HeavyRain);
+
 			if (_rainLensLayer != null)
 				_rainLensLayer.Visible = true;
 
@@ -307,6 +342,8 @@ public partial class GameHub : Control
 			}
 		}
 
+		_dayCycleDisplay?.SetWeather(hasRain, hasHeavyRain);
+
 		if (!hasRain)
 		{
 			_rainLensOverlay?.StopRain();
@@ -327,8 +364,9 @@ public partial class GameHub : Control
 			_feedbackTimelineTween.Kill();
 		}
 
-		_feedbackSequenceEndDelay =
-			WaterFeedbackDelay + WaterLabelDuration;
+		_feedbackSequenceEndDelay = Mathf.Max(
+			_feedbackSequenceEndDelay,
+			WaterFeedbackDelay + WaterLabelDuration);
 		SetEndTurnLocked(true);
 
 		_eventDisplay?.ShowWaterResult(result);
@@ -364,6 +402,81 @@ public partial class GameHub : Control
 		UpdateWaterPreview();
 	}
 
+	private void OnEndTurnRequested(int _)
+	{
+		_gameManager?.SetDayNightPresentationInputLocked(true);
+		float userInterfaceDuration = StartDayNightTransition();
+		float worldDuration = _droughtWorldEffect?.PlayDayNightCycle() ?? 0.0f;
+		_feedbackSequenceEndDelay = Mathf.Max(
+			_feedbackSequenceEndDelay,
+			Mathf.Max(userInterfaceDuration, worldDuration));
+		SetEndTurnLocked(true);
+	}
+
+	private float StartDayNightTransition()
+	{
+		if (_dayNightOverlay == null)
+			return 0.0f;
+
+		if (_dayNightTransitionTween != null &&
+			_dayNightTransitionTween.IsValid())
+		{
+			_dayNightTransitionTween.Kill();
+		}
+
+		_dayCycleDisplay?.ShowDay();
+		_dayCycleDisplay?.PlaySunset(DimmingDuration);
+		_dayNightOverlay.Color = new Color(0.05f, 0.12f, 0.30f, 0.0f);
+		_dayNightOverlay.Show();
+
+		_dayNightTransitionTween = CreateTween()
+			.SetPauseMode(Tween.TweenPauseMode.Process)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
+		_dayNightTransitionTween.TweenProperty(
+			_dayNightOverlay,
+			"color",
+			new Color(0.06f, 0.14f, 0.34f, 0.16f),
+			DimmingDuration);
+		_dayNightTransitionTween.TweenCallback(
+			Callable.From(() => _dayCycleDisplay?.ShowNight()));
+		_dayNightTransitionTween.TweenInterval(NightHoldDuration);
+		_dayNightTransitionTween.TweenCallback(
+			Callable.From(() => _dayCycleDisplay?.PlaySunrise(
+				SunriseDuration)));
+		_dayNightTransitionTween.TweenInterval(SunriseMoonPhaseDuration);
+		_dayNightTransitionTween.TweenProperty(
+			_dayNightOverlay,
+			"color",
+			new Color(0.05f, 0.12f, 0.30f, 0.0f),
+			BrighteningDuration);
+		_dayNightTransitionTween.TweenCallback(
+			Callable.From(() => _dayCycleDisplay?.ShowDay()));
+		_dayNightTransitionTween.TweenCallback(
+			Callable.From(() => _dayNightOverlay.Hide()));
+
+		return DayNightTransitionDuration;
+	}
+
+	private void ResetDayNightPresentation()
+	{
+		if (_dayNightTransitionTween != null &&
+			_dayNightTransitionTween.IsValid())
+		{
+			_dayNightTransitionTween.Kill();
+		}
+
+		if (_dayNightOverlay != null)
+		{
+			_dayNightOverlay.Color = new Color(0.0f, 0.0f, 0.0f, 0.0f);
+			_dayNightOverlay.Hide();
+		}
+
+		_dayCycleDisplay?.ShowDay();
+		_droughtWorldEffect?.CancelDayNightCycle();
+		_gameManager?.SetDayNightPresentationInputLocked(false);
+	}
+
 	private void ScheduleRoundStartFeedback(int round)
 	{
 		ScheduleRoundPresentationCompletion(round);
@@ -377,6 +490,7 @@ public partial class GameHub : Control
 		{
 			_roundDisplay?.ShowRound(round);
 			SetEndTurnLocked(false);
+			_gameManager?.SetDayNightPresentationInputLocked(false);
 			_feedbackSequenceEndDelay = 0.0f;
 			return;
 		}
@@ -388,6 +502,7 @@ public partial class GameHub : Control
 		{
 			_roundDisplay?.ShowRound(round);
 			SetEndTurnLocked(false);
+			_gameManager?.SetDayNightPresentationInputLocked(false);
 			_feedbackSequenceEndDelay = 0.0f;
 		}));
 	}
@@ -702,6 +817,19 @@ public partial class GameHub : Control
 	private void OnEventPhaseResolved(EventPhaseResult result)
 	{
 		_eventDisplay?.ShowPhaseResult(result);
+
+		bool hasHeavyRain = false;
+		foreach (GameEventType eventType in result.ActiveEvents)
+		{
+			if (eventType == GameEventType.HeavyRain)
+			{
+				hasHeavyRain = true;
+				break;
+			}
+		}
+		_dayCycleDisplay?.SetWeather(
+			ContainsRainEvent(result.ActiveEvents),
+			hasHeavyRain);
 
 		if (!ContainsRainEvent(result.ActiveEvents))
 		{

@@ -57,6 +57,7 @@ public partial class CardHandUI : Control
 	private TextureRect _draggedCard;
 	private PlantType? _draggedPlantType = null;
 	private Vector2 _dragOffset = Vector2.Zero;
+	private bool _interactionEnabled = true;
 	private bool _isDragging = false;
 	private bool _removeDraggedCardAfterRelease = false;
 
@@ -85,6 +86,9 @@ public partial class CardHandUI : Control
 
 	public override void _Input(InputEvent inputEvent)
 	{
+		if (!_interactionEnabled)
+			return;
+
 		if (inputEvent is not InputEventMouseButton mouseButton)
 			return;
 
@@ -228,6 +232,18 @@ public partial class CardHandUI : Control
 		_draggedPlantType = null;
 		_isDragging = false;
 		_removeDraggedCardAfterRelease = false;
+	}
+
+	public void SetInteractionEnabled(bool isEnabled)
+	{
+		if (_interactionEnabled == isEnabled)
+			return;
+
+		_interactionEnabled = isEnabled;
+		SetProcessInput(isEnabled);
+
+		if (!isEnabled)
+			CancelDrag();
 	}
 
 	private TextureRect FindExistingCard(
