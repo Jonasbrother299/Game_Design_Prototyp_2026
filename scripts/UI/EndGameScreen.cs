@@ -57,7 +57,6 @@ public partial class EndGameScreen : Control
 
 		_turnManager = GetTree().CurrentScene?.GetNodeOrNull<TurnManager>(
 			"TurnManager");
-
 		if (_turnManager != null)
 			_turnManager.GameEnded += ShowResult;
 		else

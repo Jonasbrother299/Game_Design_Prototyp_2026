@@ -228,7 +228,7 @@ public partial class PauseMenu : Control
 		ShowConfirmation(
 			PendingAction.MainMenu,
 			"Zum Hauptmenü?",
-			"Der aktuelle Fortschritt geht verloren.",
+			"Die laufende Partie wird beendet.",
 			"Hauptmenü");
 	}
 
@@ -237,7 +237,7 @@ public partial class PauseMenu : Control
 		ShowConfirmation(
 			PendingAction.Quit,
 			"Spiel beenden?",
-			"Das Spiel wird geschlossen.",
+			"Die laufende Partie wird beendet und das Spiel geschlossen.",
 			"Beenden");
 	}
 

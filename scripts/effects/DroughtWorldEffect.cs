@@ -112,6 +112,14 @@ public partial class DroughtWorldEffect : WorldEnvironment
 			_transitionTween.Kill();
 	}
 
+	public void RefreshFromRestoredState()
+	{
+		if (_turnManager?.State == null)
+			return;
+
+		ApplyLook(GetLook(_turnManager.State.ActiveEvents), immediate: true);
+	}
+
 	private void SaveBaseLook()
 	{
 		_baseBackgroundColor = Environment.BackgroundColor;

@@ -8,7 +8,6 @@ public partial class PlantDefinition : Resource
 	[Export] public string DisplayName = "";
 
 	[ExportGroup("Karten")]
-	[Export] public int PlayCost = 0;
 	[Export] public int StartingHandCopies = 0;
 	[Export] public int DrawWeight = 1;
 

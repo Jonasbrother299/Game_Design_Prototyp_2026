@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 public partial class SceneTransition : CanvasLayer
 {
 	public static SceneTransition Instance { get; private set; }
+	public event System.Action<string, string> SceneChangeFailed;
 
 	[Export] public float FadeDuration = 0.25f;
 	[Export] public int FramesBeforeReveal = 2;
@@ -36,6 +37,7 @@ public partial class SceneTransition : CanvasLayer
 		if (!ResourceLoader.Exists(scenePath))
 		{
 			GD.PushError($"SceneTransition: Zielszene fehlt: {scenePath}");
+			SceneChangeFailed?.Invoke(scenePath, "Die Zielszene fehlt.");
 			return;
 		}
 
@@ -50,6 +52,7 @@ public partial class SceneTransition : CanvasLayer
 		{
 			GD.PushError(
 				$"SceneTransition: Szenenwechsel fehlgeschlagen: {error}");
+			SceneChangeFailed?.Invoke(scenePath, error.ToString());
 			await FadeCoverTo(0.0f);
 			FinishTransition();
 			return;

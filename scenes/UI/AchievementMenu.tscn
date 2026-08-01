@@ -1,0 +1,306 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/AchievementMenu.cs" id="1_achievements"]
+[ext_resource type="Theme" path="res://assets/ui/themes/forest_card_theme.tres" id="2_theme"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/OhnoBlazefaceDemo-48Point.otf" id="3_title_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="4_ivy"]
+
+[sub_resource type="StyleBoxFlat" id="MenuPanelStyle"]
+content_margin_left = 34.0
+content_margin_top = 28.0
+content_margin_right = 34.0
+content_margin_bottom = 26.0
+bg_color = Color(0.89, 0.77, 0.59, 0.985)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.29, 0.125, 0.07, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0.008, 0.018, 0.009, 0.78)
+shadow_size = 18
+shadow_offset = Vector2(4, 9)
+
+[sub_resource type="StyleBoxFlat" id="EyebrowStyle"]
+content_margin_left = 16.0
+content_margin_top = 5.0
+content_margin_right = 16.0
+content_margin_bottom = 5.0
+bg_color = Color(0.57, 0.2, 0.23, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.33, 0.13, 0.075, 1)
+corner_radius_top_left = 17
+corner_radius_top_right = 17
+corner_radius_bottom_right = 17
+corner_radius_bottom_left = 17
+
+[sub_resource type="StyleBoxFlat" id="ProfileStyle"]
+content_margin_left = 22.0
+content_margin_top = 16.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+bg_color = Color(0.95, 0.86, 0.68, 0.97)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.31, 0.42, 0.2, 0.96)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.22, 0.105, 0.055, 0.24)
+shadow_size = 6
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="LevelBadgeStyle"]
+bg_color = Color(0.28, 0.42, 0.2, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.95, 0.82, 0.53, 1)
+corner_radius_top_left = 48
+corner_radius_top_right = 48
+corner_radius_bottom_right = 48
+corner_radius_bottom_left = 48
+shadow_color = Color(0.17, 0.08, 0.04, 0.4)
+shadow_size = 5
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="ProgressBackgroundStyle"]
+bg_color = Color(0.31, 0.15, 0.09, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.1, 0.055, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="ProgressFillStyle"]
+bg_color = Color(0.41, 0.58, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.36, 0.13, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="AchievementMenu" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 36
+theme = ExtResource("2_theme")
+script = ExtResource("1_achievements")
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.008, 0.02, 0.01, 0.8)
+
+[node name="MenuMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 38.0
+offset_top = 24.0
+offset_right = -38.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AchievementPanel" type="PanelContainer" parent="MenuMargin"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("MenuPanelStyle")
+
+[node name="Content" type="VBoxContainer" parent="MenuMargin/AchievementPanel"]
+z_index = 1
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EyebrowPanel" type="PanelContainer" parent="MenuMargin/AchievementPanel/Content"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("EyebrowStyle")
+
+[node name="Eyebrow" type="Label" parent="MenuMargin/AchievementPanel/Content/EyebrowPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.91, 0.7, 1)
+theme_override_font_sizes/font_size = 17
+text = "WALDCHRONIK"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="MenuMargin/AchievementPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_colors/font_shadow_color = Color(0.96, 0.84, 0.64, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("3_title_font")
+theme_override_font_sizes/font_size = 52
+text = "Erfolge & Pfade"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MenuMargin/AchievementPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.31, 0.19, 0.115, 1)
+theme_override_font_sizes/font_size = 21
+text = "Jedes Abzeichen erzählt von einem bewahrten Stück Wald."
+horizontal_alignment = 1
+
+[node name="HeaderSeparator" type="HSeparator" parent="MenuMargin/AchievementPanel/Content"]
+layout_mode = 2
+
+[node name="ProfilePanel" type="PanelContainer" parent="MenuMargin/AchievementPanel/Content"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("ProfileStyle")
+
+[node name="ProfileContent" type="HBoxContainer" parent="MenuMargin/AchievementPanel/Content/ProfilePanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="LevelBadge" type="PanelContainer" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent"]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+theme_override_styles/panel = SubResource("LevelBadgeStyle")
+
+[node name="LevelLabel" type="Label" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent/LevelBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.07, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 24
+text = "STUFE\n1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProfileText" type="VBoxContainer" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="ProfileEyebrow" type="Label" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent/ProfileText"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.29, 0.43, 0.2, 1)
+theme_override_font_sizes/font_size = 17
+text = "DEIN WALDHÜTER-PROFIL"
+
+[node name="ProfileTitle" type="Label" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent/ProfileText"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.26, 0.115, 0.06, 1)
+theme_override_font_sizes/font_size = 28
+text = "Erfahrung aus deinen Abzeichen"
+
+[node name="ExperienceBar" type="ProgressBar" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent/ProfileText"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+max_value = 250.0
+show_percentage = false
+theme_override_styles/background = SubResource("ProgressBackgroundStyle")
+theme_override_styles/fill = SubResource("ProgressFillStyle")
+
+[node name="ExperienceLabel" type="Label" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent/ProfileText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.2, 0.12, 1)
+theme_override_font_sizes/font_size = 18
+text = "0 / 250 EP bis Stufe 2"
+
+[node name="AchievementCount" type="Label" parent="MenuMargin/AchievementPanel/Content/ProfilePanel/ProfileContent/ProfileText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.27, 0.14, 1)
+theme_override_font_sizes/font_size = 17
+text = "0 von 5 Abzeichen freigeschaltet"
+
+[node name="GridSeparator" type="HSeparator" parent="MenuMargin/AchievementPanel/Content"]
+layout_mode = 2
+
+[node name="AchievementScroll" type="ScrollContainer" parent="MenuMargin/AchievementPanel/Content"]
+custom_minimum_size = Vector2(0, 310)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="AchievementGrid" type="GridContainer" parent="MenuMargin/AchievementPanel/Content/AchievementScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 18
+columns = 3
+
+[node name="StatusLabel" type="Label" parent="MenuMargin/AchievementPanel/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.17, 0.12, 1)
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BackButton" type="Button" parent="MenuMargin/AchievementPanel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(230, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 22
+text = "ZURÜCK"
+
+[node name="IvyDecoration" type="Control" parent="MenuMargin/AchievementPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TopLeftIvy" type="TextureRect" parent="MenuMargin/AchievementPanel/IvyDecoration"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 184.0
+offset_bottom = 72.0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.88)
+texture = ExtResource("4_ivy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TopRightIvy" type="TextureRect" parent="MenuMargin/AchievementPanel/IvyDecoration"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -184.0
+offset_top = 6.0
+offset_right = -8.0
+offset_bottom = 72.0
+grow_horizontal = 0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.88)
+texture = ExtResource("4_ivy")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true

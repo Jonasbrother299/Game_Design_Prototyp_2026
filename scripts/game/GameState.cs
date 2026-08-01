@@ -13,7 +13,13 @@ public class GameState
 	public bool HasLost { get; set; } = false;
 
 	public List<CardData> HandCards { get; private set; } = new();
+	public List<CardData> DrawPile { get; private set; } = new();
 	public List<ActiveGameEvent> ActiveEvents { get; private set; } = new();
+
+	public int CardsPlayedTotal { get; set; }
+	public int PlantsDiedTotal { get; set; }
+	public double PlayTimeSeconds { get; set; }
+	public List<RoundStatisticsEntry> RoundHistory { get; private set; } = new();
 
 	public bool IsGameOver => HasWon || HasLost;
 

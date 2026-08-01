@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="32" viewBox="0 0 224 32">
+  <g fill="none" stroke="#f7e7bd" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <g transform="translate(0 0)">
+      <path d="M10 7 L25 16 L10 25 Z" fill="#f7e7bd" stroke="none"/>
+    </g>
+    <g transform="translate(32 0)">
+      <path d="M6 9 H26 M6 16 H26 M6 23 H26"/>
+      <circle cx="12" cy="9" r="3" fill="#f7e7bd"/>
+      <circle cx="21" cy="16" r="3" fill="#f7e7bd"/>
+      <circle cx="15" cy="23" r="3" fill="#f7e7bd"/>
+    </g>
+    <g transform="translate(64 0)">
+      <path d="M5 7 C10 6 14 8 16 11 V26 C14 23 10 22 5 23 Z"/>
+      <path d="M27 7 C22 6 18 8 16 11 V26 C18 23 22 22 27 23 Z"/>
+      <path d="M16 11 V26"/>
+    </g>
+    <g transform="translate(96 0)">
+      <path d="M5 15 L16 6 L27 15"/>
+      <path d="M8 14 V26 H24 V14"/>
+      <path d="M13 26 V19 H19 V26"/>
+    </g>
+    <g transform="translate(128 0)">
+      <path d="M10 11 H22 C26 11 28 15 27 21 L26 25 C25 28 22 28 20 24 L18 21 H14 L12 24 C10 28 7 28 6 25 L5 21 C4 15 6 11 10 11 Z"/>
+      <path d="M9 17 H15 M12 14 V20"/>
+      <circle cx="21" cy="16" r="1.5" fill="#f7e7bd"/>
+      <circle cx="24" cy="20" r="1.5" fill="#f7e7bd"/>
+    </g>
+    <g transform="translate(160 0)">
+      <path d="M25 11 V5 L20 9"/>
+      <path d="M25 6 C19 2 10 5 7 11 C3 18 8 26 16 27 C21 27 25 24 27 20"/>
+      <path d="M6 21 L6 27 L11 23"/>
+    </g>
+    <g transform="translate(192 0)">
+      <path d="M13 6 H6 V26 H13"/>
+      <path d="M12 16 H27"/>
+      <path d="M22 11 L27 16 L22 21"/>
+    </g>
+  </g>
+</svg>
