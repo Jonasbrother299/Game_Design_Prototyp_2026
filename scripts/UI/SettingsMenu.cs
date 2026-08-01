@@ -2,12 +2,25 @@ using Godot;
 
 public partial class SettingsMenu : Control
 {
+	private enum SettingsSection
+	{
+		Audio,
+		Display,
+		Controls
+	}
+
 	[Signal]
 	public delegate void ClosedEventHandler();
 
 	private const string SettingsPath = "user://settings.cfg";
 	private const string MusicBusName = "Music";
 	private const string EffectsBusName = "Effects";
+	private const string CameraSensitivitySetting =
+		"gameplay/camera_sensitivity_multiplier";
+	private const string ZoomSensitivitySetting =
+		"gameplay/zoom_sensitivity_multiplier";
+	private const string InvertVerticalSetting =
+		"gameplay/invert_vertical_camera";
 
 	private static readonly Vector2I[] WindowSizes =
 	{
@@ -17,14 +30,27 @@ public partial class SettingsMenu : Control
 		new Vector2I(2560, 1440)
 	};
 
+	private Button _audioTabButton;
+	private Button _displayTabButton;
+	private Button _controlsTabButton;
+	private Control _audioPage;
+	private Control _displayPage;
+	private Control _controlsPage;
 	private HSlider _masterVolumeSlider;
 	private Label _masterVolumeValue;
 	private HSlider _musicVolumeSlider;
 	private Label _musicVolumeValue;
 	private HSlider _effectsVolumeSlider;
 	private Label _effectsVolumeValue;
+	private CheckButton _muteToggle;
 	private CheckButton _fullscreenToggle;
+	private CheckButton _vsyncToggle;
 	private OptionButton _resolutionOptions;
+	private HSlider _cameraSensitivitySlider;
+	private Label _cameraSensitivityValue;
+	private HSlider _zoomSensitivitySlider;
+	private Label _zoomSensitivityValue;
+	private CheckButton _invertVerticalToggle;
 	private Button _backButton;
 
 	public override void _Ready()
@@ -32,24 +58,46 @@ public partial class SettingsMenu : Control
 		EnsureAudioBus(MusicBusName);
 		EnsureAudioBus(EffectsBusName);
 
+		_audioTabButton = GetNode<Button>("%AudioTabButton");
+		_displayTabButton = GetNode<Button>("%DisplayTabButton");
+		_controlsTabButton = GetNode<Button>("%ControlsTabButton");
+		_audioPage = GetNode<Control>("%AudioPage");
+		_displayPage = GetNode<Control>("%DisplayPage");
+		_controlsPage = GetNode<Control>("%ControlsPage");
 		_masterVolumeSlider = GetNode<HSlider>("%MasterVolumeSlider");
 		_masterVolumeValue = GetNode<Label>("%MasterVolumeValue");
 		_musicVolumeSlider = GetNode<HSlider>("%MusicVolumeSlider");
 		_musicVolumeValue = GetNode<Label>("%MusicVolumeValue");
 		_effectsVolumeSlider = GetNode<HSlider>("%EffectsVolumeSlider");
 		_effectsVolumeValue = GetNode<Label>("%EffectsVolumeValue");
+		_muteToggle = GetNode<CheckButton>("%MuteToggle");
 		_fullscreenToggle = GetNode<CheckButton>("%FullscreenToggle");
+		_vsyncToggle = GetNode<CheckButton>("%VsyncToggle");
 		_resolutionOptions = GetNode<OptionButton>("%ResolutionOptions");
+		_cameraSensitivitySlider = GetNode<HSlider>("%CameraSensitivitySlider");
+		_cameraSensitivityValue = GetNode<Label>("%CameraSensitivityValue");
+		_zoomSensitivitySlider = GetNode<HSlider>("%ZoomSensitivitySlider");
+		_zoomSensitivityValue = GetNode<Label>("%ZoomSensitivityValue");
+		_invertVerticalToggle = GetNode<CheckButton>("%InvertVerticalToggle");
 		_backButton = GetNode<Button>("%BackButton");
 
 		PopulateResolutionOptions();
 		LoadSettings();
+		SetSection(SettingsSection.Audio);
 
+		_audioTabButton.Pressed += () => SetSection(SettingsSection.Audio);
+		_displayTabButton.Pressed += () => SetSection(SettingsSection.Display);
+		_controlsTabButton.Pressed += () => SetSection(SettingsSection.Controls);
 		_masterVolumeSlider.ValueChanged += OnMasterVolumeChanged;
 		_musicVolumeSlider.ValueChanged += OnMusicVolumeChanged;
 		_effectsVolumeSlider.ValueChanged += OnEffectsVolumeChanged;
+		_muteToggle.Toggled += OnMuteToggled;
 		_fullscreenToggle.Toggled += OnFullscreenToggled;
+		_vsyncToggle.Toggled += OnVsyncToggled;
 		_resolutionOptions.ItemSelected += OnResolutionSelected;
+		_cameraSensitivitySlider.ValueChanged += OnControlSettingChanged;
+		_zoomSensitivitySlider.ValueChanged += OnControlSettingChanged;
+		_invertVerticalToggle.Toggled += OnInvertVerticalToggled;
 		_backButton.Pressed += Close;
 	}
 
@@ -64,8 +112,9 @@ public partial class SettingsMenu : Control
 
 	public void Open()
 	{
+		SetSection(SettingsSection.Audio);
 		Show();
-		_backButton.GrabFocus();
+		_audioTabButton.GrabFocus();
 	}
 
 	public void Close()
@@ -75,18 +124,34 @@ public partial class SettingsMenu : Control
 		EmitSignal(SignalName.Closed);
 	}
 
+	private void SetSection(SettingsSection section)
+	{
+		_audioPage.Visible = section == SettingsSection.Audio;
+		_displayPage.Visible = section == SettingsSection.Display;
+		_controlsPage.Visible = section == SettingsSection.Controls;
+		_audioTabButton.ButtonPressed = section == SettingsSection.Audio;
+		_displayTabButton.ButtonPressed = section == SettingsSection.Display;
+		_controlsTabButton.ButtonPressed = section == SettingsSection.Controls;
+	}
+
 	private void LoadSettings()
 	{
 		float masterVolume = GetBusVolume("Master");
 		float musicVolume = GetBusVolume(MusicBusName);
 		float effectsVolume = GetBusVolume(EffectsBusName);
+		bool muted = IsBusMuted("Master");
 
 		DisplayServer.WindowMode windowMode = DisplayServer.WindowGetMode();
 		bool fullscreen =
 			windowMode == DisplayServer.WindowMode.Fullscreen ||
 			windowMode == DisplayServer.WindowMode.ExclusiveFullscreen;
+		bool vsyncEnabled =
+			DisplayServer.WindowGetVsyncMode() != DisplayServer.VSyncMode.Disabled;
 		Vector2I windowSize = DisplayServer.WindowGetSize();
 		bool hasSavedResolution = false;
+		float cameraSensitivity = 1.0f;
+		float zoomSensitivity = 1.0f;
+		bool invertVertical = false;
 
 		ConfigFile config = new ConfigFile();
 		if (config.Load(SettingsPath) == Error.Ok)
@@ -100,8 +165,12 @@ public partial class SettingsMenu : Control
 			effectsVolume = config
 				.GetValue("audio", "effects_volume", effectsVolume)
 				.AsSingle();
+			muted = config.GetValue("audio", "muted", muted).AsBool();
 			fullscreen = config
 				.GetValue("display", "fullscreen", fullscreen)
+				.AsBool();
+			vsyncEnabled = config
+				.GetValue("display", "vsync", vsyncEnabled)
 				.AsBool();
 			hasSavedResolution =
 				config.HasSectionKey("display", "window_width") &&
@@ -109,12 +178,24 @@ public partial class SettingsMenu : Control
 			windowSize = new Vector2I(
 				config.GetValue("display", "window_width", windowSize.X).AsInt32(),
 				config.GetValue("display", "window_height", windowSize.Y).AsInt32());
+			cameraSensitivity = config
+				.GetValue("controls", "camera_sensitivity", cameraSensitivity)
+				.AsSingle();
+			zoomSensitivity = config
+				.GetValue("controls", "zoom_sensitivity", zoomSensitivity)
+				.AsSingle();
+			invertVertical = config
+				.GetValue("controls", "invert_vertical", invertVertical)
+				.AsBool();
 		}
 
 		ApplyBusVolume("Master", masterVolume);
 		ApplyBusVolume(MusicBusName, musicVolume);
 		ApplyBusVolume(EffectsBusName, effectsVolume);
+		ApplyMasterMute(muted);
 		ApplyFullscreen(fullscreen);
+		ApplyVsync(vsyncEnabled);
+		ApplyControlSettings(cameraSensitivity, zoomSensitivity, invertVertical);
 
 		int resolutionIndex = FindClosestResolutionIndex(windowSize);
 		_resolutionOptions.Select(resolutionIndex);
@@ -126,8 +207,14 @@ public partial class SettingsMenu : Control
 		_masterVolumeSlider.Value = ToPercent(masterVolume);
 		_musicVolumeSlider.Value = ToPercent(musicVolume);
 		_effectsVolumeSlider.Value = ToPercent(effectsVolume);
+		_muteToggle.ButtonPressed = muted;
 		_fullscreenToggle.ButtonPressed = fullscreen;
+		_vsyncToggle.ButtonPressed = vsyncEnabled;
+		_cameraSensitivitySlider.Value = ToSensitivityPercent(cameraSensitivity);
+		_zoomSensitivitySlider.Value = ToSensitivityPercent(zoomSensitivity);
+		_invertVerticalToggle.ButtonPressed = invertVertical;
 		UpdateVolumeLabels();
+		UpdateControlLabels();
 	}
 
 	private void SaveSettings()
@@ -145,14 +232,25 @@ public partial class SettingsMenu : Control
 			"audio",
 			"effects_volume",
 			(float)(_effectsVolumeSlider.Value / 100.0));
-		config.SetValue(
-			"display",
-			"fullscreen",
-			_fullscreenToggle.ButtonPressed);
+		config.SetValue("audio", "muted", _muteToggle.ButtonPressed);
+		config.SetValue("display", "fullscreen", _fullscreenToggle.ButtonPressed);
+		config.SetValue("display", "vsync", _vsyncToggle.ButtonPressed);
 
 		Vector2I selectedResolution = GetSelectedResolution();
 		config.SetValue("display", "window_width", selectedResolution.X);
 		config.SetValue("display", "window_height", selectedResolution.Y);
+		config.SetValue(
+			"controls",
+			"camera_sensitivity",
+			(float)(_cameraSensitivitySlider.Value / 100.0));
+		config.SetValue(
+			"controls",
+			"zoom_sensitivity",
+			(float)(_zoomSensitivitySlider.Value / 100.0));
+		config.SetValue(
+			"controls",
+			"invert_vertical",
+			_invertVerticalToggle.ButtonPressed);
 
 		Error error = config.Save(SettingsPath);
 		if (error != Error.Ok)
@@ -162,6 +260,8 @@ public partial class SettingsMenu : Control
 	private void OnMasterVolumeChanged(double value)
 	{
 		ApplyBusVolume("Master", (float)(value / 100.0));
+		if (_muteToggle.ButtonPressed)
+			ApplyMasterMute(true);
 		UpdateVolumeLabels();
 	}
 
@@ -177,6 +277,19 @@ public partial class SettingsMenu : Control
 		UpdateVolumeLabels();
 	}
 
+	private void OnMuteToggled(bool enabled)
+	{
+		if (enabled)
+		{
+			ApplyMasterMute(true);
+			return;
+		}
+
+		ApplyBusVolume(
+			"Master",
+			(float)(_masterVolumeSlider.Value / 100.0));
+	}
+
 	private void OnFullscreenToggled(bool enabled)
 	{
 		ApplyFullscreen(enabled);
@@ -186,12 +299,36 @@ public partial class SettingsMenu : Control
 			ApplyResolution(GetSelectedResolution());
 	}
 
+	private static void OnVsyncToggled(bool enabled)
+	{
+		ApplyVsync(enabled);
+	}
+
 	private void OnResolutionSelected(long index)
 	{
 		if (_fullscreenToggle.ButtonPressed)
 			return;
 
 		ApplyResolution(WindowSizes[(int)index]);
+	}
+
+	private void OnControlSettingChanged(double value)
+	{
+		ApplyCurrentControlSettings();
+		UpdateControlLabels();
+	}
+
+	private void OnInvertVerticalToggled(bool enabled)
+	{
+		ApplyCurrentControlSettings();
+	}
+
+	private void ApplyCurrentControlSettings()
+	{
+		ApplyControlSettings(
+			(float)(_cameraSensitivitySlider.Value / 100.0),
+			(float)(_zoomSensitivitySlider.Value / 100.0),
+			_invertVerticalToggle.ButtonPressed);
 	}
 
 	private void PopulateResolutionOptions()
@@ -207,6 +344,12 @@ public partial class SettingsMenu : Control
 		_masterVolumeValue.Text = FormatPercent(_masterVolumeSlider.Value);
 		_musicVolumeValue.Text = FormatPercent(_musicVolumeSlider.Value);
 		_effectsVolumeValue.Text = FormatPercent(_effectsVolumeSlider.Value);
+	}
+
+	private void UpdateControlLabels()
+	{
+		_cameraSensitivityValue.Text = FormatPercent(_cameraSensitivitySlider.Value);
+		_zoomSensitivityValue.Text = FormatPercent(_zoomSensitivitySlider.Value);
 	}
 
 	private Vector2I GetSelectedResolution()
@@ -259,10 +402,13 @@ public partial class SettingsMenu : Control
 		if (busIndex < 0)
 			return 1.0f;
 
-		if (AudioServer.IsBusMute(busIndex))
-			return 0.0f;
-
 		return Mathf.DbToLinear(AudioServer.GetBusVolumeDb(busIndex));
+	}
+
+	private static bool IsBusMuted(string busName)
+	{
+		int busIndex = AudioServer.GetBusIndex(busName);
+		return busIndex >= 0 && AudioServer.IsBusMute(busIndex);
 	}
 
 	private static void ApplyBusVolume(string busName, float linearVolume)
@@ -277,6 +423,13 @@ public partial class SettingsMenu : Control
 
 		if (!muted)
 			AudioServer.SetBusVolumeDb(busIndex, Mathf.LinearToDb(volume));
+	}
+
+	private static void ApplyMasterMute(bool enabled)
+	{
+		int busIndex = AudioServer.GetBusIndex("Master");
+		if (busIndex >= 0)
+			AudioServer.SetBusMute(busIndex, enabled);
 	}
 
 	private static void ApplyFullscreen(bool enabled)
@@ -306,9 +459,36 @@ public partial class SettingsMenu : Control
 		DisplayServer.WindowSetSize(size);
 	}
 
+	private static void ApplyVsync(bool enabled)
+	{
+		DisplayServer.WindowSetVsyncMode(
+			enabled
+				? DisplayServer.VSyncMode.Enabled
+				: DisplayServer.VSyncMode.Disabled);
+	}
+
+	private static void ApplyControlSettings(
+		float cameraSensitivity,
+		float zoomSensitivity,
+		bool invertVertical)
+	{
+		ProjectSettings.SetSetting(
+			CameraSensitivitySetting,
+			Mathf.Clamp(cameraSensitivity, 0.5f, 2.0f));
+		ProjectSettings.SetSetting(
+			ZoomSensitivitySetting,
+			Mathf.Clamp(zoomSensitivity, 0.5f, 2.0f));
+		ProjectSettings.SetSetting(InvertVerticalSetting, invertVertical);
+	}
+
 	private static float ToPercent(float linearVolume)
 	{
 		return Mathf.Clamp(linearVolume, 0.0f, 1.0f) * 100.0f;
+	}
+
+	private static float ToSensitivityPercent(float sensitivity)
+	{
+		return Mathf.Clamp(sensitivity, 0.5f, 2.0f) * 100.0f;
 	}
 
 	private static string FormatPercent(double value)

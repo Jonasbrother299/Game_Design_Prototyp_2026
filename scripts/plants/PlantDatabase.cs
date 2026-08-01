@@ -73,9 +73,6 @@ public static class PlantDatabase
 		if (string.IsNullOrWhiteSpace(plant.DisplayName))
 			errors.Add("Anzeigename fehlt");
 
-		if (plant.PlayCost < 0)
-			errors.Add("Spielkosten dürfen nicht negativ sein");
-
 		if (plant.StartingHandCopies < 0)
 			errors.Add("Startkartenanzahl darf nicht negativ sein");
 

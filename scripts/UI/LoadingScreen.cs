@@ -3,6 +3,7 @@ using Godot;
 public partial class LoadingScreen : Control
 {
 	private const string GameScenePath = "res://scenes/Main.tscn";
+	private const string MainMenuScenePath = "res://scenes/UI/MainMenu.tscn";
 	private const float DisplayTime = 1.1f;
 
 	private Label _statusLabel;
@@ -14,6 +15,15 @@ public partial class LoadingScreen : Control
 	{
 		_statusLabel = GetNode<Label>("%StatusLabel");
 		_progressBar = GetNode<ProgressBar>("%ProgressBar");
+
+		if (SceneTransition.Instance != null)
+			SceneTransition.Instance.SceneChangeFailed += OnSceneChangeFailed;
+	}
+
+	public override void _ExitTree()
+	{
+		if (SceneTransition.Instance != null)
+			SceneTransition.Instance.SceneChangeFailed -= OnSceneChangeFailed;
 	}
 
 	public override void _Process(double delta)
@@ -56,19 +66,29 @@ public partial class LoadingScreen : Control
 
 		Error error = GetTree().ChangeSceneToFile(GameScenePath);
 		if (error != Error.Ok)
-		{
-			_isChangingScene = false;
-			ShowLoadError($"Spielwelt konnte nicht geöffnet werden: {error}");
-		}
+			ReturnToMainMenu($"Spielwelt konnte nicht geöffnet werden: {error}");
 	}
 
-	private void ShowLoadError(string message)
+	private void OnSceneChangeFailed(string scenePath, string reason)
 	{
-		SetProcess(false);
+		if (_isChangingScene && scenePath == GameScenePath)
+			ReturnToMainMenu($"Spielwelt konnte nicht geöffnet werden: {reason}");
+	}
+
+	private void ReturnToMainMenu(string message)
+	{
+		MainMenu.SetPendingStartError(message);
+		GD.PushError($"LoadingScreen: {message}");
+
+		Error error = GetTree().ChangeSceneToFile(MainMenuScenePath);
+		if (error == Error.Ok)
+			return;
+
+		_isChangingScene = false;
 		_statusLabel.Text = message;
 		_statusLabel.AddThemeColorOverride(
 			"font_color",
 			new Color(1.0f, 0.58f, 0.48f));
-		GD.PushError($"LoadingScreen: {message}");
+		GD.PushError($"LoadingScreen: Rückkehr zum Hauptmenü fehlgeschlagen: {error}");
 	}
 }

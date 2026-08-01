@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 public partial class GameHub : Control
 {
@@ -39,6 +40,20 @@ public partial class GameHub : Control
 	private RainLensCyaniluxOverlay _rainLensOverlay;
 	private Tween _feedbackTimelineTween;
 	private float _feedbackSequenceEndDelay;
+	private CanvasLayer _saveFeedbackLayer;
+	private PanelContainer _saveFeedbackPanel;
+	private Label _saveFeedbackLabel;
+	private TextureRect _saveFeedbackSpinner;
+	private Tween _saveFeedbackTween;
+	private Tween _saveFeedbackSpinnerTween;
+	private CanvasLayer _achievementFeedbackLayer;
+	private PanelContainer _achievementFeedbackPanel;
+	private PanelContainer _achievementBadgePanel;
+	private Label _achievementBadgeLabel;
+	private Label _achievementFeedbackTitleLabel;
+	private Label _achievementFeedbackNameLabel;
+	private Label _achievementFeedbackDescriptionLabel;
+	private Tween _achievementFeedbackTween;
 
 	public override void _Ready()
 	{
@@ -75,6 +90,13 @@ public partial class GameHub : Control
 		{
 			_feedbackTimelineTween.Kill();
 		}
+
+		if (_saveFeedbackTween != null && _saveFeedbackTween.IsValid())
+			_saveFeedbackTween.Kill();
+		if (_saveFeedbackSpinnerTween != null && _saveFeedbackSpinnerTween.IsValid())
+			_saveFeedbackSpinnerTween.Kill();
+		if (_achievementFeedbackTween != null && _achievementFeedbackTween.IsValid())
+			_achievementFeedbackTween.Kill();
 	}
 
 	private void OnExitButtonPressed()
@@ -150,6 +172,100 @@ public partial class GameHub : Control
 		_turnManager.EventActivated += OnEventActivated;
 		_turnManager.WaterPhaseResolved += OnWaterPhaseResolved;
 		_turnManager.EventPhaseResolved += OnEventPhaseResolved;
+		RefreshFromRestoredState();
+	}
+
+	public void RefreshFromRestoredState()
+	{
+		if (_turnManager?.State == null || _boardManager == null)
+			return;
+
+		if (_feedbackTimelineTween != null &&
+			_feedbackTimelineTween.IsValid())
+		{
+			_feedbackTimelineTween.Kill();
+		}
+
+		_feedbackSequenceEndDelay = 0.0f;
+		_waterDisplay?.ShowCurrentState(
+			_turnManager.State.Water,
+			_turnManager.Config.WinWaterLimit);
+		_roundDisplay?.ShowRound(_turnManager.State.CurrentRound);
+		SetEndTurnLocked(_turnManager.State.IsGameOver);
+		UpdateWaterPreview();
+		RefreshActiveEventDisplay();
+	}
+
+	public void ShowSaveFeedback(string message, bool isWarning)
+	{
+		EnsureSaveFeedbackLabel();
+		if (_saveFeedbackLabel == null)
+			return;
+
+		if (_saveFeedbackTween != null && _saveFeedbackTween.IsValid())
+			_saveFeedbackTween.Kill();
+
+		_saveFeedbackLabel.Text = message;
+		_saveFeedbackLabel.AddThemeColorOverride(
+			"font_color",
+			isWarning
+				? new Color(0.90f, 0.50f, 0.32f)
+				: new Color(0.84f, 0.94f, 0.67f));
+		_saveFeedbackPanel.Modulate = Colors.White;
+		_saveFeedbackPanel.Show();
+
+		_saveFeedbackTween = _saveFeedbackPanel.CreateTween()
+			.SetPauseMode(Tween.TweenPauseMode.Process);
+		_saveFeedbackTween.TweenInterval(1.35f);
+		_saveFeedbackTween.TweenProperty(
+			_saveFeedbackPanel,
+			"modulate:a",
+			0.0f,
+			0.20f);
+		_saveFeedbackTween.TweenCallback(Callable.From(() => _saveFeedbackPanel.Hide()));
+	}
+
+	public void ShowAchievementFeedback(IReadOnlyList<AchievementDefinition> achievements)
+	{
+		if (achievements == null || achievements.Count == 0)
+			return;
+
+		EnsureAchievementFeedback();
+		if (_achievementFeedbackPanel == null)
+			return;
+
+		if (_achievementFeedbackTween != null && _achievementFeedbackTween.IsValid())
+			_achievementFeedbackTween.Kill();
+
+		AchievementDefinition firstAchievement = achievements[0];
+		Color badgeColor = GetAchievementBadgeColor(firstAchievement.BadgeTier);
+		_achievementFeedbackPanel.AddThemeStyleboxOverride(
+			"panel",
+			CreateAchievementFeedbackStyle(badgeColor));
+		_achievementBadgePanel.AddThemeStyleboxOverride(
+			"panel",
+			CreateAchievementBadgeStyle(badgeColor));
+		_achievementBadgeLabel.AddThemeColorOverride("font_color", badgeColor);
+		_achievementFeedbackTitleLabel.Text = achievements.Count == 1
+			? $"{GetAchievementBadgeLabel(firstAchievement.BadgeTier)}-ABZEICHEN FREIGESCHALTET"
+			: "ACHIEVEMENTS FREIGESCHALTET";
+		_achievementFeedbackNameLabel.Text = achievements.Count == 1
+			? firstAchievement.DisplayName
+			: $"{firstAchievement.DisplayName} + {achievements.Count - 1} weitere";
+		_achievementFeedbackDescriptionLabel.Text = firstAchievement.Description;
+		_achievementFeedbackPanel.Modulate = Colors.White;
+		_achievementFeedbackPanel.Show();
+
+		_achievementFeedbackTween = _achievementFeedbackPanel.CreateTween()
+			.SetPauseMode(Tween.TweenPauseMode.Process);
+		_achievementFeedbackTween.TweenInterval(3.0f);
+		_achievementFeedbackTween.TweenProperty(
+			_achievementFeedbackPanel,
+			"modulate:a",
+			0.0f,
+			0.25f);
+		_achievementFeedbackTween.TweenCallback(
+			Callable.From(() => _achievementFeedbackPanel.Hide()));
 	}
 
 	private void OnEventActivated(GameEventType eventType)
@@ -166,6 +282,41 @@ public partial class GameHub : Control
 			float intensity = eventType == GameEventType.HeavyRain ? 0.90f : 0.62f;
 			_rainLensOverlay?.StartRain(intensity);
 		}
+	}
+
+	private void RefreshActiveEventDisplay()
+	{
+		ActiveGameEvent activeEvent = _turnManager.State.ActiveEvents.Count > 0
+			? _turnManager.State.ActiveEvents[0]
+			: null;
+		if (activeEvent?.Definition != null)
+			_eventDisplay?.ShowActivated(activeEvent.Definition);
+
+		bool hasRain = false;
+		bool hasHeavyRain = false;
+		foreach (ActiveGameEvent gameEvent in _turnManager.State.ActiveEvents)
+		{
+			if (gameEvent?.Definition?.Type == GameEventType.HeavyRain)
+			{
+				hasRain = true;
+				hasHeavyRain = true;
+			}
+			else if (gameEvent?.Definition?.Type == GameEventType.Rain)
+			{
+				hasRain = true;
+			}
+		}
+
+		if (!hasRain)
+		{
+			_rainLensOverlay?.StopRain();
+			return;
+		}
+
+		if (_rainLensLayer != null)
+			_rainLensLayer.Visible = true;
+
+		_rainLensOverlay?.StartRain(hasHeavyRain ? 0.90f : 0.62f);
 	}
 
 	private void OnWaterPhaseResolved(WaterPhaseResult result)
@@ -215,16 +366,23 @@ public partial class GameHub : Control
 
 	private void ScheduleRoundStartFeedback(int round)
 	{
+		ScheduleRoundPresentationCompletion(round);
+	}
+
+	private void ScheduleRoundPresentationCompletion(int round)
+	{
 		float delay = Mathf.Max(_feedbackSequenceEndDelay, 0.0f);
 
 		if (delay <= 0.01f)
 		{
 			_roundDisplay?.ShowRound(round);
 			SetEndTurnLocked(false);
+			_feedbackSequenceEndDelay = 0.0f;
 			return;
 		}
 
-		_feedbackTimelineTween = CreateTween();
+		_feedbackTimelineTween = CreateTween()
+			.SetPauseMode(Tween.TweenPauseMode.Process);
 		_feedbackTimelineTween.TweenInterval(delay);
 		_feedbackTimelineTween.TweenCallback(Callable.From(() =>
 		{
@@ -232,6 +390,282 @@ public partial class GameHub : Control
 			SetEndTurnLocked(false);
 			_feedbackSequenceEndDelay = 0.0f;
 		}));
+	}
+
+	private void EnsureSaveFeedbackLabel()
+	{
+		if (_saveFeedbackPanel != null && IsInstanceValid(_saveFeedbackPanel))
+			return;
+
+		_saveFeedbackLayer = new CanvasLayer
+		{
+			Name = "StatisticsSaveFeedbackLayer",
+			Layer = 1001,
+			ProcessMode = ProcessModeEnum.Always
+		};
+		AddChild(_saveFeedbackLayer);
+
+		_saveFeedbackPanel = new PanelContainer
+		{
+			Name = "StatisticsSaveFeedback",
+			MouseFilter = MouseFilterEnum.Ignore,
+			AnchorTop = 1.0f,
+			AnchorBottom = 1.0f,
+			OffsetLeft = 28.0f,
+			OffsetTop = -98.0f,
+			OffsetRight = 368.0f,
+			OffsetBottom = -28.0f
+		};
+		_saveFeedbackPanel.AddThemeStyleboxOverride("panel", CreateSaveFeedbackStyle());
+		_saveFeedbackLayer.AddChild(_saveFeedbackPanel);
+
+		HBoxContainer content = new()
+		{
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		content.AddThemeConstantOverride("separation", 12);
+		_saveFeedbackPanel.AddChild(content);
+
+		_saveFeedbackSpinner = new TextureRect
+		{
+			CustomMinimumSize = new Vector2(44.0f, 44.0f),
+			Texture = GD.Load<Texture2D>("res://assets/ui/decor/ivy_corner.svg"),
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+			MouseFilter = MouseFilterEnum.Ignore,
+			PivotOffset = new Vector2(22.0f, 22.0f)
+		};
+		Panel spinnerRing = new()
+		{
+			MouseFilter = MouseFilterEnum.Ignore,
+			AnchorRight = 1.0f,
+			AnchorBottom = 1.0f,
+			OffsetRight = 0.0f,
+			OffsetBottom = 0.0f
+		};
+		spinnerRing.AddThemeStyleboxOverride("panel", CreateSaveFeedbackSpinnerStyle());
+		_saveFeedbackSpinner.AddChild(spinnerRing);
+		content.AddChild(_saveFeedbackSpinner);
+
+		_saveFeedbackLabel = new Label
+		{
+			MouseFilter = MouseFilterEnum.Ignore,
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
+			VerticalAlignment = VerticalAlignment.Center
+		};
+		_saveFeedbackLabel.AddThemeColorOverride(
+			"font_outline_color",
+			new Color(0.05f, 0.09f, 0.04f, 0.98f));
+		_saveFeedbackLabel.AddThemeConstantOverride("outline_size", 5);
+		_saveFeedbackLabel.AddThemeFontSizeOverride("font_size", 22);
+		content.AddChild(_saveFeedbackLabel);
+
+		_saveFeedbackSpinnerTween = _saveFeedbackSpinner.CreateTween()
+			.SetPauseMode(Tween.TweenPauseMode.Process)
+			.SetLoops();
+		_saveFeedbackSpinnerTween.TweenProperty(
+			_saveFeedbackSpinner,
+			"rotation",
+			Mathf.Tau,
+			1.6f);
+	}
+
+	private void EnsureAchievementFeedback()
+	{
+		if (_achievementFeedbackPanel != null &&
+			IsInstanceValid(_achievementFeedbackPanel))
+		{
+			return;
+		}
+
+		_achievementFeedbackLayer = new CanvasLayer
+		{
+			Name = "AchievementFeedbackLayer",
+			Layer = 1002,
+			ProcessMode = ProcessModeEnum.Always
+		};
+		AddChild(_achievementFeedbackLayer);
+
+		_achievementFeedbackPanel = new PanelContainer
+		{
+			Name = "AchievementFeedback",
+			MouseFilter = MouseFilterEnum.Ignore,
+			AnchorTop = 1.0f,
+			AnchorBottom = 1.0f,
+			OffsetLeft = 28.0f,
+			OffsetTop = -194.0f,
+			OffsetRight = 508.0f,
+			OffsetBottom = -110.0f
+		};
+		_achievementFeedbackLayer.AddChild(_achievementFeedbackPanel);
+
+		HBoxContainer content = new()
+		{
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		content.AddThemeConstantOverride("separation", 14);
+		_achievementFeedbackPanel.AddChild(content);
+
+		_achievementBadgePanel = new PanelContainer
+		{
+			CustomMinimumSize = new Vector2(58.0f, 58.0f),
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		content.AddChild(_achievementBadgePanel);
+
+		_achievementBadgeLabel = new Label
+		{
+			Text = "✦",
+			HorizontalAlignment = HorizontalAlignment.Center,
+			VerticalAlignment = VerticalAlignment.Center,
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		_achievementBadgeLabel.AddThemeFontSizeOverride("font_size", 34);
+		_achievementBadgeLabel.AddThemeColorOverride(
+			"font_outline_color",
+			new Color(0.10f, 0.07f, 0.03f, 0.96f));
+		_achievementBadgeLabel.AddThemeConstantOverride("outline_size", 4);
+		_achievementBadgePanel.AddChild(_achievementBadgeLabel);
+
+		VBoxContainer textContent = new()
+		{
+			MouseFilter = MouseFilterEnum.Ignore,
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
+		};
+		textContent.AddThemeConstantOverride("separation", 1);
+		content.AddChild(textContent);
+
+		_achievementFeedbackTitleLabel = CreateAchievementTextLabel(16, new Color(0.83f, 0.91f, 0.62f));
+		textContent.AddChild(_achievementFeedbackTitleLabel);
+		_achievementFeedbackNameLabel = CreateAchievementTextLabel(24, new Color(1.0f, 0.94f, 0.78f));
+		textContent.AddChild(_achievementFeedbackNameLabel);
+		_achievementFeedbackDescriptionLabel = CreateAchievementTextLabel(17, new Color(0.90f, 0.86f, 0.69f));
+		textContent.AddChild(_achievementFeedbackDescriptionLabel);
+	}
+
+	private static Label CreateAchievementTextLabel(int fontSize, Color fontColor)
+	{
+		Label label = new()
+		{
+			MouseFilter = MouseFilterEnum.Ignore,
+			AutowrapMode = TextServer.AutowrapMode.WordSmart
+		};
+		label.AddThemeFontSizeOverride("font_size", fontSize);
+		label.AddThemeColorOverride("font_color", fontColor);
+		label.AddThemeColorOverride(
+			"font_outline_color",
+			new Color(0.04f, 0.06f, 0.025f, 0.94f));
+		label.AddThemeConstantOverride("outline_size", 3);
+		return label;
+	}
+
+	private static StyleBoxFlat CreateSaveFeedbackStyle()
+	{
+		return new StyleBoxFlat
+		{
+			ContentMarginLeft = 14.0f,
+			ContentMarginTop = 10.0f,
+			ContentMarginRight = 18.0f,
+			ContentMarginBottom = 10.0f,
+			BgColor = new Color(0.11f, 0.20f, 0.08f, 0.98f),
+			BorderWidthLeft = 2,
+			BorderWidthTop = 2,
+			BorderWidthRight = 2,
+			BorderWidthBottom = 2,
+			BorderColor = new Color(0.72f, 0.82f, 0.42f, 1.0f),
+			CornerRadiusTopLeft = 16,
+			CornerRadiusTopRight = 16,
+			CornerRadiusBottomRight = 16,
+			CornerRadiusBottomLeft = 16,
+			ShadowColor = new Color(0.01f, 0.03f, 0.01f, 0.78f),
+			ShadowSize = 8,
+			ShadowOffset = new Vector2(2.0f, 3.0f)
+		};
+	}
+
+	private static StyleBoxFlat CreateSaveFeedbackSpinnerStyle()
+	{
+		return new StyleBoxFlat
+		{
+			BgColor = new Color(0.06f, 0.13f, 0.045f, 0.0f),
+			BorderWidthLeft = 2,
+			BorderWidthTop = 2,
+			BorderWidthRight = 2,
+			BorderWidthBottom = 2,
+			BorderColor = new Color(0.77f, 0.87f, 0.48f, 0.92f),
+			CornerRadiusTopLeft = 22,
+			CornerRadiusTopRight = 22,
+			CornerRadiusBottomRight = 22,
+			CornerRadiusBottomLeft = 22
+		};
+	}
+
+	private static StyleBoxFlat CreateAchievementFeedbackStyle(Color badgeColor)
+	{
+		return new StyleBoxFlat
+		{
+			ContentMarginLeft = 13.0f,
+			ContentMarginTop = 11.0f,
+			ContentMarginRight = 18.0f,
+			ContentMarginBottom = 11.0f,
+			BgColor = new Color(0.075f, 0.13f, 0.055f, 0.99f),
+			BorderWidthLeft = 3,
+			BorderWidthTop = 3,
+			BorderWidthRight = 3,
+			BorderWidthBottom = 3,
+			BorderColor = badgeColor,
+			CornerRadiusTopLeft = 15,
+			CornerRadiusTopRight = 15,
+			CornerRadiusBottomRight = 15,
+			CornerRadiusBottomLeft = 15,
+			ShadowColor = new Color(0.01f, 0.02f, 0.01f, 0.84f),
+			ShadowSize = 9,
+			ShadowOffset = new Vector2(2.0f, 4.0f)
+		};
+	}
+
+	private static StyleBoxFlat CreateAchievementBadgeStyle(Color badgeColor)
+	{
+		return new StyleBoxFlat
+		{
+			BgColor = new Color(0.16f, 0.22f, 0.09f, 1.0f),
+			BorderWidthLeft = 3,
+			BorderWidthTop = 3,
+			BorderWidthRight = 3,
+			BorderWidthBottom = 3,
+			BorderColor = badgeColor,
+			CornerRadiusTopLeft = 29,
+			CornerRadiusTopRight = 29,
+			CornerRadiusBottomRight = 29,
+			CornerRadiusBottomLeft = 29
+		};
+	}
+
+	private static Color GetAchievementBadgeColor(AchievementBadgeTier badgeTier)
+	{
+		return badgeTier switch
+		{
+			AchievementBadgeTier.Bronze => new Color(0.78f, 0.50f, 0.26f),
+			AchievementBadgeTier.Silver => new Color(0.76f, 0.82f, 0.82f),
+			AchievementBadgeTier.Gold => new Color(0.98f, 0.76f, 0.28f),
+			AchievementBadgeTier.Verdant => new Color(0.48f, 0.81f, 0.39f),
+			AchievementBadgeTier.Copper => new Color(0.86f, 0.39f, 0.24f),
+			_ => new Color(0.84f, 0.91f, 0.62f)
+		};
+	}
+
+	private static string GetAchievementBadgeLabel(AchievementBadgeTier badgeTier)
+	{
+		return badgeTier switch
+		{
+			AchievementBadgeTier.Bronze => "BRONZE",
+			AchievementBadgeTier.Silver => "SILBER",
+			AchievementBadgeTier.Gold => "GOLD",
+			AchievementBadgeTier.Verdant => "WALD",
+			AchievementBadgeTier.Copper => "KUPFER",
+			_ => "WALD"
+		};
 	}
 
 	private void SetEndTurnLocked(bool isLocked)

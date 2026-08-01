@@ -1,86 +1,153 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/EncyclopediaMenu.cs" id="1_encyclopedia"]
+[ext_resource type="Theme" path="res://assets/ui/themes/forest_card_theme.tres" id="2_theme"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/OhnoBlazefaceDemo-48Point.otf" id="3_title_font"]
+[ext_resource type="Script" path="res://scripts/UI/MenuCardMotion.cs" id="4_motion"]
+[ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="5_ivy"]
 
 [sub_resource type="StyleBoxFlat" id="StylePanel"]
-content_margin_left = 38.0
-content_margin_top = 32.0
-content_margin_right = 38.0
-content_margin_bottom = 32.0
-bg_color = Color(0.025, 0.085, 0.045, 0.985)
+content_margin_left = 30.0
+content_margin_top = 24.0
+content_margin_right = 30.0
+content_margin_bottom = 24.0
+bg_color = Color(0.89, 0.77, 0.59, 0.985)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.29, 0.125, 0.07, 1)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+shadow_color = Color(0.008, 0.018, 0.009, 0.76)
+shadow_size = 18
+shadow_offset = Vector2(4, 9)
+
+[sub_resource type="StyleBoxFlat" id="StyleDetailPanel"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 18.0
+bg_color = Color(0.96, 0.87, 0.7, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.35, 0.43, 0.22, 0.95)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.22, 0.105, 0.055, 0.24)
+shadow_size = 7
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleHeaderBadge"]
+content_margin_left = 16.0
+content_margin_top = 5.0
+content_margin_right = 16.0
+content_margin_bottom = 5.0
+bg_color = Color(0.57, 0.2, 0.23, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.55, 0.7, 0.35, 0.78)
+border_color = Color(0.33, 0.13, 0.075, 1)
+corner_radius_top_left = 17
+corner_radius_top_right = 17
+corner_radius_bottom_right = 17
+corner_radius_bottom_left = 17
+
+[sub_resource type="StyleBoxFlat" id="StyleArtFrame"]
+bg_color = Color(0.24, 0.11, 0.065, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.51, 0.31, 0.19, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
-[sub_resource type="StyleBoxFlat" id="StyleDetailPanel"]
-content_margin_left = 28.0
-content_margin_top = 24.0
-content_margin_right = 28.0
-content_margin_bottom = 24.0
-bg_color = Color(0.035, 0.105, 0.057, 0.72)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.45, 0.58, 0.3, 0.55)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[sub_resource type="StyleBoxFlat" id="StyleCardNormal"]
+bg_color = Color(0.76, 0.61, 0.44, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.28, 0.35, 0.18, 1)
+corner_radius_top_left = 19
+corner_radius_top_right = 19
+corner_radius_bottom_right = 19
+corner_radius_bottom_left = 19
+shadow_color = Color(0.18, 0.075, 0.035, 0.42)
+shadow_size = 7
+shadow_offset = Vector2(0, 4)
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
-content_margin_left = 24.0
-content_margin_top = 11.0
-content_margin_right = 24.0
-content_margin_bottom = 11.0
-bg_color = Color(0.07, 0.16, 0.075, 1)
-border_width_left = 2
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.58, 0.72, 0.38, 0.7)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="StyleBoxFlat" id="StyleCardHover"]
+bg_color = Color(0.93, 0.82, 0.64, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.52, 0.62, 0.29, 1)
+corner_radius_top_left = 19
+corner_radius_top_right = 19
+corner_radius_bottom_right = 19
+corner_radius_bottom_left = 19
+shadow_color = Color(0.18, 0.075, 0.035, 0.55)
+shadow_size = 11
+shadow_offset = Vector2(0, 6)
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
-content_margin_left = 24.0
-content_margin_top = 11.0
-content_margin_right = 24.0
-content_margin_bottom = 11.0
-bg_color = Color(0.15, 0.28, 0.12, 1)
+[sub_resource type="StyleBoxFlat" id="StyleCardPressed"]
+bg_color = Color(0.88, 0.75, 0.51, 1)
+border_width_left = 9
+border_width_top = 9
+border_width_right = 9
+border_width_bottom = 9
+border_color = Color(0.32, 0.5, 0.18, 1)
+corner_radius_top_left = 19
+corner_radius_top_right = 19
+corner_radius_bottom_right = 19
+corner_radius_bottom_left = 19
+shadow_color = Color(0.22, 0.36, 0.12, 0.58)
+shadow_size = 13
+shadow_offset = Vector2(0, 5)
+expand_margin_left = 4.0
+expand_margin_top = 4.0
+expand_margin_right = 4.0
+expand_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleCardFocus"]
+bg_color = Color(0, 0, 0, 0)
 border_width_left = 3
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.8, 0.88, 0.5, 0.95)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.98, 0.84, 0.58, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
 
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-content_margin_left = 24.0
-content_margin_top = 11.0
-content_margin_right = 24.0
-content_margin_bottom = 11.0
-bg_color = Color(0.04, 0.105, 0.05, 1)
-border_width_left = 3
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.8, 0.88, 0.5, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="StyleBoxFlat" id="StyleCardLocked"]
+bg_color = Color(0.29, 0.22, 0.17, 0.96)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.39, 0.3, 0.23, 1)
+corner_radius_top_left = 19
+corner_radius_top_right = 19
+corner_radius_bottom_right = 19
+corner_radius_bottom_left = 19
 
 [node name="EncyclopediaMenu" type="Control"]
 process_mode = 3
@@ -91,6 +158,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 z_index = 35
+theme = ExtResource("2_theme")
 script = ExtResource("1_encyclopedia")
 
 [node name="Dimmer" type="ColorRect" parent="."]
@@ -100,68 +168,104 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.005, 0.012, 0.007, 0.82)
+color = Color(0.008, 0.02, 0.01, 0.8)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1080, 720)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StylePanel")
 
 [node name="Content" type="VBoxContainer" parent="CenterContainer/Panel"]
+z_index = 1
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 11
+
+[node name="HeaderBadge" type="PanelContainer" parent="CenterContainer/Panel/Content"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleHeaderBadge")
+
+[node name="HeaderBadgeLabel" type="Label" parent="CenterContainer/Panel/Content/HeaderBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.87, 0.68, 1)
+theme_override_font_sizes/font_size = 18
+text = "KARTEN & WETTER"
+horizontal_alignment = 1
 
 [node name="Title" type="Label" parent="CenterContainer/Panel/Content"]
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.92, 0.72, 1)
-theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_fonts/font = ExtResource("3_title_font")
+theme_override_font_sizes/font_size = 54
 text = "Ökosystem-Lexikon"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Subtitle" type="Label" parent="CenterContainer/Panel/Content"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.77, 0.62, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.4, 0.27, 0.17, 1)
+theme_override_font_sizes/font_size = 21
 text = "Pflanzenwerte und Wetterwirkungen aus den aktuellen Spieldaten"
 horizontal_alignment = 1
 
 [node name="Tabs" type="HBoxContainer" parent="CenterContainer/Panel/Content"]
 layout_mode = 2
 theme_override_constants/separation = 12
-alignment = 1
+
+[node name="AllButton" type="Button" parent="CenterContainer/Panel/Content/Tabs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 48)
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+theme_override_font_sizes/font_size = 22
+text = "ALLE"
 
 [node name="PlantsButton" type="Button" parent="CenterContainer/Panel/Content/Tabs"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
 toggle_mode = true
 button_pressed = true
-custom_minimum_size = Vector2(210, 52)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleButtonNormal")
-theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-text = "Pflanzen"
+text = "PFLANZEN"
 
 [node name="EventsButton" type="Button" parent="CenterContainer/Panel/Content/Tabs"]
 unique_name_in_owner = true
-toggle_mode = true
-custom_minimum_size = Vector2(210, 52)
+custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
+toggle_mode = true
 theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleButtonNormal")
-theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-text = "Wetter"
+text = "EREIGNISSE"
+
+[node name="FilterSpacer" type="Control" parent="CenterContainer/Panel/Content/Tabs"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="EntryCountLabel" type="Label" parent="CenterContainer/Panel/Content/Tabs"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.43, 0.42, 0.18, 1)
+theme_override_font_sizes/font_size = 20
+text = "0 bekannt"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/Panel/Content"]
 layout_mode = 2
@@ -169,58 +273,323 @@ layout_mode = 2
 [node name="Body" type="HBoxContainer" parent="CenterContainer/Panel/Content"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 18
+theme_override_constants/separation = 22
 
-[node name="EntryList" type="ItemList" parent="CenterContainer/Panel/Content/Body"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 460)
+[node name="CardCollection" type="PanelContainer" parent="CenterContainer/Panel/Content/Body"]
+custom_minimum_size = Vector2(1400, 460)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.92, 0.82, 1)
-theme_override_colors/font_selected_color = Color(1, 0.98, 0.78, 1)
-theme_override_font_sizes/font_size = 21
-icon_mode = 1
-fixed_icon_size = Vector2i(52, 52)
+size_flags_horizontal = 1
+theme_override_styles/panel = SubResource("StyleDetailPanel")
+
+[node name="CollectionContent" type="VBoxContainer" parent="CenterContainer/Panel/Content/Body/CardCollection"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CollectionHeading" type="Label" parent="CenterContainer/Panel/Content/Body/CardCollection/CollectionContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.33, 0.43, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "KARTENSAMMLUNG"
+
+[node name="CardScroll" type="ScrollContainer" parent="CenterContainer/Panel/Content/Body/CardCollection/CollectionContent"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+scroll_deadzone = 8
+
+[node name="GridPadding" type="MarginContainer" parent="CenterContainer/Panel/Content/Body/CardCollection/CollectionContent/CardScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 52
+theme_override_constants/margin_bottom = 48
+
+[node name="CardGrid" type="GridContainer" parent="CenterContainer/Panel/Content/Body/CardCollection/CollectionContent/CardScroll/GridPadding"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 64
+theme_override_constants/v_separation = 64
+columns = 3
 
 [node name="DetailPanel" type="PanelContainer" parent="CenterContainer/Panel/Content/Body"]
 clip_contents = true
+custom_minimum_size = Vector2(620, 460)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
 theme_override_styles/panel = SubResource("StyleDetailPanel")
 
-[node name="DetailRow" type="HBoxContainer" parent="CenterContainer/Panel/Content/Body/DetailPanel"]
+[node name="DetailRow" type="VBoxContainer" parent="CenterContainer/Panel/Content/Body/DetailPanel"]
 clip_contents = true
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 14
 
-[node name="PreviewImage" type="TextureRect" parent="CenterContainer/Panel/Content/Body/DetailPanel/DetailRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 320)
+[node name="DetailHeading" type="Label" parent="CenterContainer/Panel/Content/Body/DetailPanel/DetailRow"]
 layout_mode = 2
-mouse_filter = 2
-texture_filter = 1
-expand_mode = 1
-stretch_mode = 5
+theme_override_colors/font_color = Color(0.33, 0.43, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "KARTENDETAILS"
 
 [node name="DetailsText" type="RichTextLabel" parent="CenterContainer/Panel/Content/Body/DetailPanel/DetailRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/default_color = Color(0.93, 0.93, 0.85, 1)
-theme_override_font_sizes/normal_font_size = 21
-theme_override_font_sizes/bold_font_size = 21
+theme_override_colors/default_color = Color(0.25, 0.13, 0.075, 1)
+theme_override_constants/line_separation = 4
+theme_override_font_sizes/normal_font_size = 25
+theme_override_font_sizes/bold_font_size = 25
 bbcode_enabled = true
 fit_content = false
 scroll_active = true
 
 [node name="BackButton" type="Button" parent="CenterContainer/Panel/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 56)
+custom_minimum_size = Vector2(250, 52)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
-theme_override_font_sizes/font_size = 23
-theme_override_styles/normal = SubResource("StyleButtonNormal")
-theme_override_styles/hover = SubResource("StyleButtonHover")
-theme_override_styles/pressed = SubResource("StyleButtonPressed")
-text = "Zurück"
+theme_override_font_sizes/font_size = 24
+text = "ZURÜCK"
+
+[node name="IvyDecoration" type="Control" parent="CenterContainer/Panel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TopLeftIvy" type="TextureRect" parent="CenterContainer/Panel/IvyDecoration"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 288.0
+offset_bottom = 109.0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.92)
+texture = ExtResource("5_ivy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TopRightIvy" type="TextureRect" parent="CenterContainer/Panel/IvyDecoration"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -288.0
+offset_top = 4.0
+offset_right = -8.0
+offset_bottom = 109.0
+grow_horizontal = 0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.92)
+texture = ExtResource("5_ivy")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
+
+[node name="BottomLeftIvy" type="TextureRect" parent="CenterContainer/Panel/IvyDecoration"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -109.0
+offset_right = 288.0
+offset_bottom = -4.0
+grow_vertical = 0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.78)
+texture = ExtResource("5_ivy")
+expand_mode = 1
+stretch_mode = 5
+flip_v = true
+
+[node name="BottomRightIvy" type="TextureRect" parent="CenterContainer/Panel/IvyDecoration"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -288.0
+offset_top = -109.0
+offset_right = -8.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.78)
+texture = ExtResource("5_ivy")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
+flip_v = true
+
+[node name="MenuCardMotion" type="Node" parent="."]
+script = ExtResource("4_motion")
+TargetPath = NodePath("../CenterContainer/Panel/Content")
+
+[node name="EntryCardTemplate" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(370, 720)
+size_flags_horizontal = 4
+toggle_mode = true
+theme_override_styles/normal = SubResource("StyleCardNormal")
+theme_override_styles/hover = SubResource("StyleCardHover")
+theme_override_styles/pressed = SubResource("StyleCardPressed")
+theme_override_styles/hover_pressed = SubResource("StyleCardPressed")
+theme_override_styles/focus = SubResource("StyleCardFocus")
+
+[node name="CardContent" type="VBoxContainer" parent="EntryCardTemplate"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="Category" type="Label" parent="EntryCardTemplate/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.43, 0.42, 0.18, 1)
+theme_override_font_sizes/font_size = 20
+text = "KATEGORIE"
+horizontal_alignment = 1
+
+[node name="ArtFrame" type="PanelContainer" parent="EntryCardTemplate/CardContent"]
+custom_minimum_size = Vector2(0, 544)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleArtFrame")
+
+[node name="CardImage" type="TextureRect" parent="EntryCardTemplate/CardContent/ArtFrame"]
+layout_mode = 2
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ImageFallback" type="Label" parent="EntryCardTemplate/CardContent/ArtFrame"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.51, 1)
+theme_override_font_sizes/font_size = 50
+text = "!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="EntryCardTemplate/CardContent"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.27, 0.115, 0.06, 1)
+theme_override_font_sizes/font_size = 30
+text = "Kartentitel"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="SelectionDecor" type="Control" parent="EntryCardTemplate"]
+visible = false
+z_index = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopLeftIvy" type="TextureRect" parent="EntryCardTemplate/SelectionDecor"]
+layout_mode = 0
+offset_left = -8.0
+offset_top = -16.0
+offset_right = 112.0
+offset_bottom = 29.0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.78)
+texture = ExtResource("5_ivy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BottomRightIvy" type="TextureRect" parent="EntryCardTemplate/SelectionDecor"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -112.0
+offset_top = -29.0
+offset_right = 8.0
+offset_bottom = 16.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+self_modulate = Color(1, 1, 1, 0.78)
+texture = ExtResource("5_ivy")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
+flip_v = true
+
+[node name="LockedCardTemplate" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(370, 720)
+size_flags_horizontal = 4
+disabled = true
+theme_override_styles/disabled = SubResource("StyleCardLocked")
+
+[node name="CardContent" type="VBoxContainer" parent="LockedCardTemplate"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Category" type="Label" parent="LockedCardTemplate/CardContent"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.67, 0.57, 0.43, 1)
+theme_override_font_sizes/font_size = 20
+text = "UNBEKANNT"
+
+[node name="ArtFrame" type="PanelContainer" parent="LockedCardTemplate/CardContent"]
+custom_minimum_size = Vector2(0, 544)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleArtFrame")
+
+[node name="QuestionMark" type="Label" parent="LockedCardTemplate/CardContent/ArtFrame"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.75, 0.62, 0.45, 1)
+theme_override_font_sizes/font_size = 128
+text = "?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="LockedCardTemplate/CardContent"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.62, 0.49, 1)
+theme_override_font_sizes/font_size = 30
+text = "Noch nicht entdeckt"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2

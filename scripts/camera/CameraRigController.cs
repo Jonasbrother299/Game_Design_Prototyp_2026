@@ -3,6 +3,13 @@ using Godot;
 
 public partial class CameraRigController : Node3D
 {
+	private const string CameraSensitivitySetting =
+		"gameplay/camera_sensitivity_multiplier";
+	private const string ZoomSensitivitySetting =
+		"gameplay/zoom_sensitivity_multiplier";
+	private const string InvertVerticalSetting =
+		"gameplay/invert_vertical_camera";
+
 	[Export] public Camera3D Camera;
 
 	[ExportGroup("Input")]
@@ -341,16 +348,24 @@ public partial class CameraRigController : Node3D
 			return;
 
 		Vector2 delta = mouseMotion.Relative;
+		float sensitivityMultiplier = GetSettingMultiplier(
+			CameraSensitivitySetting);
 
 		if (_isYawDragging)
 		{
-			_targetYaw -= Mathf.DegToRad(delta.X * YawSensitivity);
+			_targetYaw -= Mathf.DegToRad(
+				delta.X * YawSensitivity * sensitivityMultiplier);
 			_targetYaw = ClampYaw(_targetYaw);
 		}
 
 		if (_isPitchDragging)
 		{
-			_targetPitch -= Mathf.DegToRad(delta.Y * PitchSensitivity);
+			float verticalDirection = GetInvertVerticalSetting() ? -1.0f : 1.0f;
+			_targetPitch -= Mathf.DegToRad(
+				delta.Y *
+				PitchSensitivity *
+				sensitivityMultiplier *
+				verticalDirection);
 
 			float minPitch = Mathf.DegToRad(GetMinimumPitchDegrees());
 			float maxPitch = Mathf.DegToRad(GetMaximumPitchDegrees());
@@ -369,10 +384,12 @@ public partial class CameraRigController : Node3D
 		if (inputEvent is not InputEventMouseButton mouseButton || !mouseButton.Pressed)
 			return;
 
+		float zoomStep = ZoomStep * GetSettingMultiplier(ZoomSensitivitySetting);
+
 		if (mouseButton.ButtonIndex == MouseButton.WheelUp)
-			_targetDistance -= ZoomStep;
+			_targetDistance -= zoomStep;
 		else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
-			_targetDistance += ZoomStep;
+			_targetDistance += zoomStep;
 		else
 			return;
 
@@ -809,5 +826,20 @@ public partial class CameraRigController : Node3D
 
 		foreach (Node child in node.GetChildren())
 			AddCollisionExclusions(child);
+	}
+
+	private static float GetSettingMultiplier(string settingName)
+	{
+		return Mathf.Clamp(
+			ProjectSettings.GetSetting(settingName, 1.0f).AsSingle(),
+			0.5f,
+			2.0f);
+	}
+
+	private static bool GetInvertVerticalSetting()
+	{
+		return ProjectSettings
+			.GetSetting(InvertVerticalSetting, false)
+			.AsBool();
 	}
 }

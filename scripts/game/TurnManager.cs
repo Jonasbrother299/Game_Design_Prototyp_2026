@@ -12,9 +12,10 @@ public partial class TurnManager : Node
 	public event Action<GrowthPhaseResult> GrowthPhaseResolved;
 	public event Action<EventPhaseResult> EventPhaseResolved;
 	public event Action<GameEventType> EventActivated;
+	public event Action<RoundStatisticsEntry> RoundFullyResolved;
 	public event Action<GameState> GameEnded;
 
-	[Export] public GameConfig Config = GameConfig.LoadDefault();
+	[Export] public GameConfig Config;
 	public GameState State { get; private set; }
 	public bool CanDiscardHand =>
 		State != null &&
@@ -29,6 +30,11 @@ public partial class TurnManager : Node
 	private readonly EventPhase _eventPhase = new();
 
 	private BoardManager _boardManager;
+
+	public override void _Ready()
+	{
+		Config ??= GameConfig.LoadDefault();
+	}
 
 	public void Setup(BoardManager boardManager)
 	{
@@ -52,11 +58,15 @@ public partial class TurnManager : Node
 		}
 
 		State = new GameState(Config);
-		State.HandCards.Clear();
-
 		DrawConfiguredStartingCards();
-
 		StartTurn();
+	}
+
+	public void ResetProgressStateForNewGame()
+	{
+		Config.EventsUnlocked = false;
+		Config.ForceRainAsFirstEvent = true;
+		Config.HasTriggeredFirstTutorialEvent = false;
 	}
 
 	public void StartTurn()
@@ -104,9 +114,14 @@ public partial class TurnManager : Node
 
 		_boardManager.RecalculateLightLevels();
 		State.CheckWinLose(Config);
+		State.PlantsDiedTotal += eventResult.PlantDeaths.Count;
+		RoundStatisticsEntry statisticsEntry = RecordRoundStatistics(
+			resolvedRound,
+			eventResult.PlantDeaths.Count);
 
 		if (State.IsGameOver)
 		{
+			RoundFullyResolved?.Invoke(statisticsEntry);
 			GameEnded?.Invoke(State);
 			PrintGameOver();
 			return;
@@ -114,6 +129,7 @@ public partial class TurnManager : Node
 
 		DrawCardsUntilTargetHandSize();
 		State.CurrentRound++;
+		RoundFullyResolved?.Invoke(statisticsEntry);
 		StartTurn();
 	}
 
@@ -186,6 +202,7 @@ public partial class TurnManager : Node
 			wasCreatedBySpread: false);
 
 		State.CardsPlayedThisTurn++;
+		State.CardsPlayedTotal++;
 		tile.PlacePlant(plantInstance);
 
 		_boardManager.GetTileView(tile.Coord)?.UpdateVisualState();
@@ -205,18 +222,6 @@ public partial class TurnManager : Node
 		return true;
 	}
 
-	public void AddRandomEvent()
-	{
-		if (State == null || State.IsGameOver || State.ActiveEvents.Count > 0)
-			return;
-
-		GameEventType? eventType = _eventPhase.SelectRandomEvent(CreatePhaseContext());
-		if (eventType.HasValue)
-		{
-			AddEvent(eventType.Value);
-		}
-	}
-
 	public bool AddEvent(GameEventType eventType)
 	{
 		if (State == null || State.IsGameOver || State.ActiveEvents.Count > 0)
@@ -232,6 +237,47 @@ public partial class TurnManager : Node
 		State.ActiveEvents.Add(new ActiveGameEvent(eventDefinition));
 		EventActivated?.Invoke(eventType);
 		return true;
+	}
+
+	public CompletedGameStatisticsEntry CaptureCompletedGameStatistics()
+	{
+		if (State == null || _boardManager == null || !State.IsGameOver)
+		{
+			throw new InvalidOperationException(
+				"Eine Partiestatistik kann nur nach einem Spielende erfasst werden.");
+		}
+
+		HexCoord mainTreeCoord = FindMainTreeCoord();
+		return new CompletedGameStatisticsEntry
+		{
+			CompletedAt = DateTimeOffset.UtcNow,
+			HasWon = State.HasWon,
+			FinalRound = State.CurrentRound,
+			FinalWater = State.Water,
+			MainTreeProgress = GetMainTreeProgress(mainTreeCoord),
+			LivingPlantCount = CountLivingPlants(),
+			PlantsDiedTotal = State.PlantsDiedTotal,
+			CardsPlayedTotal = State.CardsPlayedTotal,
+			PlayTimeSeconds = State.PlayTimeSeconds
+		};
+	}
+
+	public bool TryGetMainTreeCoord(out HexCoord coord)
+	{
+		if (_boardManager != null)
+		{
+			foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
+			{
+				if (tile.Plant?.Definition.Type == PlantType.Oak)
+				{
+					coord = tile.Coord;
+					return true;
+				}
+			}
+		}
+
+		coord = default;
+		return false;
 	}
 
 	private TurnPhaseContext CreatePhaseContext()
@@ -260,7 +306,7 @@ public partial class TurnManager : Node
 
 		foreach (PlantDefinition plant in PlantDatabase.GetAll())
 		{
-			int copies = System.Math.Max(plant.StartingHandCopies, 0);
+			int copies = Math.Max(plant.StartingHandCopies, 0);
 
 			for (int index = 0;
 				index < copies && State.HandCards.Count < targetHandSize;
@@ -288,8 +334,27 @@ public partial class TurnManager : Node
 		if (State.HandCards.Count >= Config.MaxHandSize)
 			return;
 
-		PlantType plantType = GetRandomPlantType();
-		DrawCard(CardData.CreatePlantCard(plantType));
+		EnsureDrawPile();
+		if (State.DrawPile.Count == 0)
+			return;
+
+		CardData card = State.DrawPile[0];
+		State.DrawPile.RemoveAt(0);
+		DrawCard(card);
+	}
+
+	private void EnsureDrawPile()
+	{
+		if (State.DrawPile.Count > 0)
+			return;
+
+		int drawBatchSize = 1;
+		for (int index = 0; index < drawBatchSize; index++)
+		{
+			CardData card = CardData.CreatePlantCard(GetRandomPlantType());
+			if (card != null)
+				State.DrawPile.Add(card);
+		}
 	}
 
 	private void DrawCard(CardData card)
@@ -310,7 +375,7 @@ public partial class TurnManager : Node
 			if (plant.Type is PlantType.None or PlantType.Oak)
 				continue;
 
-			totalWeight += System.Math.Max(plant.DrawWeight, 0);
+			totalWeight += Math.Max(plant.DrawWeight, 0);
 		}
 
 		if (totalWeight <= 0)
@@ -323,13 +388,74 @@ public partial class TurnManager : Node
 			if (plant.Type is PlantType.None or PlantType.Oak)
 				continue;
 
-			selection -= System.Math.Max(plant.DrawWeight, 0);
+			selection -= Math.Max(plant.DrawWeight, 0);
 
 			if (selection <= 0)
 				return plant.Type;
 		}
 
 		return PlantType.Moss;
+	}
+
+	private HexCoord FindMainTreeCoord()
+	{
+		foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
+		{
+			if (tile.Plant?.Definition.Type == PlantType.Oak)
+				return tile.Coord;
+		}
+
+		throw new InvalidOperationException(
+			"Der Spielzustand enthält keine Haupteiche.");
+	}
+
+	private int CountLivingPlants()
+	{
+		int count = 0;
+		foreach (HexTileData tile in _boardManager.BoardData.Tiles.Values)
+		{
+			if (tile.Plant != null)
+				count++;
+		}
+
+		return count;
+	}
+
+	private int GetMainTreeProgress(HexCoord mainTreeCoord)
+	{
+		PlantInstance mainTree = _boardManager.GetTileData(mainTreeCoord)?.Plant;
+		if (mainTree == null)
+			return 0;
+
+		return Mathf.RoundToInt(mainTree.GrowthProgress * 100.0f);
+	}
+
+	private RoundStatisticsEntry RecordRoundStatistics(
+		int roundNumber,
+		int plantsDiedThisRound)
+	{
+		foreach (RoundStatisticsEntry existingEntry in State.RoundHistory)
+		{
+			if (existingEntry.RoundNumber == roundNumber)
+				return existingEntry;
+		}
+
+		HexCoord mainTreeCoord = FindMainTreeCoord();
+		RoundStatisticsEntry entry = new()
+		{
+			RoundNumber = roundNumber,
+			CompletedAt = DateTimeOffset.UtcNow,
+			WaterAtRoundEnd = State.Water,
+			LivingPlantCount = CountLivingPlants(),
+			PlantsDiedThisRound = plantsDiedThisRound,
+			DeadPlantCountTotal = State.PlantsDiedTotal,
+			CardsPlayedTotal = State.CardsPlayedTotal,
+			MainTreeProgress = GetMainTreeProgress(mainTreeCoord),
+			PlayTimeSeconds = State.PlayTimeSeconds
+		};
+
+		State.RoundHistory.Add(entry);
+		return entry;
 	}
 
 	private void PrintState()
@@ -353,4 +479,5 @@ public partial class TurnManager : Node
 			GD.Print("You lost. Water reached 0.");
 		}
 	}
+
 }

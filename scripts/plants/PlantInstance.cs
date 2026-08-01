@@ -69,8 +69,4 @@ public class PlantInstance
 		return Definition.WaterProduction;
 	}
 
-	public int GetWaterCostWhenPlaced()
-	{
-		return 0;
-	}
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public partial class BoardManager : Node3D
 {
 	[ExportGroup("Balance")]
-	[Export] public GameConfig Balance = GameConfig.LoadDefault();
+	[Export] public GameConfig Balance;
 
 	[ExportGroup("Board Visual")]
 	[Export] public PackedScene HexTileScene;
@@ -70,6 +70,8 @@ public partial class BoardManager : Node3D
 
 	public override void _Ready()
 	{
+		Balance ??= GameConfig.LoadDefault();
+
 		if (HexTileScene == null)
 		{
 			HexTileScene = GD.Load<PackedScene>("res://scenes/board/HexTile.tscn");
@@ -81,6 +83,7 @@ public partial class BoardManager : Node3D
 	public void GenerateBoard()
 	{
 		ClearBoard();
+		BoardData = new BoardData();
 
 		GameConfig balance = Balance ?? GameConfig.LoadDefault();
 
@@ -270,8 +273,10 @@ public partial class BoardManager : Node3D
 
 	private void ClearBoard()
 	{
-		foreach (Node child in GetChildren())
+		while (GetChildCount() > 0)
 		{
+			Node child = GetChild(0);
+			RemoveChild(child);
 			child.QueueFree();
 		}
 

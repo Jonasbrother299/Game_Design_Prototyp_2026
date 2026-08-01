@@ -41,9 +41,6 @@ Wähle eine verknüpfte Resource aus, um diese Werte zu ändern:
 Ein Ziehgewicht von `0` schließt eine Pflanze aus zufällig gezogenen Karten
 aus. Höhere Werte erhöhen ihren Anteil relativ zu den anderen Pflanzen.
 
-`PlayCost` hat derzeit keine Auswirkung auf das Spiel und ist kein aktiver
-Balancing-Wert.
-
 ## Ereigniswerte
 
 Die Gruppe `Ereignisse` verweist auf die Resources unter `data/events/`.

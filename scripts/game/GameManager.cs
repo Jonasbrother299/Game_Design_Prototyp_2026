@@ -1,8 +1,11 @@
 using Godot;
+using System;
+using System.Collections.Generic;
 
 public partial class GameManager : Node
 {
 	private const float TileFocusClickThreshold = 6.0f;
+	private const int MassPlantDeathThreshold = 15;
 	private static bool _skipTutorialOnNextStart;
 
 	private BoardManager _boardManager;
@@ -10,18 +13,33 @@ public partial class GameManager : Node
 	private CameraRigController _cameraRig;
 	private HexTile _mainTreeTile;
 	private CardHandUI _cardHand;
+	private GameHub _gameHub;
 	private BaseButton _endTurnButton;
 	private BaseButton _discardHandButton;
 	private HexTile _currentPreviewTile;
 	private TutorialManager _tutorialManager;
+	private readonly GlobalStatisticsManager _statisticsManager = new();
+	private readonly HashSet<int> _recordedMassPlantDeathRounds = new();
 	private string _lastDebugMessage = "";
 	private bool _isCardDragActive;
+	private bool _hasRecordedCompletedGame;
 	private bool _isTileFocusClickCandidate;
 	private Vector2 _tileFocusPressPosition;
 
 	public override void _Ready()
 	{
 		CallDeferred(nameof(SetupGame));
+	}
+
+	public override void _Process(double delta)
+	{
+		if (_turnManager?.State == null ||
+			_turnManager.State.IsGameOver)
+		{
+			return;
+		}
+
+		_turnManager.State.PlayTimeSeconds += Math.Max(delta, 0.0);
 	}
 
 	private void SetupGame()
@@ -42,14 +60,19 @@ public partial class GameManager : Node
 		}
 
 		_turnManager.Setup(_boardManager);
-		_turnManager.StartGame();
-
-		PlaceStarterOak();
-		ConfigureCameraRig();
-
+		ConnectGameHub();
+		ConnectRoundResolution();
 		ConnectCardHand();
 		ConnectEndTurnButton();
 		ConnectDiscardHandButton();
+
+		_recordedMassPlantDeathRounds.Clear();
+		_hasRecordedCompletedGame = false;
+		_turnManager.ResetProgressStateForNewGame();
+		_turnManager.StartGame();
+		PlaceStarterOak();
+		ConfigureCameraRig();
+		RefreshGameInterfaces();
 
 		if (!ConsumeTutorialSkipRequest())
 			StartTutorial();
@@ -74,18 +97,32 @@ public partial class GameManager : Node
 
 	private void ConnectCardHand()
 	{
-		_cardHand = GetTree().CurrentScene.GetNodeOrNull<CardHandUI>("UI/CanvasLayer/CardHand");
+		CardHandUI cardHand = GetTree().CurrentScene.GetNodeOrNull<CardHandUI>(
+			"UI/CanvasLayer/CardHand");
 
-		if (_cardHand == null)
+		if (cardHand == null)
 		{
 			GD.PrintErr("CardHandUI not found. Expected path: UI/CanvasLayer/CardHand");
 			return;
 		}
 
-		_cardHand.PlantCardDragged += OnPlantCardDragged;
-		_cardHand.PlantCardDragReleased += OnPlantCardDragReleased;
-		_cardHand.PlantCardDragCanceled += OnPlantCardDragCanceled;
-		_cardHand.SetCards(_turnManager.State.HandCards);
+		if (_cardHand != cardHand)
+		{
+			if (_cardHand != null)
+			{
+				_cardHand.PlantCardDragged -= OnPlantCardDragged;
+				_cardHand.PlantCardDragReleased -= OnPlantCardDragReleased;
+				_cardHand.PlantCardDragCanceled -= OnPlantCardDragCanceled;
+			}
+
+			_cardHand = cardHand;
+			_cardHand.PlantCardDragged += OnPlantCardDragged;
+			_cardHand.PlantCardDragReleased += OnPlantCardDragReleased;
+			_cardHand.PlantCardDragCanceled += OnPlantCardDragCanceled;
+		}
+
+		if (_turnManager?.State != null)
+			_cardHand.SetCards(_turnManager.State.HandCards);
 
 		GD.Print("GameManager connected to CardHandUI.");
 	}
@@ -148,8 +185,95 @@ public partial class GameManager : Node
 			return;
 		}
 
-		_mainTreeTile = _boardManager.GetTileView(new HexCoord(0, 0));
+		HexCoord mainTreeCoord = new HexCoord(0, 0);
+		if (_turnManager != null)
+			_turnManager.TryGetMainTreeCoord(out mainTreeCoord);
+
+		_mainTreeTile = _boardManager.GetTileView(mainTreeCoord);
 		_cameraRig.ConfigureBoardContext(_boardManager, _mainTreeTile);
+	}
+
+	private void RefreshGameInterfaces()
+	{
+		ConnectCardHand();
+		_cardHand?.SetCards(_turnManager?.State?.HandCards);
+		UpdateDiscardHandButtonState();
+
+		Node currentScene = GetTree().CurrentScene;
+		ConnectGameHub();
+		_gameHub?.RefreshFromRestoredState();
+
+		DroughtWorldEffect droughtWorldEffect = currentScene?.GetNodeOrNull<
+			DroughtWorldEffect>("WorldEnvironment");
+		droughtWorldEffect?.RefreshFromRestoredState();
+	}
+
+	private void ConnectGameHub()
+	{
+		_gameHub = GetTree().CurrentScene?.GetNodeOrNull<GameHub>(
+			"UI/CanvasLayer/GameHub");
+	}
+
+	private void ConnectRoundResolution()
+	{
+		if (_turnManager == null)
+			return;
+
+		_turnManager.RoundFullyResolved -= OnRoundFullyResolved;
+		_turnManager.RoundFullyResolved += OnRoundFullyResolved;
+		_turnManager.GameEnded -= OnGameEnded;
+		_turnManager.GameEnded += OnGameEnded;
+	}
+
+	private void OnRoundFullyResolved(RoundStatisticsEntry statisticsEntry)
+	{
+		if (statisticsEntry == null ||
+			statisticsEntry.PlantsDiedThisRound < MassPlantDeathThreshold ||
+			_recordedMassPlantDeathRounds.Contains(statisticsEntry.RoundNumber))
+		{
+			return;
+		}
+
+		if (TryRecordStatistics(
+			() => _statisticsManager.RecordMassPlantDeath(statisticsEntry)))
+		{
+			_recordedMassPlantDeathRounds.Add(statisticsEntry.RoundNumber);
+		}
+	}
+
+	private void OnGameEnded(GameState state)
+	{
+		if (state == null || _hasRecordedCompletedGame)
+			return;
+
+		if (TryRecordStatistics(
+			() => _statisticsManager.RecordCompletedGame(
+				_turnManager.CaptureCompletedGameStatistics())))
+		{
+			_hasRecordedCompletedGame = true;
+		}
+	}
+
+	private bool TryRecordStatistics(
+		Func<IReadOnlyList<AchievementDefinition>> recordStatistics)
+	{
+		try
+		{
+			IReadOnlyList<AchievementDefinition> newlyUnlocked = recordStatistics();
+			_gameHub?.ShowSaveFeedback("Statistik gespeichert", isWarning: false);
+			_gameHub?.ShowAchievementFeedback(newlyUnlocked);
+			return true;
+		}
+		catch (Exception exception)
+		{
+			GD.PushError(
+				$"GameManager: Die Statistik konnte nicht gespeichert werden: " +
+				$"{exception.Message}");
+			_gameHub?.ShowSaveFeedback(
+				"Statistik konnte nicht gespeichert werden",
+				isWarning: true);
+			return false;
+		}
 	}
 
 	private bool IsMainTreeVisualUnderMouse(Vector2 mousePosition)
@@ -285,6 +409,12 @@ private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 }
 	public override void _ExitTree()
 	{
+		if (_turnManager != null)
+		{
+			_turnManager.RoundFullyResolved -= OnRoundFullyResolved;
+			_turnManager.GameEnded -= OnGameEnded;
+		}
+
 		if (_cardHand != null)
 		{
 			_cardHand.PlantCardDragged -= OnPlantCardDragged;
@@ -303,28 +433,35 @@ private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 	}
 private void ConnectEndTurnButton()
 {
-	_endTurnButton = FindNodeByName<BaseButton>(
+	BaseButton endTurnButton = FindNodeByName<BaseButton>(
 		GetTree().CurrentScene,
 		"EndTurnButton");
 
-	if (_endTurnButton == null)
+	if (endTurnButton == null)
 	{
 		GD.PrintErr("EndTurnButton not found. Make sure the button node is named EndTurnButton.");
 		return;
 	}
 
-	_endTurnButton.Pressed += OnEndTurnButtonPressed;
+	if (_endTurnButton != endTurnButton)
+	{
+		if (_endTurnButton != null)
+			_endTurnButton.Pressed -= OnEndTurnButtonPressed;
+
+		_endTurnButton = endTurnButton;
+		_endTurnButton.Pressed += OnEndTurnButtonPressed;
+	}
 
 	GD.Print("EndTurnButton connected.");
 }
 
 private void ConnectDiscardHandButton()
 {
-	_discardHandButton = FindNodeByName<BaseButton>(
+	BaseButton discardHandButton = FindNodeByName<BaseButton>(
 		GetTree().CurrentScene,
 		"DiscardHandButton");
 
-	if (_discardHandButton == null)
+	if (discardHandButton == null)
 	{
 		GD.PrintErr(
 			"DiscardHandButton not found. " +
@@ -332,7 +469,14 @@ private void ConnectDiscardHandButton()
 		return;
 	}
 
-	_discardHandButton.Pressed += OnDiscardHandButtonPressed;
+	if (_discardHandButton != discardHandButton)
+	{
+		if (_discardHandButton != null)
+			_discardHandButton.Pressed -= OnDiscardHandButtonPressed;
+
+		_discardHandButton = discardHandButton;
+		_discardHandButton.Pressed += OnDiscardHandButtonPressed;
+	}
 	UpdateDiscardHandButtonState();
 }
 
@@ -617,30 +761,6 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 
 	_boardManager.RecalculateLightLevels();
 }
-
-	private void PlayHandCard(PlantType plantType, HexCoord coord)
-	{
-		CardData card = GetCardFromHand(plantType);
-
-		if (card == null)
-		{
-			GD.PrintErr($"No {plantType} card found in hand.");
-			return;
-		}
-
-		HexTileData tile = _boardManager.GetTileData(coord);
-
-		bool played = _turnManager.TryPlayCardOnTile(
-			card,
-			tile,
-			out string error
-		);
-
-		if (!played)
-		{
-			GD.PrintErr(error);
-		}
-	}
 
 	private CardData GetCardFromHand(PlantType plantType)
 	{
