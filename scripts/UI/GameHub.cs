@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public partial class GameHub : Control
 {
+	private const string EffectsBusName = "Effects";
 	private const float DimmingDuration = 1.80f;
 	private const float NightHoldDuration = 1.50f;
 	private const float SunriseMoonPhaseDuration = 1.25f;
@@ -52,6 +53,12 @@ public partial class GameHub : Control
 	private DayCycleDisplayUI _dayCycleDisplay;
 	private DroughtWorldEffect _droughtWorldEffect;
 	private GameManager _gameManager;
+	private AudioStreamPlayer _plantPlacementAudio;
+	private AudioStreamPlayer _forestAmbienceAudio;
+	private AudioStreamPlayer _heatAmbienceAudio;
+	private AudioStreamPlayer _rainAmbienceAudio;
+	private AudioStreamPlayer _heavyRainAmbienceAudio;
+	private bool _environmentalAudioEventsConnected;
 	private CanvasLayer _rainLensLayer;
 	private RainLensCyaniluxOverlay _rainLensOverlay;
 	private Tween _feedbackTimelineTween;
@@ -102,6 +109,9 @@ public partial class GameHub : Control
 			_turnManager.EventPhaseResolved -= OnEventPhaseResolved;
 			_turnManager.EndTurnRequested -= OnEndTurnRequested;
 		}
+
+		DisconnectEnvironmentalAudioEvents();
+		StopEnvironmentalAudio();
 
 		if (_feedbackTimelineTween != null &&
 			_feedbackTimelineTween.IsValid())
@@ -190,6 +200,7 @@ public partial class GameHub : Control
 		_droughtWorldEffect =
 			currentScene.GetNodeOrNull<DroughtWorldEffect>("WorldEnvironment");
 		_gameManager = currentScene.GetNodeOrNull<GameManager>("GameManager");
+		SetupEnvironmentalAudio();
 
 		_rainLensOverlay =
 			currentScene.GetNodeOrNull<RainLensCyaniluxOverlay>(
@@ -317,6 +328,8 @@ public partial class GameHub : Control
 			float intensity = eventType == GameEventType.HeavyRain ? 0.90f : 0.62f;
 			_rainLensOverlay?.StartRain(intensity);
 		}
+
+		UpdateEnvironmentalAudio();
 	}
 
 	private void RefreshActiveEventDisplay()
@@ -343,6 +356,7 @@ public partial class GameHub : Control
 		}
 
 		_dayCycleDisplay?.SetWeather(hasRain, hasHeavyRain);
+		UpdateEnvironmentalAudio();
 
 		if (!hasRain)
 		{
@@ -791,6 +805,7 @@ public partial class GameHub : Control
 
 	private void OnPlantPlaced(PlantType plantType, HexCoord coord)
 	{
+		PlayPlantPlacementAudio();
 		UpdateWaterPreview();
 	}
 
@@ -830,6 +845,7 @@ public partial class GameHub : Control
 		_dayCycleDisplay?.SetWeather(
 			ContainsRainEvent(result.ActiveEvents),
 			hasHeavyRain);
+		UpdateEnvironmentalAudio();
 
 		if (!ContainsRainEvent(result.ActiveEvents))
 		{
@@ -850,5 +866,136 @@ public partial class GameHub : Control
 		}
 
 		return false;
+	}
+
+	private void SetupEnvironmentalAudio()
+	{
+		EnsureEffectsBus();
+		_plantPlacementAudio = GetNodeOrNull<AudioStreamPlayer>(
+			"PlantPlacementAudio");
+		_forestAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
+			"ForestAmbienceAudio");
+		_heatAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
+			"HeatAmbienceAudio");
+		_rainAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
+			"RainAmbienceAudio");
+		_heavyRainAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
+			"HeavyRainAmbienceAudio");
+
+		if (_environmentalAudioEventsConnected)
+			return;
+
+		SubscribeEnvironmentalAudio(_forestAmbienceAudio);
+		SubscribeEnvironmentalAudio(_heatAmbienceAudio);
+		SubscribeEnvironmentalAudio(_rainAmbienceAudio);
+		SubscribeEnvironmentalAudio(_heavyRainAmbienceAudio);
+		_environmentalAudioEventsConnected = true;
+	}
+
+	private void SubscribeEnvironmentalAudio(AudioStreamPlayer audioPlayer)
+	{
+		if (audioPlayer != null)
+			audioPlayer.Finished += OnEnvironmentalAudioFinished;
+	}
+
+	private void DisconnectEnvironmentalAudioEvents()
+	{
+		if (!_environmentalAudioEventsConnected)
+			return;
+
+		UnsubscribeEnvironmentalAudio(_forestAmbienceAudio);
+		UnsubscribeEnvironmentalAudio(_heatAmbienceAudio);
+		UnsubscribeEnvironmentalAudio(_rainAmbienceAudio);
+		UnsubscribeEnvironmentalAudio(_heavyRainAmbienceAudio);
+		_environmentalAudioEventsConnected = false;
+	}
+
+	private void UnsubscribeEnvironmentalAudio(AudioStreamPlayer audioPlayer)
+	{
+		if (audioPlayer != null)
+			audioPlayer.Finished -= OnEnvironmentalAudioFinished;
+	}
+
+	private void OnEnvironmentalAudioFinished()
+	{
+		UpdateEnvironmentalAudio();
+	}
+
+	private void UpdateEnvironmentalAudio()
+	{
+		if (_turnManager?.State == null)
+			return;
+
+		bool hasRain = false;
+		bool hasHeavyRain = false;
+		bool hasHeat = false;
+		foreach (ActiveGameEvent gameEvent in _turnManager.State.ActiveEvents)
+		{
+			GameEventType? eventType = gameEvent?.Definition?.Type;
+			if (eventType == GameEventType.HeavyRain)
+			{
+				hasRain = true;
+				hasHeavyRain = true;
+			}
+			else if (eventType == GameEventType.Rain)
+			{
+				hasRain = true;
+			}
+			else if (eventType == GameEventType.HeatDay)
+			{
+				hasHeat = true;
+			}
+		}
+
+		SetAmbientPlayback(_forestAmbienceAudio, !hasRain);
+		SetAmbientPlayback(_heatAmbienceAudio, !hasRain && hasHeat);
+		SetAmbientPlayback(_rainAmbienceAudio, hasRain && !hasHeavyRain);
+		SetAmbientPlayback(_heavyRainAmbienceAudio, hasHeavyRain);
+	}
+
+	private void StopEnvironmentalAudio()
+	{
+		SetAmbientPlayback(_forestAmbienceAudio, false);
+		SetAmbientPlayback(_heatAmbienceAudio, false);
+		SetAmbientPlayback(_rainAmbienceAudio, false);
+		SetAmbientPlayback(_heavyRainAmbienceAudio, false);
+		_plantPlacementAudio?.Stop();
+	}
+
+	private static void SetAmbientPlayback(
+		AudioStreamPlayer audioPlayer,
+		bool shouldPlay)
+	{
+		if (audioPlayer == null)
+			return;
+
+		if (!shouldPlay)
+		{
+			audioPlayer.Stop();
+			return;
+		}
+
+		if (audioPlayer.Stream != null && !audioPlayer.Playing)
+			audioPlayer.Play();
+	}
+
+	private void PlayPlantPlacementAudio()
+	{
+		if (_plantPlacementAudio?.Stream == null)
+			return;
+
+		_plantPlacementAudio.PitchScale = 0.88f + GD.Randf() * 0.20f;
+		_plantPlacementAudio.Play();
+	}
+
+	private static void EnsureEffectsBus()
+	{
+		if (AudioServer.GetBusIndex(EffectsBusName) >= 0)
+			return;
+
+		AudioServer.AddBus();
+		int effectsBusIndex = AudioServer.BusCount - 1;
+		AudioServer.SetBusName(effectsBusIndex, EffectsBusName);
+		AudioServer.SetBusSend(effectsBusIndex, "Master");
 	}
 }

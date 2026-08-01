@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://ifs463km2wex"]
+[gd_scene load_steps=16 format=3 uid="uid://ifs463km2wex"]
 
 [ext_resource type="Script" uid="uid://dsiubbb3giavj" path="res://scripts/UI/MainMenu.cs" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/images/LoadingScreen.png" id="2_background"]
@@ -10,6 +10,10 @@
 [ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="8_ivy"]
 [ext_resource type="PackedScene" path="res://scenes/UI/AchievementMenu.tscn" id="9_achievements"]
 [ext_resource type="PackedScene" path="res://scenes/UI/MenuMusicPlayer.tscn" id="10_music_player"]
+[ext_resource type="AudioStream" uid="uid://bxnaimw5eh3ck" path="res://assets/audio/Musik/tunetank-travel-nature-lofi-music-349633.mp3" id="11_travel_nature"]
+[ext_resource type="AudioStream" uid="uid://cdq1an7v7jjjo" path="res://assets/audio/Musik/lofi_seasons-lofi-seasons-summer-anthem-251489.mp3" id="12_summer_anthem"]
+[ext_resource type="AudioStream" uid="uid://jw6n3yc0tp2g" path="res://assets/audio/Musik/celeronbeats-good-nature-chill-lofi-guitar-amp-forest-river-564350.mp3" id="13_good_nature"]
+[ext_resource type="AudioStream" uid="uid://ccangilhdawdi" path="res://assets/audio/Musik/wings_of_freedom-lofi-and-rain-432544.mp3" id="14_wings_of_freedom"]
 
 [sub_resource type="StyleBoxFlat" id="MenuPanelStyle"]
 content_margin_left = 42.0
@@ -308,6 +312,9 @@ text = "PLAYTEST-BUILD"
 horizontal_alignment = 2
 
 [node name="MenuMusicPlayer" parent="." instance=ExtResource("10_music_player")]
+Tracks = [ExtResource("11_travel_nature"), ExtResource("12_summer_anthem"), ExtResource("13_good_nature"), ExtResource("14_wings_of_freedom")]
+TrackTitles = PackedStringArray("Travel Nature", "Summer Anthem", "Good Nature", "Wings of Freedom")
+TrackArtists = PackedStringArray("tunetank", "lofi_seasons", "celeronbeats", "wings_of_freedom")
 
 [node name="SettingsMenu" parent="." instance=ExtResource("4_settings")]
 visible = false
