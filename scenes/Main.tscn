@@ -22,6 +22,11 @@
 [ext_resource type="Resource" path="res://data/balance/game_balance.tres" id="20_balance"]
 [ext_resource type="Script" path="res://scripts/UI/DayCycleDisplayUI.cs" id="23_day_cycle_display"]
 [ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="24_day_cycle_ivy"]
+[ext_resource type="AudioStream" uid="uid://us03fk4xjdkg" path="res://assets/audio/Sound effects/Einpflanzen.mp3" id="25_planting_audio"]
+[ext_resource type="AudioStream" uid="uid://g5cendvai7jb" path="res://assets/audio/ambiente/Waldambiente.mp3" id="26_forest_ambience"]
+[ext_resource type="AudioStream" uid="uid://37t50n3wvk1j" path="res://assets/audio/ambiente/Hitze/crickets-cicadas.mp3" id="27_heat_ambience"]
+[ext_resource type="AudioStream" uid="uid://dofbpfm8ppaw4" path="res://assets/audio/ambiente/Rain/liecio-calming-rain-257596.mp3" id="28_rain_ambience"]
+[ext_resource type="AudioStream" uid="uid://dayyt8jw5qowp" path="res://assets/audio/ambiente/Rain/donrain-rain-110508.mp3" id="29_heavy_rain_ambience"]
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 1
@@ -310,6 +315,31 @@ expand_mode = 1
 stretch_mode = 5
 flip_h = true
 flip_v = true
+
+[node name="PlantPlacementAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub"]
+stream = ExtResource("25_planting_audio")
+volume_db = -3.0
+bus = &"Effects"
+
+[node name="ForestAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub"]
+stream = ExtResource("26_forest_ambience")
+volume_db = -22.0
+bus = &"Effects"
+
+[node name="HeatAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub"]
+stream = ExtResource("27_heat_ambience")
+volume_db = -20.0
+bus = &"Effects"
+
+[node name="RainAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub"]
+stream = ExtResource("28_rain_ambience")
+volume_db = -16.0
+bus = &"Effects"
+
+[node name="HeavyRainAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub"]
+stream = ExtResource("29_heavy_rain_ambience")
+volume_db = -13.0
+bus = &"Effects"
 
 [node name="WaterLabel" parent="UI/CanvasLayer/GameHub" unique_id=1513438614 instance=ExtResource("11_water")]
 layout_mode = 1
