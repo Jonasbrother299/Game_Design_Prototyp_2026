@@ -12,7 +12,7 @@ public partial class HexTile : Node3D
 
 	private Node3D _plantAnchor;
 	private Node3D _plantVisualRoot;
-	
+
 	private Node3D _effectVisualRoot;
 	private Node3D _placementIndicatorRoot;
 	private MeshInstance3D _placementIndicatorMesh;
@@ -20,12 +20,106 @@ public partial class HexTile : Node3D
 	private StandardMaterial3D _tileMaterial;
 	private Material _validPreviewMaterial;
 	private Material _invalidPreviewMaterial;
+	private Material _blockedPreviewMaterial;
+	private Material _tutorialHighlightMaterial;
+	private bool _isTutorialHighlightActive;
+	private Tween _tutorialHighlightTween;
+
+	private const float TutorialHighlightMinAlpha = 0.55f;
+	private const float TutorialHighlightMaxAlpha = 0.88f;
+	private const float TutorialHighlightMinEmission = 1.9f;
+	private const float TutorialHighlightMaxEmission = 4.0f;
+	private const float TutorialHighlightPulseDuration = 0.85f;
+
+	private PlantInstance _renderedPlant;
+	private int _renderedGrowthStage = -1;
+	private bool _renderedAsDead;
 
 	public float StartingOakScale { get; private set; } = 0.25f;
+	public float DeadPlantScale { get; private set; } = 0.6f;
+	public Color DeadPlantTint { get; private set; } =
+		new Color(0.32f, 0.27f, 0.20f);
+	public Color BlockedTileTint { get; private set; } =
+		new Color(0.38f, 0.40f, 0.38f);
+	public Color BlockedPreviewTint { get; private set; } =
+		new Color(0.48f, 0.50f, 0.48f);
+	public float MushroomModelScale { get; private set; } = 0.32f;
+	public float MushroomGrowthAnimationSpeed { get; private set; } = 1.0f;
+	public float FlowerModelScale { get; private set; } = 0.38f;
+	public int MatureFlowerCount { get; private set; } = 4;
+	public float BirchModelScale { get; private set; } = 0.18f;
+	public Color TreeShadowColor { get; private set; } =
+		new Color(0.055f, 0.08f, 0.045f, 0.66f);
+	public float StartingOakShadowSize { get; private set; } = 5.4f;
+	public Vector2 StartingOakShadowOffset { get; private set; } =
+		new Vector2(0.0f, 0.45f);
+	public float BirchShadowSize { get; private set; } = 2.8f;
+	public Vector2 BirchShadowOffset { get; private set; } =
+		new Vector2(0.0f, 0.18f);
+	public Color SunTileTint { get; private set; } = Colors.White;
+	public Color PartialShadeTileTint { get; private set; } =
+		new Color(0.82f, 0.91f, 0.80f);
+	public Color ShadeTileTint { get; private set; } =
+		new Color(0.62f, 0.74f, 0.64f);
 
 	public void ConfigureStartingOakScale(float scale)
 	{
 		StartingOakScale = Mathf.Max(0.01f, scale);
+	}
+
+	public void ConfigureDeadPlantVisuals(
+		float deadPlantScale,
+		Color deadPlantTint,
+		Color blockedTileTint,
+		Color blockedPreviewTint)
+	{
+		DeadPlantScale = Mathf.Clamp(deadPlantScale, 0.1f, 1.0f);
+		DeadPlantTint = deadPlantTint;
+		BlockedTileTint = blockedTileTint;
+		BlockedPreviewTint = blockedPreviewTint;
+	}
+
+	public void ConfigureMushroomVisual(
+		float modelScale,
+		float growthAnimationSpeed)
+	{
+		MushroomModelScale = Mathf.Max(0.1f, modelScale);
+		MushroomGrowthAnimationSpeed = Mathf.Max(0.1f, growthAnimationSpeed);
+	}
+
+	public void ConfigureFlowerVisual(float modelScale, int matureFlowerCount)
+	{
+		FlowerModelScale = Mathf.Max(0.01f, modelScale);
+		MatureFlowerCount = Mathf.Clamp(matureFlowerCount, 1, 7);
+	}
+
+	public void ConfigureBirchVisual(float modelScale)
+	{
+		BirchModelScale = Mathf.Max(0.01f, modelScale);
+	}
+
+	public void ConfigureTreeShadowVisual(
+		Color shadowColor,
+		float startingOakShadowSize,
+		Vector2 startingOakShadowOffset,
+		float birchShadowSize,
+		Vector2 birchShadowOffset)
+	{
+		TreeShadowColor = shadowColor;
+		StartingOakShadowSize = Mathf.Max(0.1f, startingOakShadowSize);
+		StartingOakShadowOffset = startingOakShadowOffset;
+		BirchShadowSize = Mathf.Max(0.1f, birchShadowSize);
+		BirchShadowOffset = birchShadowOffset;
+	}
+
+	public void ConfigureLightVisuals(
+		Color sunTileTint,
+		Color partialShadeTileTint,
+		Color shadeTileTint)
+	{
+		SunTileTint = sunTileTint;
+		PartialShadeTileTint = partialShadeTileTint;
+		ShadeTileTint = shadeTileTint;
 	}
 
 	public void Setup(HexTileData data)
@@ -56,10 +150,97 @@ public partial class HexTile : Node3D
 		UpdateVisualState();
 	}
 
+	public void ShowFloatingWaterChange(
+		int amount,
+		Color color,
+		Color outlineColor,
+		Font font,
+		int fontSize,
+		int outlineSize,
+		float delaySeconds,
+		float durationSeconds)
+	{
+		if (amount == 0)
+			return;
+
+		Label3D label = new Label3D
+		{
+			Name = "WaterChangeFeedback",
+			Text = amount > 0 ? $"+{amount}" : amount.ToString(),
+			Position = new Vector3(0.0f, 1.35f, 0.0f),
+			Font = font,
+			FontSize = Mathf.Clamp(fontSize, 32, 96),
+			OutlineSize = Mathf.Clamp(outlineSize, 0, 20),
+			PixelSize = 0.0065f,
+			Modulate = color,
+			OutlineModulate = outlineColor,
+			Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+			NoDepthTest = true,
+			Visible = false,
+			Scale = new Vector3(0.84f, 0.84f, 0.84f)
+		};
+
+		AddChild(label);
+
+		float delay = Mathf.Max(delaySeconds, 0.0f);
+		float duration = Mathf.Max(durationSeconds, 0.2f);
+		Vector3 targetPosition = label.Position + new Vector3(0.0f, 0.65f, 0.0f);
+
+		Tween tween = CreateTween();
+
+		if (delay > 0.0f)
+			tween.TweenInterval(delay);
+
+		tween.TweenCallback(Callable.From(() =>
+		{
+			if (IsInstanceValid(label))
+				label.Visible = true;
+		}));
+
+		tween.SetParallel(true);
+		tween.TweenProperty(label, "position", targetPosition, duration)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(
+				label,
+				"scale",
+				Vector3.One,
+				Mathf.Min(duration * 0.35f, 0.32f))
+			.SetTrans(Tween.TransitionType.Back)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(
+				label,
+				"transparency",
+				1.0f,
+				duration * 0.55f)
+			.SetDelay(duration * 0.45f)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.In);
+
+		tween.SetParallel(false);
+		tween.TweenCallback(Callable.From(() =>
+		{
+			if (IsInstanceValid(label))
+				label.QueueFree();
+		}));
+	}
+
 	private void SetupPlacementIndicator()
 	{
-		_validPreviewMaterial = CreatePlacementIndicatorMaterial(true);
-		_invalidPreviewMaterial = CreatePlacementIndicatorMaterial(false);
+		_validPreviewMaterial = CreatePlacementIndicatorMaterial(
+			new Color(0.25f, 1.0f, 0.45f, 1.0f));
+
+		_invalidPreviewMaterial = CreatePlacementIndicatorMaterial(
+			new Color(1.0f, 0.15f, 0.15f, 1.0f));
+
+		_blockedPreviewMaterial = CreatePlacementIndicatorMaterial(
+			BlockedPreviewTint);
+
+		_tutorialHighlightMaterial = CreatePlacementIndicatorMaterial(
+			new Color(1.0f, 1.0f, 1.0f, 1.0f),
+			maxAlpha: TutorialHighlightMinAlpha,
+			emissionStrength: TutorialHighlightMinEmission,
+			fadePower: 0.65f);
 
 		_placementIndicatorRoot = GetNodeOrNull<Node3D>("HandCardPlacementIndicator");
 
@@ -173,81 +354,85 @@ public partial class HexTile : Node3D
 
 		return null;
 	}
-private MeshInstance3D FindRenderableTileMesh()
-{
-	MeshInstance3D directHexTile = GetNodeOrNull<MeshInstance3D>("hex_tile");
 
-	if (directHexTile != null && directHexTile.Mesh != null)
-		return directHexTile;
-
-	MeshInstance3D nestedHexTile = GetNodeOrNull<MeshInstance3D>("hex_tile/MeshInstance3D");
-
-	if (nestedHexTile != null && nestedHexTile.Mesh != null)
-		return nestedHexTile;
-
-	MeshInstance3D tileMesh = GetNodeOrNull<MeshInstance3D>("TileMesh");
-
-	if (tileMesh != null && tileMesh.Mesh != null)
-		return tileMesh;
-
-	return FindFirstRenderableMeshInstance(this);
-}
-private MeshInstance3D FindFirstRenderableMeshInstance(Node node)
-{
-	foreach (Node child in node.GetChildren())
+	private MeshInstance3D FindRenderableTileMesh()
 	{
-		if (IsIgnoredMeshNode(child))
-			continue;
+		MeshInstance3D directHexTile = GetNodeOrNull<MeshInstance3D>("hex_tile");
 
-		if (child is MeshInstance3D meshInstance)
+		if (directHexTile != null && directHexTile.Mesh != null)
+			return directHexTile;
+
+		MeshInstance3D nestedHexTile = GetNodeOrNull<MeshInstance3D>("hex_tile/MeshInstance3D");
+
+		if (nestedHexTile != null && nestedHexTile.Mesh != null)
+			return nestedHexTile;
+
+		MeshInstance3D tileMesh = GetNodeOrNull<MeshInstance3D>("TileMesh");
+
+		if (tileMesh != null && tileMesh.Mesh != null)
+			return tileMesh;
+
+		return FindFirstRenderableMeshInstance(this);
+	}
+
+	private MeshInstance3D FindFirstRenderableMeshInstance(Node node)
+	{
+		foreach (Node child in node.GetChildren())
 		{
-			if (meshInstance.Mesh != null)
-				return meshInstance;
+			if (IsIgnoredMeshNode(child))
+				continue;
+
+			if (child is MeshInstance3D meshInstance)
+			{
+				if (meshInstance.Mesh != null)
+					return meshInstance;
+			}
+
+			MeshInstance3D found = FindFirstRenderableMeshInstance(child);
+
+			if (found != null)
+				return found;
 		}
 
-		MeshInstance3D found = FindFirstRenderableMeshInstance(child);
-
-		if (found != null)
-			return found;
+		return null;
 	}
 
-	return null;
-}
-private bool IsIgnoredMeshNode(Node node)
-{
-	string fullText = "";
-	Node current = node;
-
-	while (current != null)
+	private bool IsIgnoredMeshNode(Node node)
 	{
-		fullText += $"/{current.Name.ToString().ToLowerInvariant()}";
+		string fullText = "";
+		Node current = node;
 
-		if (current == this)
-			break;
+		while (current != null)
+		{
+			fullText += $"/{current.Name.ToString().ToLowerInvariant()}";
 
-		current = current.GetParent();
+			if (current == this)
+				break;
+
+			current = current.GetParent();
+		}
+
+		if (fullText.Contains("handcard"))
+			return true;
+
+		if (fullText.Contains("placement"))
+			return true;
+
+		if (fullText.Contains("placment"))
+			return true;
+
+		if (fullText.Contains("indicator"))
+			return true;
+
+		if (fullText.Contains("indikactor"))
+			return true;
+
+		if (fullText.Contains("preview"))
+			return true;
+
+		return false;
 	}
 
-	if (fullText.Contains("handcard"))
-		return true;
-
-	if (fullText.Contains("placement"))
-		return true;
-
-	if (fullText.Contains("placment"))
-		return true;
-
-	if (fullText.Contains("indicator"))
-		return true;
-
-	if (fullText.Contains("indikactor"))
-		return true;
-
-	if (fullText.Contains("preview"))
-		return true;
-
-	return false;
-}
 	private void SetupUniqueTileMaterial()
 	{
 		if (_tileMesh == null)
@@ -327,40 +512,173 @@ private bool IsIgnoredMeshNode(Node node)
 			return;
 		}
 
+		_isTutorialHighlightActive = false;
+		StopTutorialHighlightGlow();
+
 		if (_placementIndicatorRoot != null)
-		{
 			_placementIndicatorRoot.Visible = true;
-		}
 
 		_placementIndicatorMesh.Visible = true;
-		_placementIndicatorMesh.MaterialOverride = isValid ? _validPreviewMaterial : _invalidPreviewMaterial;
+		_placementIndicatorMesh.MaterialOverride = Data?.IsBlocked == true
+			? _blockedPreviewMaterial
+			: isValid
+				? _validPreviewMaterial
+				: _invalidPreviewMaterial;
+	}
+
+	public void SetTutorialHighlight(bool enabled)
+	{
+		if (!enabled)
+		{
+			ClearTutorialHighlight();
+			return;
+		}
+
+		if (_placementIndicatorMesh == null)
+		{
+			GD.PrintErr($"{Name}: Cannot show tutorial highlight because mesh is null.");
+			return;
+		}
+
+		_isTutorialHighlightActive = true;
+
+		if (_placementIndicatorRoot != null)
+			_placementIndicatorRoot.Visible = true;
+
+		_placementIndicatorMesh.Visible = true;
+		_placementIndicatorMesh.MaterialOverride = _tutorialHighlightMaterial;
+
+		StartTutorialHighlightGlow();
+	}
+
+	public void ClearTutorialHighlight()
+	{
+		if (!_isTutorialHighlightActive)
+			return;
+
+		_isTutorialHighlightActive = false;
+		StopTutorialHighlightGlow();
+
+		if (_placementIndicatorMesh != null)
+			_placementIndicatorMesh.Visible = false;
+	}
+
+	private void StartTutorialHighlightGlow()
+	{
+		StopTutorialHighlightGlow();
+
+		if (_tutorialHighlightMaterial is not ShaderMaterial shaderMaterial)
+			return;
+
+		SetTutorialHighlightShaderValues(
+			shaderMaterial,
+			TutorialHighlightMinAlpha,
+			TutorialHighlightMinEmission);
+
+		_tutorialHighlightTween = CreateTween();
+		_tutorialHighlightTween.SetLoops();
+
+		_tutorialHighlightTween.TweenMethod(
+			Callable.From<float>((value) =>
+			{
+				if (!IsInstanceValid(this))
+					return;
+
+				float normalized = value;
+				float alpha = Mathf.Lerp(
+					TutorialHighlightMinAlpha,
+					TutorialHighlightMaxAlpha,
+					normalized);
+				float emission = Mathf.Lerp(
+					TutorialHighlightMinEmission,
+					TutorialHighlightMaxEmission,
+					normalized);
+
+				SetTutorialHighlightShaderValues(shaderMaterial, alpha, emission);
+			}),
+			0.0f,
+			1.0f,
+			TutorialHighlightPulseDuration
+		).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+
+		_tutorialHighlightTween.TweenMethod(
+			Callable.From<float>((value) =>
+			{
+				if (!IsInstanceValid(this))
+					return;
+
+				float normalized = value;
+				float alpha = Mathf.Lerp(
+					TutorialHighlightMinAlpha,
+					TutorialHighlightMaxAlpha,
+					normalized);
+				float emission = Mathf.Lerp(
+					TutorialHighlightMinEmission,
+					TutorialHighlightMaxEmission,
+					normalized);
+
+				SetTutorialHighlightShaderValues(shaderMaterial, alpha, emission);
+			}),
+			1.0f,
+			0.0f,
+			TutorialHighlightPulseDuration
+		).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+	}
+
+	private void SetTutorialHighlightShaderValues(
+		ShaderMaterial shaderMaterial,
+		float maxAlpha,
+		float emissionStrength)
+	{
+		shaderMaterial.SetShaderParameter("max_alpha", maxAlpha);
+		shaderMaterial.SetShaderParameter("emission_strength", emissionStrength);
+	}
+
+	private void StopTutorialHighlightGlow()
+	{
+		if (_tutorialHighlightTween != null)
+		{
+			_tutorialHighlightTween.Kill();
+			_tutorialHighlightTween = null;
+		}
+
+		if (_tutorialHighlightMaterial is ShaderMaterial shaderMaterial)
+		{
+			SetTutorialHighlightShaderValues(
+				shaderMaterial,
+				TutorialHighlightMinAlpha,
+				TutorialHighlightMinEmission);
+		}
 	}
 
 	public void ClearPlacementPreview()
 	{
+		_isTutorialHighlightActive = false;
+		StopTutorialHighlightGlow();
+
 		if (_placementIndicatorMesh == null)
 			return;
 
 		_placementIndicatorMesh.Visible = false;
 	}
 
-	private Material CreatePlacementIndicatorMaterial(bool isValid)
+	private Material CreatePlacementIndicatorMaterial(
+		Color color,
+		float maxAlpha = 0.28f,
+		float emissionStrength = 0.45f,
+		float fadePower = 1.35f)
 	{
 		ShaderMaterial material = new ShaderMaterial();
 
 		material.Shader = GetPlacementPreviewShader();
 
-		Color color = isValid
-			? new Color(0.25f, 1.0f, 0.45f, 1.0f)
-			: new Color(1.0f, 0.15f, 0.15f, 1.0f);
-
 		material.SetShaderParameter("base_color", color);
 		material.SetShaderParameter("bottom_y", -0.25f);
 		material.SetShaderParameter("top_y", 0.75f);
-		material.SetShaderParameter("max_alpha", 0.28f);
+		material.SetShaderParameter("max_alpha", maxAlpha);
 		material.SetShaderParameter("min_alpha", 0.0f);
-		material.SetShaderParameter("fade_power", 1.35f);
-		material.SetShaderParameter("emission_strength", 0.45f);
+		material.SetShaderParameter("fade_power", fadePower);
+		material.SetShaderParameter("emission_strength", emissionStrength);
 
 		return material;
 	}
@@ -422,130 +740,209 @@ void fragment() {
 			GD.Print($"{Name} | Light: {Data.LightLevel} | Plant: {Data.Plant.Definition.DisplayName}");
 		}
 	}
-private void UpdateTileMaterial()
-{
-	if (_tileMesh == null || _tileMesh.Mesh == null)
+
+	private void UpdateTileMaterial()
 	{
-		_tileMesh = FindRenderableTileMesh();
+		if (_tileMesh == null || _tileMesh.Mesh == null)
+		{
+			_tileMesh = FindRenderableTileMesh();
+		}
+
+		if (_tileMesh == null)
+		{
+			GD.PrintErr($"{Name}: Cannot apply grass texture because tile mesh is null.");
+			return;
+		}
+
+		Texture2D grassTexture = GD.Load<Texture2D>(
+			"res://assets/textures/grass/grass.tga");
+
+		if (grassTexture == null)
+		{
+			GD.PrintErr($"{Name}: Grass texture could not be loaded.");
+			return;
+		}
+
+		_tileMaterial = new StandardMaterial3D();
+		_tileMaterial.AlbedoTexture = grassTexture;
+		_tileMaterial.AlbedoColor = Data.IsBlocked
+			? BlockedTileTint
+			: GetLightLevelTint();
+		_tileMaterial.Roughness = 1.0f;
+		_tileMaterial.Metallic = 0.0f;
+		_tileMaterial.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
+
+		_tileMesh.MaterialOverride = _tileMaterial;
 	}
 
-	if (_tileMesh == null)
+	private Color GetLightLevelTint()
 	{
-		GD.PrintErr($"{Name}: Cannot apply grass texture because tile mesh is null.");
-		return;
+		return Data.LightLevel switch
+		{
+			LightLevel.PartialShade => PartialShadeTileTint,
+			LightLevel.Shade => ShadeTileTint,
+			_ => SunTileTint
+		};
 	}
-
-	Texture2D grassTexture = GD.Load<Texture2D>("res://assets/textures/grass/grass.tga");
-
-	if (grassTexture == null)
-	{
-		GD.PrintErr($"{Name}: Grass texture could not be loaded.");
-		return;
-	}
-
-	StandardMaterial3D material = new StandardMaterial3D();
-	material.AlbedoTexture = grassTexture;
-	material.AlbedoColor = Colors.White;
-	material.Roughness = 1.0f;
-	material.Metallic = 0.0f;
-	material.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
-
-	_tileMesh.MaterialOverride = material;
-
-}
 
 	private void RebuildPlantVisual()
 	{
+		PlantInstance visualPlant = Data.Plant ?? Data.DeadPlant;
+		bool renderAsDead =
+			Data.Plant == null &&
+			Data.DeadPlant != null &&
+			Data.DeadPlant.Definition.Type != PlantType.Oak;
+		int growthStage = visualPlant?.VisualGrowthStage ?? -1;
+
+		if (_plantVisualRoot != null &&
+			ReferenceEquals(_renderedPlant, visualPlant) &&
+			_renderedGrowthStage == growthStage &&
+			_renderedAsDead == renderAsDead)
+		{
+			return;
+		}
+
 		if (_plantVisualRoot != null)
 		{
 			_plantVisualRoot.QueueFree();
 			_plantVisualRoot = null;
 		}
 
-		if (Data.Plant == null || _plantAnchor == null)
+		_renderedPlant = visualPlant;
+		_renderedGrowthStage = growthStage;
+		_renderedAsDead = renderAsDead;
+
+		if (visualPlant == null || _plantAnchor == null)
 			return;
 
-		_plantVisualRoot = CreatePlantVisual(Data.Plant);
+		_plantVisualRoot = CreatePlantVisual(
+			visualPlant,
+			this,
+			animateGrowth: !renderAsDead);
 		_plantVisualRoot.Position = Vector3.Zero;
 		_plantVisualRoot.Rotation = Vector3.Zero;
 
+		if (renderAsDead)
+			ApplyDeadPlantStyle(_plantVisualRoot);
+
 		_plantAnchor.AddChild(_plantVisualRoot);
 	}
+
+	private void ApplyDeadPlantStyle(Node3D visualRoot)
+	{
+		visualRoot.Scale *= DeadPlantScale;
+		visualRoot.Position += new Vector3(0.0f, -0.03f, 0.0f);
+
+		Node productionAura = visualRoot.FindChild(
+			"ProductionAura",
+			recursive: true,
+			owned: false);
+		productionAura?.Free();
+
+		StandardMaterial3D deadMaterial = new StandardMaterial3D();
+		deadMaterial.AlbedoColor = DeadPlantTint;
+		deadMaterial.Roughness = 1.0f;
+		deadMaterial.Metallic = 0.0f;
+
+		ApplyMaterialOverride(visualRoot, deadMaterial);
+	}
+
+	private static void ApplyMaterialOverride(Node node, Material material)
+	{
+		if (node is GeometryInstance3D geometry)
+			geometry.MaterialOverride = material;
+
+		foreach (Node child in node.GetChildren())
+			ApplyMaterialOverride(child, material);
+	}
+
 	private void RebuildEffectVisual()
-{
-	if (_effectVisualRoot != null)
 	{
-		_effectVisualRoot.QueueFree();
-		_effectVisualRoot = null;
+		if (_effectVisualRoot != null)
+		{
+			_effectVisualRoot.QueueFree();
+			_effectVisualRoot = null;
+		}
+
+		if (Data == null || Data.Plant == null)
+			return;
+
+		if (Data.Plant.Definition.Type != PlantType.Mushroom)
+			return;
+
+		if (!Data.Plant.IsMature)
+			return;
+
+		BoardManager boardManager = FindBoardManager();
+
+		if (boardManager == null)
+			return;
+
+		_effectVisualRoot = MushroomEffectVisualBuilder.Create(this, boardManager);
+
+		if (_effectVisualRoot != null)
+		{
+			AddChild(_effectVisualRoot);
+		}
 	}
 
-	if (Data == null || Data.Plant == null)
-		return;
-
-	if (Data.Plant.Definition.Type != PlantType.Mushroom)
-		return;
-
-	if (!Data.Plant.IsMature)
-		return;
-
-	BoardManager boardManager = FindBoardManager();
-
-	if (boardManager == null)
-		return;
-
-	_effectVisualRoot = MushroomEffectVisualBuilder.Create(this, boardManager);
-
-	if (_effectVisualRoot != null)
+	private BoardManager FindBoardManager()
 	{
-		AddChild(_effectVisualRoot);
-	}
-}
+		Node current = GetParent();
 
-private BoardManager FindBoardManager()
-{
-	Node current = GetParent();
+		while (current != null)
+		{
+			if (current is BoardManager boardManager)
+				return boardManager;
 
-	while (current != null)
-	{
-		if (current is BoardManager boardManager)
-			return boardManager;
+			current = current.GetParent();
+		}
 
-		current = current.GetParent();
+		return null;
 	}
 
-	return null;
-}
-
-private Node3D CreatePlantVisual(PlantInstance plant)
-{
-	Node3D root = new Node3D();
-	root.Name = $"{plant.Definition.Type}_Visual";
-
-	Node3D factoryVisual = PlantVisualFactory.CreateVisual(plant, this);
-
-	 if (factoryVisual != null)
+	private Node3D CreatePlantVisual(
+		PlantInstance plant,
+		HexTile tile,
+		bool animateGrowth)
 	{
-		return factoryVisual;
-	}
+		Node3D root = new Node3D();
+		root.Name = $"{plant.Definition.Type}_Visual";
 
-	switch (plant.Definition.Type)
-	{
-		case PlantType.Oak:
-			CreateOakVisual(root, plant);
-			break;
+		Node3D factoryVisual = PlantVisualFactory.CreateVisual(
+			plant,
+			tile,
+			animateGrowth,
+			showTreeShadow: animateGrowth);
 
-		case PlantType.Moss:
-			CreateMossVisual(root, plant);
-			break;
+		if (factoryVisual != null)
+		{
+			return factoryVisual;
+		}
 
-		case PlantType.Flower:
-			CreateFlowerVisual(root, plant);
-			break;
+		switch (plant.Definition.Type)
+		{
+			case PlantType.Oak:
+				CreateOakVisual(root, plant);
+				break;
 
-		case PlantType.Birch:
-			CreateBirchVisual(root, plant);
-			break;
-	}
+			case PlantType.Moss:
+				CreateMossVisual(root, plant);
+				break;
+
+			case PlantType.Flower:
+				CreateFlowerVisual(root, plant);
+				break;
+
+			case PlantType.Birch:
+				CreateBirchVisual(root, plant);
+				break;
+
+			case PlantType.Mushroom:
+				CreateMushroomVisual(root, plant);
+				break;
+		}
+
 		return root;
 	}
 
@@ -768,7 +1165,8 @@ private Node3D CreatePlantVisual(PlantInstance plant)
 		}
 
 		return meshInstance;
-}
+	}
+
 	private StandardMaterial3D CreateMaterial(Color color)
 	{
 		StandardMaterial3D material = new StandardMaterial3D();
@@ -779,5 +1177,4 @@ private Node3D CreatePlantVisual(PlantInstance plant)
 
 		return material;
 	}
-	
 }

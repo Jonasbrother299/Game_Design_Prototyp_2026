@@ -1,8 +1,107 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://ccsqc8nj81y5c"]
 
-[ext_resource type="Script" path="res://scripts/tutorial/TutorialOverlay.cs" id="1_overlay"]
+[ext_resource type="Script" uid="uid://dery827hnol51" path="res://scripts/tutorial/TutorialOverlay.cs" id="1_overlay"]
 
-[node name="TutorialOverlay" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleTutorialPanel"]
+content_margin_left = 34.0
+content_margin_top = 28.0
+content_margin_right = 34.0
+content_margin_bottom = 28.0
+bg_color = Color(0.022, 0.052, 0.03, 0.975)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.59, 0.72, 0.38, 0.92)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 14
+
+[sub_resource type="StyleBoxLine" id="StyleSeparator"]
+color = Color(0.42, 0.51, 0.29, 0.72)
+grow_begin = 4.0
+grow_end = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBodyPanel"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 18.0
+bg_color = Color(0.045, 0.075, 0.043, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.45, 0.24, 0.75)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+content_margin_left = 24.0
+content_margin_top = 11.0
+content_margin_right = 24.0
+content_margin_bottom = 11.0
+bg_color = Color(0.07, 0.14, 0.07, 1)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56, 0.7, 0.36, 0.78)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 24.0
+content_margin_top = 11.0
+content_margin_right = 24.0
+content_margin_bottom = 11.0
+bg_color = Color(0.035, 0.085, 0.04, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.88, 0.53, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 24.0
+content_margin_top = 11.0
+content_margin_right = 24.0
+content_margin_bottom = 11.0
+bg_color = Color(0.15, 0.27, 0.12, 1)
+border_width_left = 5
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.82, 0.88, 0.53, 0.98)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.94, 0.94, 0.72, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="TutorialOverlay" type="Control" unique_id=225137712]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -10,99 +109,106 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
+mouse_filter = 1
 script = ExtResource("1_overlay")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=361023438]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.18)
+mouse_filter = 2
+color = Color(0.005, 0.012, 0.007, 0.68)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=282233556]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TutorialWindow" type="PanelContainer" parent="CenterContainer" unique_id=231017051]
+clip_contents = true
+custom_minimum_size = Vector2(780, 470)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleTutorialPanel")
+
+[node name="TutorialLayoutVBox" type="VBoxContainer" parent="CenterContainer/TutorialWindow" unique_id=1799740566]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="TutorialTitle" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=323704727]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.94, 0.78, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.55)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 29
+text = "Tutorial"
+
+[node name="TitleSeparator" type="HSeparator" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1653185417]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleSeparator")
+
+[node name="BodyPanel" type="PanelContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=206662467]
+custom_minimum_size = Vector2(0, 185)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBodyPanel")
+
+[node name="TutorialText" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/BodyPanel" unique_id=1692033478]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.92, 0.93, 0.84, 1)
+theme_override_constants/line_spacing = 4
+theme_override_font_sizes/font_size = 19
+text = "Tutorialtext"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="NavigationSeparator" type="HSeparator" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=878514256]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleSeparator")
+
+[node name="Navigation" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=2128024124]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="FooterSpacer" type="Control" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1957570797]
+layout_mode = 2
+size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TutorialWindow" type="Panel" parent="CenterContainer"]
-clip_contents = true
-custom_minimum_size = Vector2(700, 420)
+[node name="TutorialBackButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1386900530]
+custom_minimum_size = Vector2(140, 52)
 layout_mode = 2
-
-[node name="TutorialLayoutVBox" type="VBoxContainer" parent="CenterContainer/TutorialWindow"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -8.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-alignment = 1
-
-[node name="TutorialTitle" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Tutorial"
-horizontal_alignment = 1
-
-[node name="ScrollContainer" type="ScrollContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 0
-
-[node name="ScrollContent" type="VBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="TutorialText" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent"]
-layout_mode = 2
-size_flags_horizontal = 3
-autowrap_mode = 2
-
-[node name="TutorialContentHBox" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="TutorialCardImage" type="TextureRect" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox"]
-custom_minimum_size = Vector2(200, 280)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 5
-
-[node name="TutorialCardInfo" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/ScrollContainer/ScrollContent/TutorialContentHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-autowrap_mode = 2
-
-[node name="ProgressDots" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 1
-
-[node name="Navigation" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-alignment = 3
-
-[node name="TutorialBackButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation"]
-layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
+theme_override_colors/font_hover_color = Color(1, 0.99, 0.86, 1)
+theme_override_colors/font_disabled_color = Color(0.48, 0.5, 0.42, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Zurück"
 
-[node name="TutorialNextButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation"]
+[node name="TutorialNextButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1359908772]
+custom_minimum_size = Vector2(160, 52)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.94, 0.8, 1)
+theme_override_colors/font_hover_color = Color(1, 0.99, 0.86, 1)
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Weiter"

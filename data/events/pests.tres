@@ -6,6 +6,7 @@
 script = ExtResource("1_event")
 Type = 6
 DisplayName = "Schädlinge"
+SelectionWeight = 1
 EffectType = 2
 SeedlingDeathChanceDenominator = 2
 MatureDeathChanceDenominator = 3

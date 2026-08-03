@@ -220,7 +220,7 @@ public partial class PauseMenu : Control
 		ShowConfirmation(
 			PendingAction.MainMenu,
 			"Zum Hauptmenü?",
-			"Der aktuelle Fortschritt geht verloren.",
+			"Die laufende Partie wird beendet.",
 			"Hauptmenü");
 	}
 
@@ -229,7 +229,7 @@ public partial class PauseMenu : Control
 		ShowConfirmation(
 			PendingAction.Quit,
 			"Spiel beenden?",
-			"Das Spiel wird geschlossen.",
+			"Die laufende Partie wird beendet und das Spiel geschlossen.",
 			"Beenden");
 	}
 
@@ -265,9 +265,11 @@ public partial class PauseMenu : Control
 		switch (action)
 		{
 			case PendingAction.Restart:
+				GameManager.SkipTutorialOnNextStart();
 				ChangeScene(MainScenePath, "Partie");
 				break;
 			case PendingAction.MainMenu:
+				GameManager.ClearTutorialSkipRequest();
 				ChangeScene(MainMenuScenePath, "Hauptmenü");
 				break;
 			case PendingAction.Quit:

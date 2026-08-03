@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="272" height="48" viewBox="0 0 272 48">
+  <defs>
+    <linearGradient id="switchOff" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c7a477"/>
+      <stop offset="1" stop-color="#a87d57"/>
+    </linearGradient>
+    <linearGradient id="switchOn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#829654"/>
+      <stop offset="1" stop-color="#61723f"/>
+    </linearGradient>
+    <linearGradient id="parchment" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8e6bd"/>
+      <stop offset="1" stop-color="#ddbd87"/>
+    </linearGradient>
+  </defs>
+
+  <g>
+    <rect x="2" y="3" width="108" height="42" rx="21" fill="url(#switchOff)" stroke="#4b5832" stroke-width="3"/>
+    <g fill="none" stroke="#4a291b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M52 32 L58 16 L64 32 M55 25 H61"/>
+      <path d="M69 16 V27 C69 34 82 34 82 27 V16"/>
+      <path d="M99 18 C96 15 87 15 86 20 C85 24 90 25 94 26 C100 27 101 32 96 33 C92 34 87 32 86 30"/>
+    </g>
+    <circle cx="26" cy="24" r="16" fill="url(#parchment)" stroke="#6a4129" stroke-width="2.5"/>
+    <circle cx="26" cy="24" r="5" fill="#7b593a"/>
+  </g>
+
+  <g transform="translate(112 0)">
+    <rect x="2" y="3" width="108" height="42" rx="21" fill="url(#switchOn)" stroke="#3e512d" stroke-width="3"/>
+    <g fill="none" stroke="#f4dfad" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 16 V32 M14 16 H25 M14 24 H23 M14 32 H25"/>
+      <path d="M31 16 H41 M36 16 V32 M31 32 H41"/>
+      <path d="M47 32 V16 L59 32 V16"/>
+    </g>
+    <circle cx="86" cy="24" r="16" fill="url(#parchment)" stroke="#53321f" stroke-width="2.5"/>
+    <path d="M80 29 C84 20 90 18 95 15 C93 23 89 29 80 29 Z" fill="#647b43" stroke="#44552f" stroke-width="1.5"/>
+  </g>
+
+  <g transform="translate(224 0)">
+    <circle cx="24" cy="25" r="18" fill="#35170d" opacity="0.28"/>
+    <circle cx="24" cy="22" r="18" fill="url(#parchment)" stroke="#542f1d" stroke-width="3"/>
+    <path d="M15 28 C18 18 25 14 34 12 C32 22 26 28 15 28 Z" fill="#71864a" stroke="#42562f" stroke-width="1.8"/>
+    <path d="M17 27 C22 23 27 19 32 15" fill="none" stroke="#e4d49a" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>

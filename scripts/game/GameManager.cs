@@ -1,20 +1,43 @@
 using Godot;
+using System;
+using System.Collections.Generic;
 
 public partial class GameManager : Node
 {
+	private const int MassPlantDeathThreshold = 15;
+	private static bool _skipTutorialOnNextStart;
+
 	private BoardManager _boardManager;
 	private TurnManager _turnManager;
+	private CameraRigController _cameraRig;
+	private HexTile _mainTreeTile;
 	private CardHandUI _cardHand;
-	private Button _endTurnButton;
-	private Label _roundLabel;
-	private Label _waterLabel;
-	private Label _cardsPlayedLabel;
+	private GameHub _gameHub;
+	private BaseButton _endTurnButton;
+	private BaseButton _discardHandButton;
 	private HexTile _currentPreviewTile;
+	private TutorialManager _tutorialManager;
+	private readonly GlobalStatisticsManager _statisticsManager = new();
+	private readonly HashSet<int> _recordedMassPlantDeathRounds = new();
 	private string _lastDebugMessage = "";
+	private bool _isCardDragActive;
+	private bool _isDayNightPresentationLocked;
+	private bool _hasRecordedCompletedGame;
 
 	public override void _Ready()
 	{
 		CallDeferred(nameof(SetupGame));
+	}
+
+	public override void _Process(double delta)
+	{
+		if (_turnManager?.State == null ||
+			_turnManager.State.IsGameOver)
+		{
+			return;
+		}
+
+		_turnManager.State.PlayTimeSeconds += Math.Max(delta, 0.0);
 	}
 
 	private void SetupGame()
@@ -34,49 +57,313 @@ public partial class GameManager : Node
 			return;
 		}
 
-	_turnManager.Setup(_boardManager);
-	_turnManager.StartGame();
+		_turnManager.Setup(_boardManager);
+		ConnectGameHub();
+		ConnectRoundResolution();
+		ConnectCardHand();
+		ConnectEndTurnButton();
+		ConnectDiscardHandButton();
 
-	PlaceStarterOak();
+		_recordedMassPlantDeathRounds.Clear();
+		_hasRecordedCompletedGame = false;
+		_turnManager.ResetProgressStateForNewGame();
+		_turnManager.StartGame();
+		PlaceStarterOak();
+		ConfigureCameraRig();
+		RefreshGameInterfaces();
 
-	ConnectCardHand();
-	ConnectEndTurnButton();
-	ConnectHudLabels();
-	StartTutorial();
-	UpdateHud();
+		if (!ConsumeTutorialSkipRequest())
+			StartTutorial();
+	}
+
+	public static void SkipTutorialOnNextStart()
+	{
+		_skipTutorialOnNextStart = true;
+	}
+
+	public static void ClearTutorialSkipRequest()
+	{
+		_skipTutorialOnNextStart = false;
+	}
+
+	private static bool ConsumeTutorialSkipRequest()
+	{
+		bool shouldSkip = _skipTutorialOnNextStart;
+		_skipTutorialOnNextStart = false;
+		return shouldSkip;
 	}
 
 	private void ConnectCardHand()
 	{
-		_cardHand = GetTree().CurrentScene.GetNodeOrNull<CardHandUI>("UI/CanvasLayer/CardHand");
+		CardHandUI cardHand = GetTree().CurrentScene.GetNodeOrNull<CardHandUI>(
+			"UI/CanvasLayer/CardHand");
 
-		if (_cardHand == null)
+		if (cardHand == null)
 		{
 			GD.PrintErr("CardHandUI not found. Expected path: UI/CanvasLayer/CardHand");
 			return;
 		}
 
-		_cardHand.PlantCardDragged += OnPlantCardDragged;
-		_cardHand.PlantCardDragReleased += OnPlantCardDragReleased;
-		_cardHand.SetCards(_turnManager.State.HandCards);
+		if (_cardHand != cardHand)
+		{
+			if (_cardHand != null)
+			{
+				_cardHand.PlantCardDragged -= OnPlantCardDragged;
+				_cardHand.PlantCardDragReleased -= OnPlantCardDragReleased;
+				_cardHand.PlantCardDragCanceled -= OnPlantCardDragCanceled;
+			}
+
+			_cardHand = cardHand;
+			_cardHand.PlantCardDragged += OnPlantCardDragged;
+			_cardHand.PlantCardDragReleased += OnPlantCardDragReleased;
+			_cardHand.PlantCardDragCanceled += OnPlantCardDragCanceled;
+		}
+
+		if (_turnManager?.State != null)
+			_cardHand.SetCards(_turnManager.State.HandCards);
 
 		GD.Print("GameManager connected to CardHandUI.");
 	}
-private void ConnectHudLabels()
-{
-	_roundLabel = FindNodeByName<Label>(GetTree().CurrentScene, "RoundLabel");
-	_waterLabel = FindNodeByName<Label>(GetTree().CurrentScene, "WaterLabel");
-	_cardsPlayedLabel = FindNodeByName<Label>(GetTree().CurrentScene, "CardsPlayLabel");
 
-	if (_roundLabel == null)
-		GD.PrintErr("RoundLabel not found. Make sure the label node is named RoundLabel.");
+	public override void _UnhandledInput(InputEvent inputEvent)
+	{
+		if (_isDayNightPresentationLocked)
+			return;
 
-	if (_waterLabel == null)
-		GD.PrintErr("WaterLabel not found. Make sure the label node is named WaterLabel.");
+		if (inputEvent is not InputEventMouseButton mouseButton ||
+			mouseButton.ButtonIndex != MouseButton.Left ||
+			!mouseButton.Pressed)
+			return;
 
-	if (_cardsPlayedLabel == null)
-		GD.PrintErr("CardsPlayedLabel not found. Make sure the label node is named CardsPlayLabel.");
-}
+		if (!CanFocusTileFromMouse())
+			return;
+
+		bool isMainTree = IsMainTreeVisualUnderMouse(mouseButton.Position);
+		HexTile clickedTile = isMainTree
+			? _mainTreeTile
+			: GetHexTileUnderMouse(mouseButton.Position);
+
+		if (clickedTile == null)
+			return;
+
+		isMainTree = isMainTree || clickedTile == _mainTreeTile;
+		if (isMainTree ? !mouseButton.DoubleClick : mouseButton.DoubleClick)
+			return;
+
+		if (!_cameraRig.FocusTile(clickedTile))
+			return;
+
+		GetViewport().SetInputAsHandled();
+	}
+
+	public void SetDayNightPresentationInputLocked(bool isLocked)
+	{
+		if (_isDayNightPresentationLocked == isLocked)
+			return;
+
+		_isDayNightPresentationLocked = isLocked;
+		_cardHand?.SetInteractionEnabled(!isLocked);
+		_cameraRig?.SetInteractionEnabled(!isLocked);
+
+		if (isLocked)
+			ClearCurrentPreview();
+
+		UpdateDiscardHandButtonState();
+	}
+
+	private void ConfigureCameraRig()
+	{
+		_cameraRig = GetTree().CurrentScene?.GetNodeOrNull<CameraRigController>(
+			"CameraRig");
+
+		if (_cameraRig == null)
+		{
+			GD.PrintErr("CameraRigController not found. Expected path: CameraRig");
+			return;
+		}
+
+		HexCoord mainTreeCoord = new HexCoord(0, 0);
+		if (_turnManager != null)
+			_turnManager.TryGetMainTreeCoord(out mainTreeCoord);
+
+		_mainTreeTile = _boardManager.GetTileView(mainTreeCoord);
+		_cameraRig.ConfigureBoardContext(_boardManager, _mainTreeTile);
+	}
+
+	private void RefreshGameInterfaces()
+	{
+		ConnectCardHand();
+		_cardHand?.SetCards(_turnManager?.State?.HandCards);
+		UpdateDiscardHandButtonState();
+
+		Node currentScene = GetTree().CurrentScene;
+		ConnectGameHub();
+		_gameHub?.RefreshFromRestoredState();
+
+		DroughtWorldEffect droughtWorldEffect = currentScene?.GetNodeOrNull<
+			DroughtWorldEffect>("WorldEnvironment");
+		droughtWorldEffect?.RefreshFromRestoredState();
+	}
+
+	private void ConnectGameHub()
+	{
+		_gameHub = GetTree().CurrentScene?.GetNodeOrNull<GameHub>(
+			"UI/CanvasLayer/GameHub");
+	}
+
+	private void ConnectRoundResolution()
+	{
+		if (_turnManager == null)
+			return;
+
+		_turnManager.RoundFullyResolved -= OnRoundFullyResolved;
+		_turnManager.RoundFullyResolved += OnRoundFullyResolved;
+		_turnManager.GameEnded -= OnGameEnded;
+		_turnManager.GameEnded += OnGameEnded;
+	}
+
+	private void OnRoundFullyResolved(RoundStatisticsEntry statisticsEntry)
+	{
+		if (statisticsEntry == null ||
+			statisticsEntry.PlantsDiedThisRound < MassPlantDeathThreshold ||
+			_recordedMassPlantDeathRounds.Contains(statisticsEntry.RoundNumber))
+		{
+			return;
+		}
+
+		if (TryRecordStatistics(
+			() => _statisticsManager.RecordMassPlantDeath(statisticsEntry)))
+		{
+			_recordedMassPlantDeathRounds.Add(statisticsEntry.RoundNumber);
+		}
+	}
+
+	private void OnGameEnded(GameState state)
+	{
+		if (state == null || _hasRecordedCompletedGame)
+			return;
+
+		if (TryRecordStatistics(
+			() => _statisticsManager.RecordCompletedGame(
+				_turnManager.CaptureCompletedGameStatistics())))
+		{
+			_hasRecordedCompletedGame = true;
+		}
+	}
+
+	private bool TryRecordStatistics(
+		Func<IReadOnlyList<AchievementDefinition>> recordStatistics)
+	{
+		try
+		{
+			IReadOnlyList<AchievementDefinition> newlyUnlocked = recordStatistics();
+			_gameHub?.ShowSaveFeedback("Statistik gespeichert", isWarning: false);
+			_gameHub?.ShowAchievementFeedback(newlyUnlocked);
+			return true;
+		}
+		catch (Exception exception)
+		{
+			GD.PushError(
+				$"GameManager: Die Statistik konnte nicht gespeichert werden: " +
+				$"{exception.Message}");
+			_gameHub?.ShowSaveFeedback(
+				"Statistik konnte nicht gespeichert werden",
+				isWarning: true);
+			return false;
+		}
+	}
+
+	private bool IsMainTreeVisualUnderMouse(Vector2 mousePosition)
+	{
+		if (_mainTreeTile == null || !IsInstanceValid(_mainTreeTile))
+			return false;
+
+		Camera3D camera = GetViewport().GetCamera3D();
+		Node treeVisual = _mainTreeTile.FindChild(
+			"StartingOak_Visual",
+			recursive: true,
+			owned: false);
+
+		if (camera == null || treeVisual == null)
+			return false;
+
+		Rect2 screenBounds = default;
+		bool hasScreenBounds = false;
+		ExpandVisualScreenBounds(
+			treeVisual,
+			camera,
+			ref screenBounds,
+			ref hasScreenBounds);
+
+		return hasScreenBounds && screenBounds.Grow(8.0f).HasPoint(mousePosition);
+	}
+
+	private static void ExpandVisualScreenBounds(
+		Node node,
+		Camera3D camera,
+		ref Rect2 screenBounds,
+		ref bool hasScreenBounds)
+	{
+		if (node is VisualInstance3D visual && visual.Visible)
+		{
+			Aabb bounds = visual.GetAabb();
+
+			for (int x = 0; x <= 1; x++)
+			{
+				for (int y = 0; y <= 1; y++)
+				{
+					for (int z = 0; z <= 1; z++)
+					{
+						Vector3 corner = bounds.Position + new Vector3(
+							bounds.Size.X * x,
+							bounds.Size.Y * y,
+							bounds.Size.Z * z);
+						Vector3 worldCorner = visual.GlobalTransform * corner;
+
+						if (camera.IsPositionBehind(worldCorner))
+							continue;
+
+						Vector2 screenCorner = camera.UnprojectPosition(worldCorner);
+
+						if (!hasScreenBounds)
+						{
+							screenBounds = new Rect2(screenCorner, Vector2.Zero);
+							hasScreenBounds = true;
+						}
+						else
+						{
+							screenBounds = screenBounds.Expand(screenCorner);
+						}
+					}
+				}
+			}
+		}
+
+		foreach (Node child in node.GetChildren())
+		{
+			ExpandVisualScreenBounds(
+				child,
+				camera,
+				ref screenBounds,
+				ref hasScreenBounds);
+		}
+	}
+
+	private bool CanFocusTileFromMouse()
+	{
+		if (_cameraRig == null ||
+			!_cameraRig.InteractionEnabled ||
+			_isCardDragActive ||
+			_currentPreviewTile != null ||
+			GetTree().Paused)
+		{
+			return false;
+		}
+
+		Control hoveredControl = GetViewport().GuiGetHoveredControl();
+		return hoveredControl == null ||
+			hoveredControl.MouseFilter != Control.MouseFilterEnum.Stop;
+	}
 
 private void StartTutorial()
 {
@@ -93,11 +380,12 @@ private void StartTutorial()
 		return;
 	}
 
-	TutorialManager tutorial = new TutorialManager();
-	tutorial.Name = "TutorialManager";
-	currentScene.AddChild(tutorial);
-	tutorial.Start(overlay, _boardManager, _cardHand, _turnManager);
+	_tutorialManager = new TutorialManager();
+	_tutorialManager.Name = "TutorialManager";
+	currentScene.AddChild(_tutorialManager);
+	_tutorialManager.Start(overlay, _boardManager, _cardHand, _turnManager);
 }
+
 private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 {
 	if (root == null)
@@ -116,109 +404,172 @@ private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 
 	return null;
 }
-private void UpdateHud()
+	public override void _ExitTree()
+	{
+		if (_turnManager != null)
+		{
+			_turnManager.RoundFullyResolved -= OnRoundFullyResolved;
+			_turnManager.GameEnded -= OnGameEnded;
+		}
+
+		if (_cardHand != null)
+		{
+			_cardHand.PlantCardDragged -= OnPlantCardDragged;
+			_cardHand.PlantCardDragReleased -= OnPlantCardDragReleased;
+			_cardHand.PlantCardDragCanceled -= OnPlantCardDragCanceled;
+		}
+			if (_endTurnButton != null)
+		{
+			_endTurnButton.Pressed -= OnEndTurnButtonPressed;
+		}
+
+		if (_discardHandButton != null)
+		{
+			_discardHandButton.Pressed -= OnDiscardHandButtonPressed;
+		}
+	}
+private void ConnectEndTurnButton()
 {
+	BaseButton endTurnButton = FindNodeByName<BaseButton>(
+		GetTree().CurrentScene,
+		"EndTurnButton");
+
+	if (endTurnButton == null)
+	{
+		GD.PrintErr("EndTurnButton not found. Make sure the button node is named EndTurnButton.");
+		return;
+	}
+
+	if (_endTurnButton != endTurnButton)
+	{
+		if (_endTurnButton != null)
+			_endTurnButton.Pressed -= OnEndTurnButtonPressed;
+
+		_endTurnButton = endTurnButton;
+		_endTurnButton.Pressed += OnEndTurnButtonPressed;
+	}
+
+	GD.Print("EndTurnButton connected.");
+}
+
+private void ConnectDiscardHandButton()
+{
+	BaseButton discardHandButton = FindNodeByName<BaseButton>(
+		GetTree().CurrentScene,
+		"DiscardHandButton");
+
+	if (discardHandButton == null)
+	{
+		GD.PrintErr(
+			"DiscardHandButton not found. " +
+			"Make sure the button node is named DiscardHandButton.");
+		return;
+	}
+
+	if (_discardHandButton != discardHandButton)
+	{
+		if (_discardHandButton != null)
+			_discardHandButton.Pressed -= OnDiscardHandButtonPressed;
+
+		_discardHandButton = discardHandButton;
+		_discardHandButton.Pressed += OnDiscardHandButtonPressed;
+	}
+	UpdateDiscardHandButtonState();
+}
+
+private void OnEndTurnButtonPressed()
+{
+	if (_isDayNightPresentationLocked)
+		return;
+
 	if (_turnManager == null)
 		return;
 
 	if (_turnManager.State == null)
 		return;
 
-	if (_roundLabel != null)
-	{
-		_roundLabel.Text = $"Round: {_turnManager.State.CurrentRound}";
-	}
+	if (_turnManager.State.IsGameOver)
+		return;
 
-	if (_waterLabel != null)
+	if (_tutorialManager != null && !_tutorialManager.CanEndTurn())
 	{
-		_waterLabel.Text = $"Water: {_turnManager.State.Water}";
-	}
-
-	if (_cardsPlayedLabel != null)
-	{
-		_cardsPlayedLabel.Text = $"Cards: {_turnManager.State.CardsPlayedThisTurn}/{_turnManager.Config.CardsPerTurnLimit}";
-	}
-}
-	public override void _ExitTree()
-	{
-		if (_cardHand != null)
-		{
-			_cardHand.PlantCardDragged -= OnPlantCardDragged;
-			_cardHand.PlantCardDragReleased -= OnPlantCardDragReleased;
-		}
-			if (_endTurnButton != null)
-		{
-			_endTurnButton.Pressed -= OnEndTurnButtonPressed;
-		}
-	}
-private void ConnectEndTurnButton()
-{
-	_endTurnButton = FindNodeByName<Button>(GetTree().CurrentScene, "EndTurnButton");
-
-	if (_endTurnButton == null)
-	{
-		GD.PrintErr("EndTurnButton not found. Make sure the button node is named EndTurnButton.");
+		GD.Print("Tutorial: Runde beenden ist gerade noch nicht erlaubt.");
 		return;
 	}
 
-	_endTurnButton.Pressed += OnEndTurnButtonPressed;
-
-	GD.Print("EndTurnButton connected.");
-}
-
-
-	private void OnEndTurnButtonPressed()
-	{
-		if (_turnManager == null)
-			return;
-
-		if (_turnManager.State == null)
-			return;
-
-		if (_turnManager.State.IsGameOver)
-			return;
-
 	_turnManager.EndTurn();
 	_cardHand?.SetCards(_turnManager.State.HandCards);
+	UpdateDiscardHandButtonState();
+}
 
-	UpdateHud();
+private void OnDiscardHandButtonPressed()
+{
+	if (_isDayNightPresentationLocked)
+		return;
+
+	if (_turnManager == null || !_turnManager.DiscardHand())
+		return;
+
+	ClearCurrentPreview();
+	_cardHand?.SetCards(_turnManager.State.HandCards);
+	UpdateDiscardHandButtonState();
+}
+
+private void UpdateDiscardHandButtonState()
+{
+	if (_discardHandButton == null)
+		return;
+
+	_discardHandButton.Disabled =
+		_isDayNightPresentationLocked ||
+		_turnManager == null ||
+		!_turnManager.CanDiscardHand;
+}
+
+private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
+{
+	_isCardDragActive = true;
+	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
+
+	if (hoveredTile == null)
+	{
+		ClearCurrentPreview();
+		_tutorialManager?.RefreshTutorialHighlights();
+		return;
 	}
 
-	private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
+	if (hoveredTile != _currentPreviewTile)
 	{
-	
+		ClearCurrentPreview();
+		_currentPreviewTile = hoveredTile;
+		_tutorialManager?.RefreshTutorialHighlights();
+	}
 
+	UpdateCurrentPreview(plantType);
+}
 
-		HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
-
-		if (hoveredTile == null)
-		{
-			ClearCurrentPreview();
-			return;
-		}
-
-		if (hoveredTile != _currentPreviewTile)
-		{
-			ClearCurrentPreview();
-			_currentPreviewTile = hoveredTile;
-		}
-
-		UpdateCurrentPreview(plantType);
+	private void OnPlantCardDragCanceled()
+	{
+	_isCardDragActive = false;
+	ClearCurrentPreview();
+		_tutorialManager?.RefreshTutorialHighlights();
 	}
 
 	private void OnPlantCardDragReleased(PlantType plantType, Vector2 mousePosition)
 	{
-		HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
+	_isCardDragActive = false;
+	HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
 
 		bool wasPlaced = TryPlacePlantOnReleasedTile(plantType, releasedTile);
 
 		if (wasPlaced)
 		{
 			_cardHand?.CommitDraggedCardPlacement();
+			UpdateDiscardHandButtonState();
 		}
 
 		ClearCurrentPreview();
-		UpdateHud();
+		_tutorialManager?.RefreshTutorialHighlights();
 
 		GD.Print($"Released plant card: {plantType} at {mousePosition}");
 		GD.Print("GameManager: drag released, preview cleared.");
@@ -254,6 +605,12 @@ private void ConnectEndTurnButton()
 			return false;
 		}
 
+		if (_tutorialManager != null && !_tutorialManager.CanPlayCard(card, releasedTile.Data))
+		{
+			GD.Print("Tutorial: Diese Karte darf gerade nicht auf dieses Feld gespielt werden.");
+			return false;
+		}
+
 		bool played = _turnManager.TryPlayCardOnTile(
 			card,
 			releasedTile.Data,
@@ -286,9 +643,15 @@ private void ConnectEndTurnButton()
 			return;
 		}
 
-		bool canPlace = _currentPreviewTile.CanPlacePlant(definition);
+		bool canPlaceByRules = _currentPreviewTile.CanPlacePlant(definition);
 
-		_currentPreviewTile.SetPlacementPreview(canPlace);
+		CardData card = GetCardFromHand(plantType);
+
+		bool canPlaceByTutorial =
+			_tutorialManager == null ||
+			_tutorialManager.CanPlayCard(card, _currentPreviewTile.Data);
+
+		_currentPreviewTile.SetPlacementPreview(canPlaceByRules && canPlaceByTutorial);
 	}
 
 	private void ClearCurrentPreview()
@@ -399,30 +762,6 @@ private void ConnectEndTurnButton()
 
 	_boardManager.RecalculateLightLevels();
 }
-
-	private void PlayHandCard(PlantType plantType, HexCoord coord)
-	{
-		CardData card = GetCardFromHand(plantType);
-
-		if (card == null)
-		{
-			GD.PrintErr($"No {plantType} card found in hand.");
-			return;
-		}
-
-		HexTileData tile = _boardManager.GetTileData(coord);
-
-		bool played = _turnManager.TryPlayCardOnTile(
-			card,
-			tile,
-			out string error
-		);
-
-		if (!played)
-		{
-			GD.PrintErr(error);
-		}
-	}
 
 	private CardData GetCardFromHand(PlantType plantType)
 	{

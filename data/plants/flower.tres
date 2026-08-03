@@ -1,12 +1,15 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://bs3e8bkyjr1p6"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" uid="uid://cjhwywn3skfq3" path="res://assets/cards/card_blume.png" id="2_card"]
+[ext_resource type="Texture2D" uid="uid://b0uxrhu6vcoih" path="res://assets/cards/card_blume.png" id="2_card"]
+[ext_resource type="PackedScene" uid="uid://b5w5jfsbhydt" path="res://assets/models/plants/SpiderliliFlower/Spidelilie.fbx" id="3_model"]
 
 [resource]
 script = ExtResource("1_plant")
 Type = 3
 DisplayName = "Blume"
+StartingHandCopies = 1
+DrawWeight = 1
 WaterConsumption = 2
 WaterProduction = 2
 GrowthRounds = 2
@@ -14,4 +17,6 @@ GrowthStageCount = 3
 SpreadChanceDenominator = 3
 AllowedLightLevels = Array[int]([0, 1])
 EffectType = 3
+NeighborSpreadDenominatorReduction = 1
 CardImage = ExtResource("2_card")
+PlantScene = ExtResource("3_model")

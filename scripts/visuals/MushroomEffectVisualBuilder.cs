@@ -30,7 +30,8 @@ public static class MushroomEffectVisualBuilder
 			if (neighborData.Plant == null)
 				continue;
 
-			if (neighborData.Plant.Definition.Type == PlantType.Oak)
+			if (neighborData.Plant.Definition.Type is
+				PlantType.Oak or PlantType.Birch)
 				continue;
 
 			HexTile neighborTile = boardManager.GetTileView(neighborData.Coord);

@@ -6,6 +6,7 @@
 script = ExtResource("1_event")
 Type = 3
 DisplayName = "Dürre"
+SelectionWeight = 1
 WaterModifierPerRound = -4
 DurationRounds = 2
 Description = "Zwei Runden lang sinkt die Wasserproduktion am Rundenende um 4."

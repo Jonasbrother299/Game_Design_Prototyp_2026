@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="GameConfig" load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/GameConfig.cs" id="1_config"]
+[ext_resource type="Resource" path="res://data/plants/oak.tres" id="2_oak"]
+[ext_resource type="Resource" path="res://data/plants/moss.tres" id="3_moss"]
+[ext_resource type="Resource" path="res://data/plants/flower.tres" id="4_flower"]
+[ext_resource type="Resource" path="res://data/plants/mushroom.tres" id="5_mushroom"]
+[ext_resource type="Resource" path="res://data/plants/birch.tres" id="6_birch"]
+[ext_resource type="Resource" path="res://data/events/rain.tres" id="7_rain"]
+[ext_resource type="Resource" path="res://data/events/heavy_rain.tres" id="8_heavy_rain"]
+[ext_resource type="Resource" path="res://data/events/drought.tres" id="9_drought"]
+[ext_resource type="Resource" path="res://data/events/heat_day.tres" id="10_heat_day"]
+[ext_resource type="Resource" path="res://data/events/wind.tres" id="11_wind"]
+[ext_resource type="Resource" path="res://data/events/pests.tres" id="12_pests"]
+
+[resource]
+script = ExtResource("1_config")
+StartingWater = 10
+LoseWaterLimit = 0
+WinWaterLimit = 50
+StartingHandSize = 3
+MaxHandSize = 3
+CardsPerTurnLimit = 3
+HandDiscardAvailableFromRound = 2
+SpreadCheckInterval = 1
+MinimumSpreadChanceDenominator = 2
+EventChanceDenominator = 3
+MonocultureMinimumPlantCount = 3
+DeadPlantBlockedRounds = 2
+UseRectangularBoard = true
+BoardColumns = 9
+BoardRows = 7
+BoardRadius = 4
+Oak = ExtResource("2_oak")
+Moss = ExtResource("3_moss")
+Flower = ExtResource("4_flower")
+Mushroom = ExtResource("5_mushroom")
+Birch = ExtResource("6_birch")
+Rain = ExtResource("7_rain")
+HeavyRain = ExtResource("8_heavy_rain")
+Drought = ExtResource("9_drought")
+HeatDay = ExtResource("10_heat_day")
+Wind = ExtResource("11_wind")
+Pests = ExtResource("12_pests")

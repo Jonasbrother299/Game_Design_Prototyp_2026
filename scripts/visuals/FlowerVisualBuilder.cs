@@ -2,11 +2,127 @@ using Godot;
 
 public static class FlowerVisualBuilder
 {
-	public static Node3D Create(PlantInstance plant)
+	private static readonly Vector3[] ClusterOffsets =
+	{
+		Vector3.Zero,
+		new Vector3(-0.15f, 0.0f, 0.10f),
+		new Vector3(0.15f, 0.0f, 0.08f),
+		new Vector3(0.03f, 0.0f, -0.15f),
+		new Vector3(-0.20f, 0.0f, -0.10f),
+		new Vector3(0.20f, 0.0f, -0.08f),
+		new Vector3(-0.03f, 0.0f, 0.19f)
+	};
+
+	private static readonly float[] ClusterScaleMultipliers =
+	{
+		1.0f,
+		0.82f,
+		0.90f,
+		0.76f,
+		0.84f,
+		0.72f,
+		0.78f
+	};
+
+	private static readonly float[] ClusterRotations =
+	{
+		0.0f,
+		42.0f,
+		-35.0f,
+		85.0f,
+		-72.0f,
+		128.0f,
+		-118.0f
+	};
+
+	public static Node3D Create(
+		PlantInstance plant,
+		float modelScale,
+		int matureFlowerCount)
 	{
 		Node3D root = new Node3D();
 		root.Name = "Flower_Visual";
 
+		if (TryAddModelCluster(
+			root,
+			plant,
+			modelScale,
+			matureFlowerCount))
+		{
+			return root;
+		}
+
+		AddFallbackVisual(root, plant);
+		return root;
+	}
+
+	private static bool TryAddModelCluster(
+		Node3D root,
+		PlantInstance plant,
+		float modelScale,
+		int matureFlowerCount)
+	{
+		PackedScene flowerScene = plant?.Definition?.PlantScene;
+
+		if (flowerScene == null)
+			return false;
+
+		int stage = Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 3);
+		int maximumCount = Mathf.Clamp(
+			matureFlowerCount,
+			1,
+			ClusterOffsets.Length);
+		int visibleCount = stage switch
+		{
+			1 => 1,
+			2 => Mathf.Min(2, maximumCount),
+			_ => maximumCount
+		};
+		float stageScale = stage switch
+		{
+			1 => 0.70f,
+			2 => 0.85f,
+			_ => 1.0f
+		};
+		float safeModelScale = Mathf.Max(0.01f, modelScale);
+
+		for (int i = 0; i < visibleCount; i++)
+		{
+			Node instance = flowerScene.Instantiate();
+
+			if (instance is not Node3D flowerModel)
+			{
+				instance?.Free();
+				ClearChildren(root);
+				return false;
+			}
+
+			flowerModel.Name = $"FlowerModel_{i + 1}";
+			flowerModel.Position = ClusterOffsets[i];
+			flowerModel.RotationDegrees =
+				new Vector3(0.0f, ClusterRotations[i], 0.0f);
+			flowerModel.Scale *=
+				safeModelScale *
+				stageScale *
+				ClusterScaleMultipliers[i];
+
+			root.AddChild(flowerModel);
+		}
+
+		return true;
+	}
+
+	private static void ClearChildren(Node root)
+	{
+		foreach (Node child in root.GetChildren())
+		{
+			root.RemoveChild(child);
+			child.Free();
+		}
+	}
+
+	private static void AddFallbackVisual(Node3D root, PlantInstance plant)
+	{
 		int stage = Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 3);
 
 		AddFlower(
@@ -42,8 +158,6 @@ public static class FlowerVisualBuilder
 				hasBloom: true,
 				new Color(0.90f, 0.78f, 0.38f));
 		}
-
-		return root;
 	}
 
 	private static void AddFlower(

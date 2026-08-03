@@ -1,13 +1,17 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://072530l8561r"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" uid="uid://dsjvmd1dqa4t0" path="res://assets/cards/card_pilz.jpeg" id="2_card"]
-[ext_resource type="PackedScene" uid="uid://coyo4pf44daw3" path="res://assets/models/plants/mushroom/Mushroom.glb" id="3_model"]
+[ext_resource type="Texture2D" uid="uid://d3g3kemma33bb" path="res://assets/cards/card_pilz.png" id="2_card"]
+[ext_resource type="PackedScene" uid="uid://maxv2b620q7l" path="res://assets/models/plants/mushroom/Stage_1_MushroomGrowthAnimation.glb" id="3_stage_1"]
+[ext_resource type="PackedScene" uid="uid://b2s3miavedg35" path="res://assets/models/plants/mushroom/Stage_2_MushroomGrowthAnimation.glb" id="4_stage_2"]
+[ext_resource type="PackedScene" uid="uid://brqiscyrs2sfl" path="res://assets/models/plants/mushroom/Stage_3_MushroomGrowthAnimation.glb" id="5_stage_3"]
 
 [resource]
 script = ExtResource("1_plant")
 Type = 4
 DisplayName = "Pilz"
+StartingHandCopies = 1
+DrawWeight = 1
 WaterConsumption = 1
 WaterProduction = 1
 GrowthRounds = 3
@@ -15,5 +19,6 @@ GrowthStageCount = 4
 SpreadChanceDenominator = 3
 AllowedLightLevels = Array[int]([1, 2])
 EffectType = 2
+AdjacentWaterProductionBonus = 1
 CardImage = ExtResource("2_card")
-PlantScene = ExtResource("3_model")
+GrowthStageScenes = Array[PackedScene]([ExtResource("3_stage_1"), ExtResource("4_stage_2"), ExtResource("5_stage_3")])

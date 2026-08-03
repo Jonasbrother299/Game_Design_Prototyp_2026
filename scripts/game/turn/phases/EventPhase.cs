@@ -23,11 +23,25 @@ public sealed class EventPhase
 	public GameEventType? SelectRandomEvent(TurnPhaseContext context)
 	{
 		List<EventDefinition> events = EventDatabase.GetAll();
-		if (events.Count == 0)
+		int totalWeight = 0;
+
+		foreach (EventDefinition definition in events)
+			totalWeight += System.Math.Max(definition.SelectionWeight, 0);
+
+		if (totalWeight <= 0)
 			return null;
 
-		int index = context.Random.RandiRange(0, events.Count - 1);
-		return events[index].Type;
+		int selection = context.Random.RandiRange(1, totalWeight);
+
+		foreach (EventDefinition definition in events)
+		{
+			selection -= System.Math.Max(definition.SelectionWeight, 0);
+
+			if (selection <= 0)
+				return definition.Type;
+		}
+
+		return null;
 	}
 
 	private static List<PlantDeathResult> ApplyEventDeathRisks(
@@ -93,7 +107,9 @@ public sealed class EventPhase
 				return 0;
 			}
 
-			return definition.SeedlingDeathChanceDenominator;
+			return ApplyGrowthStageDeathResistance(
+				definition.SeedlingDeathChanceDenominator,
+				tile);
 		}
 
 		if (definition.MatureDeathChanceDenominator <= 0)
@@ -102,7 +118,23 @@ public sealed class EventPhase
 		if (definition.MatureDeathRequiresMonoculture && !isMonoculture)
 			return 0;
 
-		return definition.MatureDeathChanceDenominator;
+		return ApplyGrowthStageDeathResistance(
+			definition.MatureDeathChanceDenominator,
+			tile);
+	}
+
+	private static int ApplyGrowthStageDeathResistance(
+		int denominator,
+		HexTileData tile)
+	{
+		int resistancePerStage = System.Math.Max(
+			tile.Plant.Definition.EventDeathResistancePerGrowthStage,
+			0);
+		int completedGrowthStages = System.Math.Max(
+			tile.Plant.VisualGrowthStage - 1,
+			0);
+
+		return denominator + resistancePerStage * completedGrowthStages;
 	}
 
 	private static bool IsPartOfMonoculture(
@@ -175,20 +207,36 @@ public sealed class EventPhase
 
 	private GameEventType? TryActivateEventForNextRound(TurnPhaseContext context)
 	{
+		if (!context.Config.EventsUnlocked)
+			return null;
+
 		if (context.State.ActiveEvents.Count > 0 ||
 			context.Config.EventChanceDenominator <= 0)
 		{
 			return null;
 		}
 
-		if (context.Random.RandiRange(1, context.Config.EventChanceDenominator) != 1)
-			return null;
+		GameEventType eventType;
 
-		GameEventType? eventType = SelectRandomEvent(context);
-		if (!eventType.HasValue)
-			return null;
+		if (context.Config.ForceRainAsFirstEvent &&
+			!context.Config.HasTriggeredFirstTutorialEvent)
+		{
+			eventType = GameEventType.Rain;
+			context.Config.HasTriggeredFirstTutorialEvent = true;
+		}
+		else
+		{
+			if (context.Random.RandiRange(1, context.Config.EventChanceDenominator) != 1)
+				return null;
 
-		EventDefinition definition = EventDatabase.Get(eventType.Value);
+			GameEventType? selectedEvent = SelectRandomEvent(context);
+			if (!selectedEvent.HasValue)
+				return null;
+
+			eventType = selectedEvent.Value;
+		}
+
+		EventDefinition definition = EventDatabase.Get(eventType);
 		if (definition == null)
 			return null;
 
