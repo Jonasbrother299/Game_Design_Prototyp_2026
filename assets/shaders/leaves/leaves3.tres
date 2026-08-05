@@ -78,6 +78,7 @@ source = 5
 [resource]
 modes/cull = 2
 flags/depth_prepass_alpha = true
+flags/vertex_lighting = true
 nodes/vertex/2/node = SubResource("VisualShaderNodeBillboard_lw1u1")
 nodes/vertex/2/position = Vector2(-300, 580)
 nodes/vertex/3/node = SubResource("VisualShaderNodeInput_k6tkq")

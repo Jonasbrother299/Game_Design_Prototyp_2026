@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://c6pr6g3kfetj6"]
+
+[ext_resource type="PackedScene" uid="uid://bo7c71b1l4jhf" path="res://assets/models/tiles/tile3.fbx" id="1_86rw7"]
+[ext_resource type="Texture2D" uid="uid://cj47kgomwwft8" path="res://assets/models/tiles/textures/tile3/tile3_Rock_AlbedoTransparency.png" id="2_2deet"]
+[ext_resource type="Texture2D" uid="uid://c1b3fwb01wucv" path="res://assets/models/tiles/textures/tile3/tile3_Rock_Normal.png" id="3_rn06m"]
+[ext_resource type="Texture2D" uid="uid://dvapuxvyuxtq4" path="res://assets/models/tiles/textures/tile3/tile3_Rock_Roughness.png" id="4_iny0k"]
+[ext_resource type="Texture2D" uid="uid://bafwym84y4ydu" path="res://assets/models/tiles/textures/tile3/tile3_Ground_AlbedoTransparency.png" id="5_4446m"]
+[ext_resource type="Texture2D" uid="uid://bot1ov0gvtgl8" path="res://assets/models/tiles/textures/tile3/tile3_Ground_Normal.png" id="6_50lcr"]
+[ext_resource type="Texture2D" uid="uid://8yosltwdhnro" path="res://assets/models/tiles/textures/tile3/tile3_Ground_Roughness.png" id="7_5yran"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_17btd"]
+albedo_texture = ExtResource("2_2deet")
+roughness_texture = ExtResource("4_iny0k")
+normal_enabled = true
+normal_texture = ExtResource("3_rn06m")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_02ojw"]
+albedo_texture = ExtResource("5_4446m")
+roughness_texture = ExtResource("7_5yran")
+roughness_texture_channel = 4
+normal_enabled = true
+normal_texture = ExtResource("6_50lcr")
+
+[node name="tile3" unique_id=1402458833 instance=ExtResource("1_86rw7")]
+
+[node name="Rock_Small_003" parent="." index="0" unique_id=784217929]
+material_override = SubResource("StandardMaterial3D_17btd")
+
+[node name="TileNew_003" parent="." index="1" unique_id=1865374051]
+material_override = SubResource("StandardMaterial3D_02ojw")

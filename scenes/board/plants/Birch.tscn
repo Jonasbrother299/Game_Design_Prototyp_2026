@@ -2,13 +2,14 @@
 
 [ext_resource type="PackedScene" uid="uid://blelryq6qal8k" path="res://assets/models/plants/birch/Birch.fbx" id="1_ctr7x"]
 [ext_resource type="Shader" uid="uid://bdkhwi4ebu8hh" path="res://assets/shaders/leaves/leaves2.tres" id="2_gw3bh"]
+[ext_resource type="Shader" uid="uid://3wi760r1mtv" path="res://assets/shaders/leaves/leaves3.tres" id="2_sj1fg"]
 [ext_resource type="Texture2D" uid="uid://dkd24uy0ih4dv" path="res://assets/models/plants/birch/textures/Birch_Material_AlbedoTransparency.png" id="4_xt30k"]
 [ext_resource type="Texture2D" uid="uid://ckkuhyo6vgwk7" path="res://assets/models/plants/birch/textures/Birch_Material_MetallicSmoothness.png" id="5_xx3eb"]
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8uq3w"]
 render_priority = 0
-shader = ExtResource("2_gw3bh")
+shader = ExtResource("2_sj1fg")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_dwyv6"]
 

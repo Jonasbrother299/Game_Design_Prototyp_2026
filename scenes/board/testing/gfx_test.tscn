@@ -1,0 +1,263 @@
+[gd_scene format=3 uid="uid://xk2ceq2n5g70"]
+
+[ext_resource type="PackedScene" uid="uid://dghs45tf2y1ty" path="res://scenes/board/tiles/HexTile2.tscn" id="1_ayfgr"]
+[ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile3.tscn" id="2_h5vyq"]
+[ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile.tscn" id="3_bbgvc"]
+[ext_resource type="PackedScene" uid="uid://dr15dpset8y4s" path="res://scenes/board/plants/Oak.tscn" id="4_pcdc4"]
+[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_pcdc4"]
+[ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="6_8h71w"]
+[ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="7_mq23u"]
+[ext_resource type="PackedScene" uid="uid://dbeuslydoe41t" path="res://scenes/board/plants/Moss.tscn" id="8_drhma"]
+[ext_resource type="PackedScene" uid="uid://dcvamy8m5xu37" path="res://scenes/board/plants/Spidelilie.tscn" id="9_7r7g7"]
+[ext_resource type="PackedScene" uid="uid://bgyebtrvvcpor" path="res://scenes/board/plants/Birch.tscn" id="10_u0h22"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_drhma"]
+panorama = ExtResource("5_pcdc4")
+filter = false
+
+[sub_resource type="Sky" id="Sky_gsxep"]
+sky_material = SubResource("PanoramaSkyMaterial_drhma")
+
+[sub_resource type="Environment" id="Environment_7r7g7"]
+background_mode = 2
+background_color = Color(0.16, 0.19, 0.16, 1)
+sky = SubResource("Sky_gsxep")
+ambient_light_source = 3
+ambient_light_color = Color(0.94, 0.91697, 0.47939998, 1)
+ambient_light_sky_contribution = 0.34
+ambient_light_energy = 0.65
+reflected_light_source = 2
+glow_enabled = true
+glow_intensity = 1.86
+glow_strength = 1.11
+glow_hdr_threshold = 0.96
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0024
+volumetric_fog_albedo = Color(0.83, 0.9943333, 1, 1)
+volumetric_fog_emission_energy = 0.0
+volumetric_fog_ambient_inject = 0.39
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_u0h22"]
+
+[sub_resource type="Compositor" id="Compositor_ln1tm"]
+
+[node name="GfxTest" type="Node3D" unique_id=644285736]
+
+[node name="TestFeld" type="Node3D" parent="." unique_id=893408971]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.21976614, 0)
+
+[node name="tile1" parent="TestFeld" unique_id=1405062571 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-0.50000006, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.50000006, 0, 0, -1.7)
+
+[node name="tile2" parent="TestFeld" unique_id=1423769831 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-0.5000001, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, -0.5000001, 1.5134771, 0, -0.84971666)
+
+[node name="tile9" parent="TestFeld" unique_id=514446296 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5134778, 0, 4.250286)
+
+[node name="tile14" parent="TestFeld" unique_id=817865742 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(0.5000001, 0, 0.8660257, 0, 1, 0, -0.8660257, 0, 0.5000001, -5.9441357, 0, -0.021645546)
+
+[node name="tile15" parent="TestFeld" unique_id=233701821 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.49999985, 0, -0.8660258, 0, 1, 0, 0.8660258, 0, -0.49999985, -5.9441347, 0, 1.6783538)
+
+[node name="tile16" parent="TestFeld" unique_id=499534998 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.49999985, 0, -0.8660258, 0, 1, 0, 0.8660258, 0, -0.49999985, -5.9441347, 0, -1.7216454)
+
+[node name="tile17" parent="TestFeld" unique_id=1402458833 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(1, 0, 2.3841858e-07, 0, 1, 0, -2.3841858e-07, 0, 1, -5.9441366, 0, -3.421646)
+
+[node name="tile18" parent="TestFeld" unique_id=2078822424 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-0.50000024, 0, -0.86602557, 0, 1, 0, 0.86602557, 0, -0.50000024, 5.957492, 0, -1.6638656)
+
+[node name="tile19" parent="TestFeld" unique_id=92074304 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, 0.86602575, 0, 1, 0, -0.86602575, 0, 0.49999997, 5.9574924, 0, -3.363865)
+
+[node name="tile20" parent="TestFeld" unique_id=1615179497 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, 0.86602575, 0, 1, 0, -0.86602575, 0, 0.49999997, 5.957492, 0, 0.03613472)
+
+[node name="tile21" parent="TestFeld" unique_id=1723649796 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(-1, 0, -1.4901161e-07, 0, 1, 0, 1.4901161e-07, 0, -1, 5.957494, 0, 1.7361362)
+
+[node name="tile10" parent="TestFeld" unique_id=819339242 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 1.5134776, 0, -2.549716)
+
+[node name="tile11" parent="TestFeld" unique_id=1888391608 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 1.5134765, 0, 0.8502846)
+
+[node name="tile12" parent="TestFeld" unique_id=181140434 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-0.5000001, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, -0.5000001, 1.5134783, 0, -4.2497177)
+
+[node name="tile22" parent="TestFeld" unique_id=693715102 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(0.50000024, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, 0.50000024, -1.5087849, 0, -0.84999895)
+
+[node name="tile23" parent="TestFeld" unique_id=1850887565 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.49999985, 0, 0.8660255, 0, 1, 0, -0.8660255, 0, -0.49999985, -1.508785, 0, -5.9500017)
+
+[node name="tile24" parent="TestFeld" unique_id=1542987272 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.5000001, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.5000001, -1.5087867, 0, 0.85000134)
+
+[node name="tile25" parent="TestFeld" unique_id=1648472222 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.5000001, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.5000001, -1.5087848, 0, -2.5499992)
+
+[node name="tile26" parent="TestFeld" unique_id=1831339568 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-0.49999985, 0, 0.8660255, 0, 1, 0, -0.8660255, 0, -0.49999985, -1.5087861, 0, 2.5500028)
+
+[node name="tile27" parent="TestFeld" unique_id=275267504 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.49999985, 0, 0.8660255, 0, 1, 0, -0.8660255, 0, -0.49999985, -1.5087873, 0, 4.250001)
+
+[node name="tile28" parent="TestFeld" unique_id=1886889321 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(0.49999994, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999994, -1.5087855, 0, -4.25)
+
+[node name="tile13" parent="TestFeld" unique_id=677867700 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999994, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999994, 1.5134778, 0, -5.9497156)
+
+[node name="tile29" parent="TestFeld" unique_id=1043144000 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(-1, 0, -1.1920929e-07, 0, 1, 0, 1.1920929e-07, 0, -1, 1.5134771, 0, 2.5502849)
+
+[node name="tile30" parent="TestFeld" unique_id=48068605 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.975, 0, 0)
+
+[node name="tile31" parent="TestFeld" unique_id=988978426 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9750001, 0, -1.7000003)
+
+[node name="tile32" parent="TestFeld" unique_id=136094558 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9750001, 0, -3.4000015)
+
+[node name="tile33" parent="TestFeld" unique_id=143198687 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-1, 0, 1.1920929e-07, 0, 1, 0, -1.1920929e-07, 0, -1, -2.9900608, 0, -1.6735749)
+
+[node name="tile34" parent="TestFeld" unique_id=775431222 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-1, 0, 1.1920929e-07, 0, 1, 0, -1.1920929e-07, 0, -1, -2.9900608, 0, 0.026425838)
+
+[node name="tile35" parent="TestFeld" unique_id=1158815305 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-1, 0, 1.1920929e-07, 0, 1, 0, -1.1920929e-07, 0, -1, -2.9900615, 0, 1.7264256)
+
+[node name="tile36" parent="TestFeld" unique_id=1419703424 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-1, 0, 1.1920929e-07, 0, 1, 0, -1.1920929e-07, 0, -1, -2.990061, 0, 3.4264262)
+
+[node name="tile37" parent="TestFeld" unique_id=907643566 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(-1, 0, 1.1920929e-07, 0, 1, 0, -1.1920929e-07, 0, -1, -2.9900608, 0, -3.3735752)
+
+[node name="tile38" parent="TestFeld" unique_id=1990040210 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-1, 0, 1.1920929e-07, 0, 1, 0, -1.1920929e-07, 0, -1, -2.9900606, 0, -5.073575)
+
+[node name="tile39" parent="TestFeld" unique_id=609834802 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9749994, 0, -5.1000004)
+
+[node name="tile40" parent="TestFeld" unique_id=2102241621 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9750001, 0, 1.6999998)
+
+[node name="tile41" parent="TestFeld" unique_id=380962111 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9750001, 0, 3.4)
+
+[node name="tile3" parent="TestFeld" unique_id=854690147 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-0.50000006, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.50000006, 0, 0, 5.1000004)
+
+[node name="tile4" parent="TestFeld" unique_id=672475695 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 0, 0, 3.4000003)
+
+[node name="tile5" parent="TestFeld" unique_id=329245487 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 0, 0, -3.4)
+
+[node name="tile6" parent="TestFeld" unique_id=1084794222 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, 0.86602545, 0, 1, 0, -0.86602545, 0, 0.49999997, 0, 0, 0)
+
+[node name="tile7" parent="TestFeld" unique_id=2097034914 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 0, 0, -5.1000004)
+
+[node name="tile8" parent="TestFeld" unique_id=1455720066 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 0, 0, -6.8)
+
+[node name="tile42" parent="TestFeld" unique_id=751003584 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(-0.50000006, 0, 0.8660254, 0, 1, 0, -0.8660254, 0, -0.50000006, 0, 0, 1.7)
+
+[node name="tile43" parent="TestFeld" unique_id=514599412 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4797583, 0, -0.85000014)
+
+[node name="tile44" parent="TestFeld" unique_id=1115474941 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-0.50000006, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.50000006, 4.4797583, 0, 2.5500002)
+
+[node name="tile45" parent="TestFeld" unique_id=1121182566 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, 4.4797583, 0, 0.85)
+
+[node name="tile46" parent="TestFeld" unique_id=1136362205 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4797583, 0, -2.5500002)
+
+[node name="tile47" parent="TestFeld" unique_id=1339506153 instance=ExtResource("1_ayfgr")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -4.475726, 0, -0.8499994)
+
+[node name="tile48" parent="TestFeld" unique_id=1561250213 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -4.475726, 0, -4.25)
+
+[node name="tile49" parent="TestFeld" unique_id=1122521779 instance=ExtResource("2_h5vyq")]
+transform = Transform3D(0.49999997, 0, -0.86602545, 0, 1, 0, 0.86602545, 0, 0.49999997, -4.475726, 0, -2.5499997)
+
+[node name="tile50" parent="TestFeld" unique_id=1990243056 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(0.5000001, 0, 0.8660253, 0, 1, 0, -0.8660253, 0, 0.5000001, -4.475726, 0, 0.8500004)
+
+[node name="tile51" parent="TestFeld" unique_id=330657321 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(-0.50000006, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.50000006, -4.475726, 0, 2.5500002)
+
+[node name="tile52" parent="TestFeld" unique_id=96377542 instance=ExtResource("3_bbgvc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4797583, 0, -4.25)
+
+[node name="starting_oak_v2" parent="." unique_id=628264869 instance=ExtResource("4_pcdc4")]
+transform = Transform3D(0.43, 0, 0, 0, 0.43, 0, 0, 0, 0.43, -0.15420938, 0, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=467712172]
+transform = Transform3D(-0.72405154, -0.48772407, 0.48772404, 7.0623467e-09, 0.7071068, 0.7071068, -0.68974626, 0.5119818, -0.51198184, 0, 1.2775217, 1.4064736)
+light_color = Color(0.98, 0.90062004, 0.4508, 1)
+light_energy = 1.04
+light_indirect_energy = 0.84
+light_volumetric_fog_energy = 1.08
+light_angular_distance = 4.1
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2083708418]
+environment = SubResource("Environment_7r7g7")
+camera_attributes = SubResource("CameraAttributesPractical_u0h22")
+compositor = SubResource("Compositor_ln1tm")
+script = ExtResource("6_8h71w")
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=278846697]
+script = ExtResource("7_mq23u")
+SmoothSpeed = 8.0
+FocusTargetPath = NodePath("../BoardManager/HexTile_0_0")
+FocusOffset = Vector3(0, -0.2, 0)
+MinPitchDegrees = 5.0
+MaxPitchDegrees = 75.0
+MinDistance = 14.0
+ZoomSmoothSpeed = 8.0
+StartPitchDegrees = 25.0
+StartDistance = 20.5
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=996065326]
+transform = Transform3D(1, 0, 0, 0, 0.57357645, 0.81915206, 0, -0.81915206, 0.57357645, 0, 18, 18)
+fov = 35.0
+
+[node name="Moss" parent="." unique_id=499062124 instance=ExtResource("8_drhma")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012536794, -0.18989593, 1.7129886)
+
+[node name="Moss2" parent="." unique_id=734959199 instance=ExtResource("8_drhma")]
+transform = Transform3D(-0.5000001, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.5000001, 1.4753926, -0.18877536, -0.86099076)
+
+[node name="Spidelilie" parent="." unique_id=1688451095 instance=ExtResource("9_7r7g7")]
+transform = Transform3D(0.4631605, -0.012210983, 0.03947414, 0, 0.44423082, 0.13741896, -0.04131968, -0.13687535, 0.44247353, 1.6037401, -0.29110014, 0.54532874)
+
+[node name="Spidelilie2" parent="." unique_id=565435910 instance=ExtResource("9_7r7g7")]
+transform = Transform3D(0.36083445, 0.046081573, 0.20994039, 0, 0.4102338, -0.090045646, -0.21493831, 0.07736089, 0.35244402, 1.9137827, -0.23792857, 1.0430183)
+
+[node name="Spidelilie3" parent="." unique_id=1350661422 instance=ExtResource("9_7r7g7")]
+transform = Transform3D(0.465, 0, 0, 0, 0.465, 0, 0, 0, 0.465, 1.4859458, 0, 1.0430183)
+
+[node name="Birch" parent="." unique_id=1076487804 instance=ExtResource("10_u0h22")]
+transform = Transform3D(0.445, 0, 0, 0, 0.445, 0, 0, 0, 0.445, -3.005278, -0.110308886, 1.7030771)
+
+[node name="SpotLight3D" type="SpotLight3D" parent="." unique_id=830473755]
+transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 1.3251916, 7.7805524, 1.0691869)
+light_color = Color(0.94, 0.85446, 0.69560003, 1)
+light_energy = 16.0
+shadow_enabled = true
+spot_range = 9.032
+spot_attenuation = -1.26
+spot_angle = 18.1636
