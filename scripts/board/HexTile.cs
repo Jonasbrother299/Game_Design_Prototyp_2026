@@ -731,7 +731,7 @@ void fragment() {
 		if (Data == null)
 			return;
 
-		UpdateTileMaterial();
+		//UpdateTileMaterial();
 		RebuildPlantVisual();
 		RebuildEffectVisual();
 
@@ -741,7 +741,7 @@ void fragment() {
 		}
 	}
 
-	private void UpdateTileMaterial()
+	/* private void UpdateTileMaterial()
 	{
 		if (_tileMesh == null || _tileMesh.Mesh == null)
 		{
@@ -773,7 +773,7 @@ void fragment() {
 		_tileMaterial.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
 
 		_tileMesh.MaterialOverride = _tileMaterial;
-	}
+	} */
 
 	private Color GetLightLevelTint()
 	{

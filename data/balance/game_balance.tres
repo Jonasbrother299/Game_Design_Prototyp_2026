@@ -1,36 +1,20 @@
-[gd_resource type="Resource" script_class="GameConfig" load_steps=13 format=3]
+[gd_resource type="Resource" script_class="GameConfig" format=3 uid="uid://d28g8w7xp712f"]
 
-[ext_resource type="Script" path="res://scripts/game/GameConfig.cs" id="1_config"]
-[ext_resource type="Resource" path="res://data/plants/oak.tres" id="2_oak"]
-[ext_resource type="Resource" path="res://data/plants/moss.tres" id="3_moss"]
-[ext_resource type="Resource" path="res://data/plants/flower.tres" id="4_flower"]
-[ext_resource type="Resource" path="res://data/plants/mushroom.tres" id="5_mushroom"]
-[ext_resource type="Resource" path="res://data/plants/birch.tres" id="6_birch"]
-[ext_resource type="Resource" path="res://data/events/rain.tres" id="7_rain"]
-[ext_resource type="Resource" path="res://data/events/heavy_rain.tres" id="8_heavy_rain"]
-[ext_resource type="Resource" path="res://data/events/drought.tres" id="9_drought"]
-[ext_resource type="Resource" path="res://data/events/heat_day.tres" id="10_heat_day"]
-[ext_resource type="Resource" path="res://data/events/wind.tres" id="11_wind"]
-[ext_resource type="Resource" path="res://data/events/pests.tres" id="12_pests"]
+[ext_resource type="Script" uid="uid://bq22v482mv18m" path="res://scripts/game/GameConfig.cs" id="1_config"]
+[ext_resource type="Resource" uid="uid://dkk662es040i5" path="res://data/plants/oak.tres" id="2_oak"]
+[ext_resource type="Resource" uid="uid://b5awnltws0s1k" path="res://data/plants/moss.tres" id="3_moss"]
+[ext_resource type="Resource" uid="uid://bs3e8bkyjr1p6" path="res://data/plants/flower.tres" id="4_flower"]
+[ext_resource type="Resource" uid="uid://072530l8561r" path="res://data/plants/mushroom.tres" id="5_mushroom"]
+[ext_resource type="Resource" uid="uid://3m6vgxyfuv8n" path="res://data/plants/birch.tres" id="6_birch"]
+[ext_resource type="Resource" uid="uid://ckd6v17q7vqx3" path="res://data/events/rain.tres" id="7_rain"]
+[ext_resource type="Resource" uid="uid://ygv3gfq0xfmb" path="res://data/events/heavy_rain.tres" id="8_heavy_rain"]
+[ext_resource type="Resource" uid="uid://cq3hsjfkjpvd4" path="res://data/events/drought.tres" id="9_drought"]
+[ext_resource type="Resource" uid="uid://usld6spmlsma" path="res://data/events/heat_day.tres" id="10_heat_day"]
+[ext_resource type="Resource" uid="uid://btaq3v1nycvp1" path="res://data/events/wind.tres" id="11_wind"]
+[ext_resource type="Resource" uid="uid://bvuh300fc0p6v" path="res://data/events/pests.tres" id="12_pests"]
 
 [resource]
 script = ExtResource("1_config")
-StartingWater = 10
-LoseWaterLimit = 0
-WinWaterLimit = 50
-StartingHandSize = 3
-MaxHandSize = 3
-CardsPerTurnLimit = 3
-HandDiscardAvailableFromRound = 2
-SpreadCheckInterval = 1
-MinimumSpreadChanceDenominator = 2
-EventChanceDenominator = 3
-MonocultureMinimumPlantCount = 3
-DeadPlantBlockedRounds = 2
-UseRectangularBoard = true
-BoardColumns = 9
-BoardRows = 7
-BoardRadius = 4
 Oak = ExtResource("2_oak")
 Moss = ExtResource("3_moss")
 Flower = ExtResource("4_flower")

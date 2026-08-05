@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://dghs45tf2y1ty"]
+
+[ext_resource type="Script" uid="uid://dswtovmxx7vpi" path="res://scripts/board/HexTile.cs" id="1_vw4n3"]
+[ext_resource type="PackedScene" uid="uid://bi5vgilqldu0g" path="res://assets/models/tiles/tile1.fbx" id="1_wgx2s"]
+[ext_resource type="Texture2D" uid="uid://brav1xihem3m1" path="res://assets/models/tiles/textures/tile1/tile1_Rock3_AlbedoTransparency.png" id="2_ymots"]
+[ext_resource type="Texture2D" uid="uid://c2yc8hd2ypsgy" path="res://assets/models/tiles/textures/tile1/tile1_Rock3_Normal.png" id="3_cxgp3"]
+[ext_resource type="Texture2D" uid="uid://d4ll6sjjimbpb" path="res://assets/models/tiles/textures/tile1/tile1_Rock1_AlbedoTransparency.png" id="4_1vq0h"]
+[ext_resource type="Texture2D" uid="uid://cp70b32jrowic" path="res://assets/models/tiles/textures/tile1/tile1_Rock1_Normal.png" id="5_hkvas"]
+[ext_resource type="Texture2D" uid="uid://c2br6yxe2c11t" path="res://assets/models/tiles/textures/tile1/tile1_Ground_AlbedoTransparency.png" id="6_i0gl4"]
+[ext_resource type="Texture2D" uid="uid://dx5py64f6quu2" path="res://assets/models/tiles/textures/tile1/tile1_Ground_Normal.png" id="7_057v8"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d4kb3"]
+albedo_texture = ExtResource("2_ymots")
+normal_enabled = true
+normal_texture = ExtResource("3_cxgp3")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kqtt6"]
+albedo_texture = ExtResource("4_1vq0h")
+normal_enabled = true
+normal_texture = ExtResource("5_hkvas")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ok44u"]
+albedo_texture = ExtResource("6_i0gl4")
+roughness_texture_channel = 3
+normal_enabled = true
+normal_scale = 1.7
+normal_texture = ExtResource("7_057v8")
+
+[node name="tile1" unique_id=1405062571 instance=ExtResource("1_wgx2s")]
+script = ExtResource("1_vw4n3")
+
+[node name="Rock_Med_002" parent="." index="0" unique_id=360037225]
+material_override = SubResource("StandardMaterial3D_d4kb3")
+
+[node name="Rock_Small_002" parent="." index="1" unique_id=2039874800]
+material_override = SubResource("StandardMaterial3D_kqtt6")
+
+[node name="TileNew" parent="." index="2" unique_id=871092914]
+material_override = SubResource("StandardMaterial3D_ok44u")

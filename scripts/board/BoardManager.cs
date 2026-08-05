@@ -74,7 +74,7 @@ public partial class BoardManager : Node3D
 
 		if (HexTileScene == null)
 		{
-			HexTileScene = GD.Load<PackedScene>("res://scenes/board/HexTile.tscn");
+			HexTileScene = GD.Load<PackedScene>("res://scenes/board/tiles/HexTile2.tscn");
 		}
 
 		GenerateBoard();

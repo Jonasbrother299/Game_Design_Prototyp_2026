@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://b5awnltws0s1k"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" uid="uid://di2wluqatpn34" path="res://assets/cards/card_moos.png" id="2_card"]
+[ext_resource type="Texture2D" uid="uid://6qgcaj0r7kpl" path="res://assets/cards/card_moos.png" id="2_card"]
+[ext_resource type="PackedScene" uid="uid://dbeuslydoe41t" path="res://scenes/board/plants/Moss.tscn" id="2_tk7rn"]
 
 [resource]
 script = ExtResource("1_plant")
 Type = 2
 DisplayName = "Moos"
 StartingHandCopies = 1
-DrawWeight = 1
 WaterConsumption = 2
 WaterProduction = 3
 GrowthRounds = 2
@@ -16,3 +16,4 @@ GrowthStageCount = 3
 SpreadChanceDenominator = 3
 AllowedLightLevels = Array[int]([1, 2])
 CardImage = ExtResource("2_card")
+PlantScene = ExtResource("2_tk7rn")

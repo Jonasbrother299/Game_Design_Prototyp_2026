@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PlantDefinition" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://dkk662es040i5"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
 
@@ -7,11 +7,8 @@ script = ExtResource("1_plant")
 Type = 1
 DisplayName = "Eiche"
 DrawWeight = 0
-WaterConsumption = 0
-WaterProduction = 0
 GrowthRounds = 3
 GrowthStageCount = 4
-SpreadChanceDenominator = 0
 AllowedLightLevels = Array[int]([0, 1])
 EffectType = 1
 ShadeRequiresMaturity = false

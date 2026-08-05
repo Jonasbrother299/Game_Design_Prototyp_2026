@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bgyebtrvvcpor"]
 
 [ext_resource type="PackedScene" uid="uid://blelryq6qal8k" path="res://assets/models/plants/birch/Birch.fbx" id="1_ctr7x"]
-[ext_resource type="Shader" uid="uid://bdkhwi4ebu8hh" path="res://assets/textures/leaves/leaves2.tres" id="2_gw3bh"]
+[ext_resource type="Shader" uid="uid://bdkhwi4ebu8hh" path="res://assets/shaders/leaves/leaves2.tres" id="2_gw3bh"]
 [ext_resource type="Texture2D" uid="uid://dkd24uy0ih4dv" path="res://assets/models/plants/birch/textures/Birch_Material_AlbedoTransparency.png" id="4_xt30k"]
 [ext_resource type="Texture2D" uid="uid://ckkuhyo6vgwk7" path="res://assets/models/plants/birch/textures/Birch_Material_MetallicSmoothness.png" id="5_xx3eb"]
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
@@ -31,7 +31,7 @@ shader = ExtResource("2_gw3bh")
 
 [node name="Birch" unique_id=1076487804 instance=ExtResource("1_ctr7x")]
 
-[node name="BirchLeaves" parent="." index="0" unique_id=1225625691]
+[node name="BirchLeaves" parent="." index="0" unique_id=354483286]
 transform = Transform3D(0.755, 0, 0, 0, 0.755, 0, 0, 0, 0.755, 3.4168153, 8.463474, -1.7497036)
 transparency = 1.0
 cast_shadow = 0
@@ -40,7 +40,7 @@ cast_shadow = 0
 material_override = SubResource("ShaderMaterial_8uq3w")
 multimesh = SubResource("MultiMesh_sj1fg")
 
-[node name="BirchUnified" parent="." index="1" unique_id=866138262]
+[node name="BirchUnified" parent="." index="1" unique_id=1719757081]
 transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_4huw2")
 
