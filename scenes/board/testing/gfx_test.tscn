@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://xk2ceq2n5g70"]
 
-[ext_resource type="PackedScene" uid="uid://dghs45tf2y1ty" path="res://scenes/board/tiles/HexTile2.tscn" id="1_ayfgr"]
-[ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile3.tscn" id="2_h5vyq"]
-[ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile.tscn" id="3_bbgvc"]
+[ext_resource type="PackedScene" uid="uid://dghs45tf2y1ty" path="res://scenes/board/tiles/HexTile1.tscn" id="1_ayfgr"]
+[ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile2.tscn" id="2_h5vyq"]
+[ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile3.tscn" id="3_bbgvc"]
 [ext_resource type="PackedScene" uid="uid://dr15dpset8y4s" path="res://scenes/board/plants/Oak.tscn" id="4_pcdc4"]
 [ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_pcdc4"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="6_8h71w"]
@@ -241,23 +241,35 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012536794, -0.18989593, 1.
 [node name="Moss2" parent="." unique_id=734959199 instance=ExtResource("8_drhma")]
 transform = Transform3D(-0.5000001, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.5000001, 1.4753926, -0.18877536, -0.86099076)
 
-[node name="Spidelilie" parent="." unique_id=1688451095 instance=ExtResource("9_7r7g7")]
-transform = Transform3D(0.4631605, -0.012210983, 0.03947414, 0, 0.44423082, 0.13741896, -0.04131968, -0.13687535, 0.44247353, 1.6037401, -0.29110014, 0.54532874)
-
-[node name="Spidelilie2" parent="." unique_id=565435910 instance=ExtResource("9_7r7g7")]
-transform = Transform3D(0.36083445, 0.046081573, 0.20994039, 0, 0.4102338, -0.090045646, -0.21493831, 0.07736089, 0.35244402, 1.9137827, -0.23792857, 1.0430183)
-
-[node name="Spidelilie3" parent="." unique_id=1350661422 instance=ExtResource("9_7r7g7")]
-transform = Transform3D(0.465, 0, 0, 0, 0.465, 0, 0, 0, 0.465, 1.4859458, 0, 1.0430183)
-
 [node name="Birch" parent="." unique_id=1076487804 instance=ExtResource("10_u0h22")]
 transform = Transform3D(0.445, 0, 0, 0, 0.445, 0, 0, 0, 0.445, -3.005278, -0.110308886, 1.7030771)
 
 [node name="SpotLight3D" type="SpotLight3D" parent="." unique_id=830473755]
-transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 1.3251916, 7.7805524, 1.0691869)
+transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 2.8732114, 7.7805524, 2.2774787)
 light_color = Color(0.94, 0.85446, 0.69560003, 1)
-light_energy = 16.0
+light_volumetric_fog_energy = 16.135
 shadow_enabled = true
 spot_range = 9.032
 spot_attenuation = -1.26
-spot_angle = 18.1636
+spot_angle = 10.531507
+
+[node name="Blume" type="Node3D" parent="." unique_id=616936206]
+transform = Transform3D(0.50907147, 0, -0.8607242, 0, 1, 0, 0.8607242, 0, 0.50907147, 1.1073236, 0, 2.5950937)
+
+[node name="Spidelilie" parent="Blume" unique_id=1688451095 instance=ExtResource("9_7r7g7")]
+transform = Transform3D(0.4631605, -0.012210983, 0.03947414, 0, 0.44423082, 0.13741896, -0.04131968, -0.13687535, 0.44247353, 0.13323927, -0.29110014, -0.4169911)
+
+[node name="Spidelilie2" parent="Blume" unique_id=565435910 instance=ExtResource("9_7r7g7")]
+transform = Transform3D(0.36083445, 0.046081573, 0.20994039, 0, 0.4102338, -0.090045646, -0.21493831, 0.07736089, 0.35244402, 0.4432819, -0.23792857, 0.08069849)
+
+[node name="Spidelilie3" parent="Blume" unique_id=1350661422 instance=ExtResource("9_7r7g7")]
+transform = Transform3D(0.465, 0, 0, 0, 0.465, 0, 0, 0, 0.465, 0.015444994, 0, 0.08069849)
+
+[node name="SpotLight3D2" type="SpotLight3D" parent="." unique_id=320022193]
+transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 1.0209522, 7.7805524, 3.2761724)
+light_color = Color(0.94, 0.85446, 0.69560003, 1)
+light_volumetric_fog_energy = 7.374
+shadow_enabled = true
+spot_range = 9.032
+spot_attenuation = -1.26
+spot_angle = 10.531507
