@@ -23,7 +23,7 @@ default_input_values = [0, Vector3(0, 0, 0), 1, Vector3(1, 1, 1), 2, Vector3(0.5
 op_type = 3
 
 [sub_resource type="VisualShaderNodeColorConstant" id="VisualShaderNodeColorConstant_vpcbw"]
-constant = Color(0, 0.1922636, 0.03106681, 1)
+constant = Color(3.985828e-08, 0.111236684, 0.01383155, 1)
 
 [sub_resource type="VisualShaderNodeColorConstant" id="VisualShaderNodeColorConstant_krc8q"]
 constant = Color(0.0016329865, 0.004702506, 0.00040887806, 1)

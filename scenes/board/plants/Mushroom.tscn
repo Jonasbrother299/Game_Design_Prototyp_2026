@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://bspdcpu85m8u8"]
+
+[ext_resource type="PackedScene" uid="uid://l88keubk76g3" path="res://assets/models/plants/mushroom/Mooshroom.fbx" id="1_0nq12"]
+[ext_resource type="Texture2D" uid="uid://b5cgtg1vbs4w1" path="res://assets/models/plants/mushroom/textures/Mooshroom_Mushroom_AlbedoTransparency.png" id="2_aew2j"]
+[ext_resource type="Texture2D" uid="uid://bvs26vj4s7j6h" path="res://assets/models/plants/mushroom/textures/Mooshroom_Mushroom_Normal.png" id="3_u3exs"]
+[ext_resource type="Texture2D" uid="uid://dqs2kwgspbfq4" path="res://assets/models/plants/mushroom/textures/Mooshroom_Mushroom_Roughness.png" id="4_csvb0"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flcaa"]
+albedo_texture = ExtResource("2_aew2j")
+roughness = 0.7
+roughness_texture = ExtResource("4_csvb0")
+roughness_texture_channel = 4
+normal_enabled = true
+normal_scale = 1.25
+normal_texture = ExtResource("3_u3exs")
+
+[node name="Mooshroom" unique_id=539476221 instance=ExtResource("1_0nq12")]
+
+[node name="Cube" parent="." index="0" unique_id=1638215356]
+material_override = SubResource("StandardMaterial3D_flcaa")

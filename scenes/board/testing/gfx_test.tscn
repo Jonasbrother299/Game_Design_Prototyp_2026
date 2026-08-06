@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://dbeuslydoe41t" path="res://scenes/board/plants/Moss.tscn" id="8_drhma"]
 [ext_resource type="PackedScene" uid="uid://dcvamy8m5xu37" path="res://scenes/board/plants/Spidelilie.tscn" id="9_7r7g7"]
 [ext_resource type="PackedScene" uid="uid://bgyebtrvvcpor" path="res://scenes/board/plants/Birch.tscn" id="10_u0h22"]
+[ext_resource type="PackedScene" uid="uid://bspdcpu85m8u8" path="res://scenes/board/plants/Mushroom.tscn" id="11_7r7g7"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_drhma"]
 panorama = ExtResource("5_pcdc4")
@@ -32,10 +33,13 @@ glow_intensity = 1.86
 glow_strength = 1.11
 glow_hdr_threshold = 0.96
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.0024
+volumetric_fog_density = 0.002
 volumetric_fog_albedo = Color(0.83, 0.9943333, 1, 1)
 volumetric_fog_emission_energy = 0.0
-volumetric_fog_ambient_inject = 0.39
+volumetric_fog_gi_inject = 0.37
+volumetric_fog_length = 9.7
+volumetric_fog_ambient_inject = 0.69
+volumetric_fog_sky_affect = 0.0
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_u0h22"]
 
@@ -206,12 +210,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4797583, 0, -4.25)
 transform = Transform3D(0.43, 0, 0, 0, 0.43, 0, 0, 0, 0.43, -0.15420938, 0, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=467712172]
-transform = Transform3D(-0.72405154, -0.48772407, 0.48772404, 7.0623467e-09, 0.7071068, 0.7071068, -0.68974626, 0.5119818, -0.51198184, 0, 1.2775217, 1.4064736)
+transform = Transform3D(-0.72405136, -0.48772418, 0.4877241, 7.062345e-09, 0.7071068, 0.7071068, -0.6897461, 0.51198167, -0.5119816, 0, 1.5954562, 1.4064736)
 light_color = Color(0.98, 0.90062004, 0.4508, 1)
-light_energy = 1.04
+light_energy = 3.103
 light_indirect_energy = 0.84
 light_volumetric_fog_energy = 1.08
 light_angular_distance = 4.1
+shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2083708418]
 environment = SubResource("Environment_7r7g7")
@@ -268,8 +273,20 @@ transform = Transform3D(0.465, 0, 0, 0, 0.465, 0, 0, 0, 0.465, 0.015444994, 0, 0
 [node name="SpotLight3D2" type="SpotLight3D" parent="." unique_id=320022193]
 transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 1.0209522, 7.7805524, 3.2761724)
 light_color = Color(0.94, 0.85446, 0.69560003, 1)
-light_volumetric_fog_energy = 7.374
+light_energy = 2.678
+light_volumetric_fog_energy = 16.0
 shadow_enabled = true
 spot_range = 9.032
 spot_attenuation = -1.26
 spot_angle = 10.531507
+
+[node name="Mushroom" type="Node3D" parent="." unique_id=829930204]
+
+[node name="Mooshroom" parent="Mushroom" unique_id=539476221 instance=ExtResource("11_7r7g7")]
+transform = Transform3D(-0.99030674, 0, 0.13889647, 0, 1, 0, -0.13889647, 0, -0.99030674, 2.1264036, -0.15557975, 0.8959142)
+
+[node name="Mooshroom2" parent="Mushroom" unique_id=538857699 instance=ExtResource("11_7r7g7")]
+transform = Transform3D(-0.31779766, 0, 1.1312072, 0, 1.175, 0, -1.1312072, 0, -0.31779766, 1.3309456, -0.20964557, 1.2089565)
+
+[node name="Mooshroom3" parent="Mushroom" unique_id=435628090 instance=ExtResource("11_7r7g7")]
+transform = Transform3D(0.36947122, 0, -0.9292428, 0, 1, 0, 0.9292428, 0, 0.36947122, 1.3161671, -0.20626283, 0.5496138)
