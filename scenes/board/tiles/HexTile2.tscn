@@ -4,9 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://jrsj86mbsvk6" path="res://assets/models/tiles/textures/tile2/tile2_Ground_BaseMap.png" id="2_8131k"]
 [ext_resource type="Texture2D" uid="uid://dyg6s1oke0li1" path="res://assets/models/tiles/textures/tile2/tile2_Ground_Normal.png" id="3_r20yo"]
 [ext_resource type="PackedScene" uid="uid://bko5hk8hy4eg2" path="res://assets/models/tiles/textures/tile2/tile2_grass.fbx" id="4_ymots"]
-[ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://assets/shaders/grass.tres" id="5_cxgp3"]
+[ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://shaders/grass.tres" id="5_cxgp3"]
 [ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="9_057v8"]
-[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://assets/shaders/leaves/windnoise.tres" id="13_d4kb3"]
+[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="13_d4kb3"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_q1cj6"]
 albedo_texture = ExtResource("2_8131k")

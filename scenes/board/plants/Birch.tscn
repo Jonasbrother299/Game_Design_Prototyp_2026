@@ -1,15 +1,21 @@
 [gd_scene format=3 uid="uid://bgyebtrvvcpor"]
 
 [ext_resource type="PackedScene" uid="uid://blelryq6qal8k" path="res://assets/models/plants/birch/Birch.fbx" id="1_ctr7x"]
-[ext_resource type="Shader" uid="uid://bdkhwi4ebu8hh" path="res://assets/shaders/leaves/leaves2.tres" id="2_gw3bh"]
-[ext_resource type="Shader" uid="uid://3wi760r1mtv" path="res://assets/shaders/leaves/leaves3.tres" id="2_sj1fg"]
+[ext_resource type="Shader" uid="uid://s86vd8ar5cut" path="res://shaders/leaves/leaves.tres" id="2_sj1fg"]
+[ext_resource type="Texture2D" uid="uid://co2j3k8mbytiy" path="res://assets/models/StartingOak/textures/leaf3.png" id="3_gw3bh"]
 [ext_resource type="Texture2D" uid="uid://dkd24uy0ih4dv" path="res://assets/models/plants/birch/textures/Birch_Material_AlbedoTransparency.png" id="4_xt30k"]
 [ext_resource type="Texture2D" uid="uid://ckkuhyo6vgwk7" path="res://assets/models/plants/birch/textures/Birch_Material_MetallicSmoothness.png" id="5_xx3eb"]
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
+[ext_resource type="Texture2D" uid="uid://bqotbqkr8h83r" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_qh0xv"]
+[ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/falling-leaves.gdshader" id="8_xt30k"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8uq3w"]
 render_priority = 0
 shader = ExtResource("2_sj1fg")
+shader_parameter/WindNoise = ExtResource("3_gw3bh")
+shader_parameter/LeaveTexture = ExtResource("3_gw3bh")
+shader_parameter/foliage_colour1 = Color(0.63492006, 0.66, 0.15840001, 1)
+shader_parameter/foliage_colour2 = Color(0.51, 0.44744, 0.04079999, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_dwyv6"]
 
@@ -27,8 +33,36 @@ normal_enabled = true
 normal_texture = ExtResource("6_umc02")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_gw3bh"]
-render_priority = 0
-shader = ExtResource("2_gw3bh")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xx3eb"]
+transparency = 1
+cull_mode = 2
+albedo_color = Color(0.1728, 0.48, 0.27520004, 1)
+albedo_texture = ExtResource("7_qh0xv")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_umc02"]
+shader = ExtResource("8_xt30k")
+shader_parameter/color = Color(1, 1, 1, 1)
+shader_parameter/box_emit_size = Vector3(8.83, 9.23, 12.185)
+shader_parameter/initial_rotation_xz = 0.5
+shader_parameter/fade_from = 1.0
+shader_parameter/forward_speed_min = 5.0
+shader_parameter/forward_speed_max = 15.0
+shader_parameter/rot_speed_x = Vector2(0, 0.5)
+shader_parameter/rot_speed_y = Vector2(1, 2)
+shader_parameter/rot_speed_z = Vector2(1, 2)
+shader_parameter/vel_damping = 1.0
+shader_parameter/grav = Vector3(0, -9.8, 0)
+shader_parameter/wind_direction = Vector3(0, 0, -1)
+shader_parameter/wind_speed_min = -10.0
+shader_parameter/wind_speed_max = 50.0
+shader_parameter/wind_change = Vector2(0.123, 0.456)
+shader_parameter/vortex_force = Vector2(0, 0)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_5afiq"]
+size = Vector2(0.5, 0.5)
+subdivide_width = 2
+subdivide_depth = 2
 
 [node name="Birch" unique_id=1076487804 instance=ExtResource("1_ctr7x")]
 
@@ -50,3 +84,14 @@ transform = Transform3D(1.175, 0, 0, 0, 1.175, 0, 0, 0, 1.175, -9.538232, 0, 0)
 visible = false
 material_override = SubResource("ShaderMaterial_gw3bh")
 mesh = SubResource("PlaneMesh_dwyv6")
+
+[node name="FallingLeaves" type="GPUParticles3D" parent="." index="3" unique_id=585236829]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.2973337, 6.098075, 0)
+material_override = SubResource("StandardMaterial3D_xx3eb")
+amount = 10
+lifetime = 10.0
+speed_scale = 0.8
+visibility_aabb = AABB(-4, -4, -4, 8.83, 9.23, 12.185)
+local_coords = true
+process_material = SubResource("ShaderMaterial_umc02")
+draw_pass_1 = SubResource("PlaneMesh_5afiq")

@@ -1,7 +1,7 @@
 [gd_resource type="VisualShader" format=3 uid="uid://csnm1i1k0eshk"]
 
 [ext_resource type="Texture2D" uid="uid://b1uhljqahla82" path="res://assets/models/plants/grass/grass_DefaultMaterial_AlbedoTransparency.png" id="1_kgka3"]
-[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://assets/shaders/leaves/windnoise.tres" id="2_kghr4"]
+[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="2_kghr4"]
 
 [sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_hw6rg"]
 texture = ExtResource("1_kgka3")
@@ -86,11 +86,11 @@ modes/cull = 2
 modes/diffuse = 3
 modes/specular = 1
 nodes/vertex/2/node = SubResource("VisualShaderNodeInput_s0ys3")
-nodes/vertex/2/position = Vector2(-1120, 440)
+nodes/vertex/2/position = Vector2(-1220, 460)
 nodes/vertex/3/node = SubResource("VisualShaderNodeVectorDecompose_tfm7n")
-nodes/vertex/3/position = Vector2(-780, 420)
+nodes/vertex/3/position = Vector2(-880, 440)
 nodes/vertex/4/node = SubResource("VisualShaderNodeFloatFunc_43lqn")
-nodes/vertex/4/position = Vector2(-540, 440)
+nodes/vertex/4/position = Vector2(-640, 460)
 nodes/vertex/5/node = SubResource("VisualShaderNodeVectorOp_oi7w0")
 nodes/vertex/5/position = Vector2(180, 60)
 nodes/vertex/6/node = SubResource("VisualShaderNodeInput_7idjg")
@@ -106,7 +106,7 @@ nodes/vertex/10/position = Vector2(-900, -340)
 nodes/vertex/11/node = SubResource("VisualShaderNodeInput_kghr4")
 nodes/vertex/11/position = Vector2(-1560, -140)
 nodes/vertex/12/node = SubResource("VisualShaderNodeVectorOp_hw6rg")
-nodes/vertex/12/position = Vector2(-300, 240)
+nodes/vertex/12/position = Vector2(-400, 260)
 nodes/vertex/13/node = SubResource("VisualShaderNodeInput_a1hl3")
 nodes/vertex/13/position = Vector2(-2000, -400)
 nodes/vertex/14/node = SubResource("VisualShaderNodeVectorDecompose_ynpbn")

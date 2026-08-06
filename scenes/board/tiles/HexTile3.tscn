@@ -8,8 +8,8 @@
 [ext_resource type="Texture2D" uid="uid://bot1ov0gvtgl8" path="res://assets/models/tiles/textures/tile3/tile3_Ground_Normal.png" id="6_50lcr"]
 [ext_resource type="Texture2D" uid="uid://8yosltwdhnro" path="res://assets/models/tiles/textures/tile3/tile3_Ground_Roughness.png" id="7_5yran"]
 [ext_resource type="PackedScene" uid="uid://b1tikic28ddfu" path="res://assets/models/tiles/textures/tile3/tile3_grass.fbx" id="8_axfrm"]
-[ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://assets/shaders/grass.tres" id="9_eh8ex"]
-[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://assets/shaders/leaves/windnoise.tres" id="10_fosnb"]
+[ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://shaders/grass.tres" id="9_eh8ex"]
+[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="10_fosnb"]
 [ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="11_wv37v"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_17btd"]

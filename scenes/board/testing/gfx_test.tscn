@@ -236,7 +236,7 @@ transform = Transform3D(1, 0, 0, 0, 0.57357645, 0.81915206, 0, -0.81915206, 0.57
 fov = 35.0
 
 [node name="Moss" parent="." unique_id=499062124 instance=ExtResource("8_drhma")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012536794, -0.18989593, 1.7129886)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.012536794, -0.13439053, 1.7129886)
 
 [node name="Moss2" parent="." unique_id=734959199 instance=ExtResource("8_drhma")]
 transform = Transform3D(-0.5000001, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.5000001, 1.4753926, -0.18877536, -0.86099076)
@@ -245,7 +245,7 @@ transform = Transform3D(-0.5000001, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.500
 transform = Transform3D(0.445, 0, 0, 0, 0.445, 0, 0, 0, 0.445, -3.005278, -0.110308886, 1.7030771)
 
 [node name="SpotLight3D" type="SpotLight3D" parent="." unique_id=830473755]
-transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 2.8732114, 7.7805524, 2.2774787)
+transform = Transform3D(0.9865551, -7.14372e-09, 0.16342929, -0.16342929, -4.3123684e-08, 0.98655504, 0, -1, -4.371138e-08, 1.4441087, 7.7805524, 0.528522)
 light_color = Color(0.94, 0.85446, 0.69560003, 1)
 light_volumetric_fog_energy = 16.135
 shadow_enabled = true
