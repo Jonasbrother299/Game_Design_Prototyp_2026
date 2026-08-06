@@ -207,7 +207,7 @@ transform = Transform3D(-0.50000006, 0, -0.8660254, 0, 1, 0, 0.8660254, 0, -0.50
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4797583, 0, -4.25)
 
 [node name="starting_oak_v2" parent="." unique_id=628264869 instance=ExtResource("4_pcdc4")]
-transform = Transform3D(0.43, 0, 0, 0, 0.43, 0, 0, 0, 0.43, -0.15420938, 0, 0)
+transform = Transform3D(0.54, 0, 0, 0, 0.54, 0, 0, 0, 0.54, -0.15420938, 0, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=467712172]
 transform = Transform3D(-0.72405136, -0.48772418, 0.4877241, 7.062345e-09, 0.7071068, 0.7071068, -0.6897461, 0.51198167, -0.5119816, 0, 1.5954562, 1.4064736)
