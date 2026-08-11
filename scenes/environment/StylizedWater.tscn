@@ -1,0 +1,111 @@
+[gd_scene format=3 uid="uid://bfjv28ce1p0ke"]
+
+[ext_resource type="Shader" path="res://assets/shaders/stylized_water.gdshader" id="1_water_shader"]
+[ext_resource type="Script" path="res://scripts/visuals/StylizedWaterController.cs" id="2_water_controller"]
+[ext_resource type="Shader" path="res://assets/shaders/stylized_water_caustic_underlay.gdshader" id="3_caustic_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
+render_priority = 0
+shader = ExtResource("1_water_shader")
+shader_parameter/surface_color = Color(0.14, 0.46, 0.54, 1)
+shader_parameter/line_color = Color(0.32, 0.72, 0.76, 1)
+shader_parameter/foam_color = Color(1, 1, 1, 1)
+shader_parameter/cell_scale = 2.3
+shader_parameter/animation_speed = 0.07
+shader_parameter/refraction_strength = 0.008
+shader_parameter/refraction_mix = 0.32
+shader_parameter/refraction_edge_reach = 0.55
+shader_parameter/refraction_edge_falloff = 1.35
+shader_parameter/refraction_center_strength = 0.16
+shader_parameter/refraction_scale = 1.3
+shader_parameter/refraction_speed = 0.16
+shader_parameter/line_width = 0.018
+shader_parameter/line_softness = 0.026
+shader_parameter/line_strength = 0.58
+shader_parameter/line_wobble_strength = 0.26
+shader_parameter/line_bulge_strength = 0.0
+shader_parameter/line_bulge_size = 1.45
+shader_parameter/line_bulge_scale = 1.8
+shader_parameter/line_distortion_scale = 1.4
+shader_parameter/wave_height = 0.002
+shader_parameter/contact_width = 0.045
+shader_parameter/contact_softness = 0.075
+shader_parameter/contact_strength = 0.92
+shader_parameter/shore_ripple_strength = 0.46
+shader_parameter/shore_ripple_reach = 36.0
+shader_parameter/shore_ripple_speed = 0.18
+shader_parameter/surface_alpha = 0.76
+shader_parameter/water_center = Vector2(0, 0)
+shader_parameter/water_radius = 16.0
+shader_parameter/edge_fade = 1.2
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_water"]
+material = SubResource("ShaderMaterial_water")
+size = Vector2(48, 48)
+subdivide_width = 64
+subdivide_depth = 64
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_caustic_underlay"]
+render_priority = 0
+shader = ExtResource("3_caustic_shader")
+shader_parameter/underlay_color = Color(0.16, 0.5, 0.57, 1)
+shader_parameter/caustic_color = Color(0.32, 0.72, 0.76, 1)
+shader_parameter/cell_scale = 1.55
+shader_parameter/animation_speed = 0.07
+shader_parameter/line_width = 0.018
+shader_parameter/line_softness = 0.026
+shader_parameter/caustic_strength = 0.58
+shader_parameter/line_wobble_strength = 0.26
+shader_parameter/line_bulge_strength = 0.0
+shader_parameter/line_bulge_size = 1.45
+shader_parameter/line_bulge_scale = 1.8
+shader_parameter/line_distortion_scale = 1.4
+shader_parameter/pattern_offset = Vector2(0.48, -0.34)
+shader_parameter/water_center = Vector2(0, 0)
+shader_parameter/underlay_radius = 19.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_caustic_underlay"]
+material = SubResource("ShaderMaterial_caustic_underlay")
+size = Vector2(56, 56)
+
+[node name="StylizedWater" type="MeshInstance3D" unique_id=725957702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
+cast_shadow = 0
+extra_cull_margin = 0.1
+mesh = SubResource("PlaneMesh_water")
+script = ExtResource("2_water_controller")
+SurfaceColor = Color(0.14, 0.46, 0.54, 1)
+UnderlayColor = Color(0.16, 0.5, 0.57, 1)
+LineColor = Color(0.32, 0.72, 0.76, 1)
+FoamColor = Color(1, 1, 1, 1)
+SurfaceCellScale = 2.3
+UnderlayCellScale = 1.55
+PatternSpeed = 0.07
+RefractionStrength = 0.008
+RefractionMix = 0.32
+RefractionEdgeReach = 0.55
+RefractionEdgeFalloff = 1.35
+RefractionCenterStrength = 0.16
+RefractionScale = 1.3
+RefractionSpeed = 0.16
+LineWobbleStrength = 0.26
+LineBulgeStrength = 0.0
+LineBulgeSize = 1.45
+LineBulgeScale = 1.8
+LineDistortionScale = 1.4
+ShoreRippleStrength = 0.46
+ShoreRippleReach = 36.0
+ShoreRippleSpeed = 0.18
+RainRippleDensity = 1.35
+NormalRainIntensity = 0.72
+HeavyRainIntensity = 1.52
+WaveHeight = 0.002
+WaterRadius = 16.0
+EdgeFade = 1.2
+ContactWidth = 0.045
+ContactSoftness = 0.075
+
+[node name="CausticUnderlay" type="MeshInstance3D" parent="."]
+position = Vector3(0, -0.35, 0)
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_caustic_underlay")

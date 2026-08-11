@@ -27,7 +27,7 @@ public partial class GameConfig : Resource
 	[Export] public int DeadPlantBlockedRounds = 2;
 
 	[ExportGroup("Board")]
-	[Export] public bool UseRectangularBoard = true;
+	[Export] public bool UseRectangularBoard = false;
 	[Export] public int BoardColumns = 9;
 	[Export] public int BoardRows = 7;
 	[Export] public int BoardRadius = 4;

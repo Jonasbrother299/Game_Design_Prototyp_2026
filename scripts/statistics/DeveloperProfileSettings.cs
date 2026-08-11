@@ -11,6 +11,7 @@ public sealed class DeveloperProfileSettings
 	private const string PublishableKeyKey = "publishable_key";
 	private const string DeveloperIdKey = "developer_id";
 	private const string DisplayNameKey = "display_name";
+	private const string HasSeenTutorialKey = "has_seen_tutorial";
 	private const string DefaultApiUrl = "https://twytuvtoiieyrenqdegi.supabase.co/rest/v1";
 	private const string DefaultPublishableKey = "sb_publishable_qdmHiVWB04dABuW0dkUzSw_huLolL1T";
 	private const string PublishableKeyEnvironmentVariable =
@@ -45,6 +46,9 @@ public sealed class DeveloperProfileSettings
 			DisplayName = config
 				.GetValue(ProfileSection, DisplayNameKey, "Entwickler")
 				.AsString(),
+			HasSeenTutorial = config
+				.GetValue(ProfileSection, HasSeenTutorialKey, false)
+				.AsBool(),
 			ApiUrl = config
 				.GetValue(ConnectionSection, ApiUrlKey, DefaultApiUrl)
 				.AsString()
@@ -64,6 +68,16 @@ public sealed class DeveloperProfileSettings
 		return Load();
 	}
 
+	public void MarkTutorialSeen()
+	{
+		ConfigFile config = LoadOrCreateConfig();
+		if (config.GetValue(ProfileSection, HasSeenTutorialKey, false).AsBool())
+			return;
+
+		config.SetValue(ProfileSection, HasSeenTutorialKey, true);
+		SaveConfig(config);
+	}
+
 	private static ConfigFile LoadOrCreateConfig()
 	{
 		ConfigFile config = new();
@@ -74,6 +88,7 @@ public sealed class DeveloperProfileSettings
 			config.SetValue(ConnectionSection, PublishableKeyKey, DefaultPublishableKey);
 			config.SetValue(ProfileSection, DeveloperIdKey, Guid.NewGuid().ToString());
 			config.SetValue(ProfileSection, DisplayNameKey, "Entwickler");
+			config.SetValue(ProfileSection, HasSeenTutorialKey, false);
 			SaveConfig(config);
 			return config;
 		}
@@ -102,6 +117,7 @@ public sealed class DeveloperProfileConfiguration
 {
 	public string DeveloperId { get; init; } = "";
 	public string DisplayName { get; init; } = "Entwickler";
+	public bool HasSeenTutorial { get; init; }
 	public string ApiUrl { get; init; } = "";
 	public string PublishableKey { get; init; } = "";
 

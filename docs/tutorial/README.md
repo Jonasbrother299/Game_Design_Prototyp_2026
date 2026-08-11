@@ -41,6 +41,15 @@ Er soll keine eigene Wasser-, Wachstums-, Platzierungs- oder Ausbreitungslogik e
 
 Der GameManager verbindet das Tutorial einmalig mit Board, Kartenhand und TurnManager. Weitere Tutorialinhalte gehören nicht in den GameManager.
 
+Beim normalen Partiestart liest er den profilspezifischen Tutorialstatus. Ein
+Profil ohne bereits gestartetes Tutorial erhält den TutorialManager automatisch.
+Nach einem erfolgreichen Start speichert er den Status. Spätere Partien starten
+ohne Tutorial.
+
+Das Pausenmenü kann für genau den nächsten Szenenstart eine Wiederholung
+anfordern. Dafür beginnt eine neue Partie mit Tutorial; der gespeicherte
+Profilstatus wird nicht zurückgesetzt.
+
 ### Main-Szene
 
 `Main.tscn` instanziiert das Overlay. Einzelne Tutorialfenster, Texte und Pfeile sollen nicht wieder direkt in die Hauptszene eingefügt werden.

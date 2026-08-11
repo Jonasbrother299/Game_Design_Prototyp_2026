@@ -3,35 +3,38 @@
 [ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
 [ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
-[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_ma7h6"]
+[ext_resource type="Texture2D" uid="uid://do4o77k1d2o8j" path="res://assets/textures/hdris/painterly_forest_panorama.png" id="5_ma7h6"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
 [ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://cnektqrt4t5n5" path="res://scripts/UI/GameHub.cs" id="8_ghub"]
+[ext_resource type="Shader" uid="uid://n0o6njhdxrw6" path="res://assets/shaders/stylized_water.gdshader" id="8_gsxep"]
 [ext_resource type="PackedScene" uid="uid://ccsqc8nj81y5c" path="res://scenes/tutorial/TutorialOverlay.tscn" id="9_tutorial"]
 [ext_resource type="PackedScene" path="res://scenes/UI/PauseMenu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" uid="uid://dbsnedk2icmha" path="res://scenes/UI/Water.tscn" id="11_water"]
-[ext_resource type="Texture2D" uid="uid://bk8u60odam17v" path="res://assets/ui/button/endTurn_button.png" id="12_end_turn"]
+[ext_resource type="Texture2D" uid="uid://c4htaarh2oul1" path="res://assets/ui/button/endTurn_button.png" id="12_end_turn"]
 [ext_resource type="PackedScene" path="res://scenes/UI/RoundDisplay.tscn" id="13_round"]
 [ext_resource type="Script" uid="uid://d2pvq043lauj3" path="res://scripts/UI/EndTurnButtonUI.cs" id="14_end_turn_feedback"]
 [ext_resource type="PackedScene" path="res://scenes/environment/GhibliBush.tscn" id="15_ghibli_bush"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EndGameScreen.tscn" id="16_end_game"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="17_drought_effect"]
-[ext_resource type="FontFile" uid="uid://pvq4hfwqoppn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="18_ui_font"]
+[ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="18_ui_font"]
 [ext_resource type="Script" uid="uid://gsrfwgwox6jb" path="res://scripts/visuals/GhibliBushBackdrop.cs" id="19_bush_backdrop"]
 [ext_resource type="Resource" uid="uid://d28g8w7xp712f" path="res://data/balance/game_balance.tres" id="20_balance"]
 [ext_resource type="Script" uid="uid://v7h0unjsq8uj" path="res://scripts/UI/DayCycleDisplayUI.cs" id="23_day_cycle_display"]
 [ext_resource type="Texture2D" uid="uid://c8gklubb702gq" path="res://assets/ui/decor/ivy_corner.svg" id="24_day_cycle_ivy"]
-[ext_resource type="AudioStream" uid="uid://cldg5l8u0k5g1" path="res://assets/audio/Sound effects/Einpflanzen.mp3" id="25_planting_audio"]
-[ext_resource type="AudioStream" uid="uid://cjcgiagq5t3ws" path="res://assets/audio/ambiente/Waldambiente.mp3" id="26_forest_ambience"]
-[ext_resource type="AudioStream" uid="uid://bq5dltfdef61" path="res://assets/audio/ambiente/Hitze/crickets-cicadas.mp3" id="27_heat_ambience"]
+[ext_resource type="AudioStream" uid="uid://us03fk4xjdkg" path="res://assets/audio/Sound effects/Einpflanzen.mp3" id="25_planting_audio"]
+[ext_resource type="AudioStream" uid="uid://g5cendvai7jb" path="res://assets/audio/ambiente/Waldambiente.mp3" id="26_forest_ambience"]
+[ext_resource type="AudioStream" uid="uid://37t50n3wvk1j" path="res://assets/audio/ambiente/Hitze/crickets-cicadas.mp3" id="27_heat_ambience"]
 [ext_resource type="AudioStream" uid="uid://dofbpfm8ppaw4" path="res://assets/audio/ambiente/Rain/liecio-calming-rain-257596.mp3" id="28_rain_ambience"]
 [ext_resource type="AudioStream" uid="uid://dayyt8jw5qowp" path="res://assets/audio/ambiente/Rain/donrain-rain-110508.mp3" id="29_heavy_rain_ambience"]
+[ext_resource type="PackedScene" uid="uid://bfjv28ce1p0ke" path="res://scenes/environment/StylizedWater.tscn" id="30_stylized_water"]
+[ext_resource type="AudioStream" uid="uid://u54mqbnxhwgf" path="res://assets/audio/ambiente/Wasser/Wasser1.mp3" id="31_water_ambience"]
+[ext_resource type="Script" uid="uid://ba25cwqxtd843" path="res://scripts/UI/FpsDisplay.cs" id="32_fps_display"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_e2s0e"]
 panorama = ExtResource("5_ma7h6")
-filter = false
 
 [sub_resource type="Sky" id="Sky_gsxep"]
 sky_material = SubResource("PanoramaSkyMaterial_e2s0e")
@@ -42,12 +45,76 @@ background_color = Color(0.16, 0.19, 0.16, 1)
 sky = SubResource("Sky_gsxep")
 ambient_light_source = 3
 ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_energy = 0.65
+ambient_light_energy = 0.38
 reflected_light_source = 2
+tonemap_mode = 2
+tonemap_exposure = 0.95
+ssil_enabled = true
+ssil_radius = 6.1
+ssil_intensity = 3.25
+ssil_sharpness = 1.0
+glow_enabled = true
+glow_intensity = 1.14
+glow_strength = 0.54
+glow_bloom = 0.25
+fog_enabled = true
+fog_light_color = Color(0.12, 0.23, 0.19, 1)
+fog_light_energy = 0.75
+fog_aerial_perspective = 0.2
+fog_sky_affect = 0.35
+volumetric_fog_density = 0.0103
+volumetric_fog_emission_energy = 316.85
+volumetric_fog_gi_inject = 8.09
+volumetric_fog_anisotropy = 0.9
+volumetric_fog_ambient_inject = 16.0
+adjustment_enabled = true
+adjustment_contrast = 1.05
+adjustment_saturation = 0.93
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
 [sub_resource type="Compositor" id="Compositor_vcsgt"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_dg70y"]
+render_priority = 0
+shader = ExtResource("8_gsxep")
+shader_parameter/surface_color = Color(0.14, 0.46, 0.54, 1)
+shader_parameter/line_color = Color(0.32, 0.72, 0.76, 1)
+shader_parameter/foam_color = Color(1, 1, 1, 1)
+shader_parameter/rain_ripple_color = Color(0.72, 0.92, 0.96, 1)
+shader_parameter/cell_scale = 1.63
+shader_parameter/animation_speed = 0.22
+shader_parameter/refraction_strength = 0.0
+shader_parameter/refraction_mix = 0.0
+shader_parameter/refraction_edge_reach = 0.55
+shader_parameter/refraction_edge_falloff = 1.35
+shader_parameter/refraction_center_strength = 0.16
+shader_parameter/refraction_scale = 1.3
+shader_parameter/refraction_speed = 0.16
+shader_parameter/line_width = 0.025
+shader_parameter/line_softness = 0.03
+shader_parameter/line_strength = 0.62
+shader_parameter/line_wobble_strength = 0.53
+shader_parameter/line_bulge_strength = 0.0
+shader_parameter/line_bulge_size = 0.63
+shader_parameter/line_bulge_scale = 3.0
+shader_parameter/line_distortion_scale = 1.03
+shader_parameter/wave_height = 0.0
+shader_parameter/contact_width = 0.045
+shader_parameter/contact_softness = 0.075
+shader_parameter/contact_strength = 0.92
+shader_parameter/shore_ripple_strength = 0.47
+shader_parameter/shore_ripple_reach = 36.0
+shader_parameter/shore_ripple_speed = 0.18
+shader_parameter/surface_alpha = 0.76
+shader_parameter/rain_intensity = 0.0
+shader_parameter/rain_ripple_density = 2.64
+shader_parameter/rain_ripple_size = 0.19
+shader_parameter/rain_ripple_speed = 1.64
+shader_parameter/rain_ripple_brightness = 0.31
+shader_parameter/water_center = Vector2(0, 0)
+shader_parameter/water_radius = 16.0
+shader_parameter/edge_fade = 4.0
 
 [sub_resource type="StyleBoxFlat" id="DayCycleFrameStyle"]
 bg_color = Color(0.89, 0.77, 0.59, 0.96)
@@ -138,7 +205,7 @@ corner_radius_bottom_left = 12
 transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0, 0)
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
-HexSize = 1.01
+StoneBorderYScale = 1.2000000000000002
 StartingOakScale = 0.75
 MushroomModelScale = 0.5
 FlowerModelScale = 0.5
@@ -153,7 +220,9 @@ script = ExtResource("3_rarhs")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=664851863]
 transform = Transform3D(-0.07661462, 0.7050285, -0.7050284, 1.916959e-09, 0.7071068, 0.7071068, 0.9970607, 0.05417466, -0.054174572, 0, 1.2775217, 1.4064736)
-light_energy = 0.8
+light_color = Color(1, 0.8862745, 0.7607843, 1)
+light_energy = 1.1
+shadow_opacity = 0.7
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]
 environment = SubResource("Environment_bjd11")
@@ -161,7 +230,27 @@ camera_attributes = SubResource("CameraAttributesPractical_rarhs")
 compositor = SubResource("Compositor_vcsgt")
 script = ExtResource("17_drought_effect")
 
+[node name="StylizedWater" parent="." unique_id=1959249824 instance=ExtResource("30_stylized_water")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
+material_override = SubResource("ShaderMaterial_dg70y")
+UnderlayColor = Color(0.16078432, 0.5019608, 0.5686275, 1)
+SurfaceCellScale = 1.63
+PatternSpeed = 0.22
+RefractionStrength = 0.0
+RefractionMix = 0.0
+LineWobbleStrength = 0.53
+LineBulgeSize = 0.63
+LineBulgeScale = 3.0
+LineDistortionScale = 1.03
+ShoreRippleStrength = 0.47
+RainRippleDensity = 2.64
+ShowRainInEditor = false
+EditorRainIntensity = 1.44
+WaveHeight = 0.0
+EdgeFade = 4.0
+
 [node name="GhibliBushBackdrop" type="Node3D" parent="." unique_id=615135018]
+visible = false
 script = ExtResource("19_bush_backdrop")
 BushScene = ExtResource("15_ghibli_bush")
 
@@ -170,7 +259,6 @@ script = ExtResource("5_vcsgt")
 SmoothSpeed = 8.0
 FocusTargetPath = NodePath("../BoardManager/HexTile_0_0")
 FocusOffset = Vector3(0, -0.2, 0)
-MinPitchDegrees = 5.0
 MaxPitchDegrees = 75.0
 MinDistance = 14.0
 ZoomSmoothSpeed = 8.0
@@ -184,6 +272,23 @@ fov = 35.0
 [node name="UI" type="Node3D" parent="." unique_id=576351862]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="UI" unique_id=102683355]
+
+[node name="FpsDisplay" type="Label" parent="UI/CanvasLayer" unique_id=1267724756]
+z_index = 90
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -22.0
+offset_right = 78.0
+offset_bottom = -6.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 0.72)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.82)
+theme_override_constants/outline_size = 1
+theme_override_font_sizes/font_size = 12
+text = "FPS --"
+script = ExtResource("32_fps_display")
 
 [node name="CardHand" parent="UI/CanvasLayer" unique_id=1779362432 instance=ExtResource("6_c01mt")]
 script = ExtResource("7_nxtc6")
@@ -316,6 +421,10 @@ volume_db = -3.0
 [node name="ForestAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub" unique_id=1773784768]
 stream = ExtResource("26_forest_ambience")
 volume_db = -22.0
+
+[node name="WaterAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub" unique_id=1545445124]
+stream = ExtResource("31_water_ambience")
+volume_db = -30.0
 
 [node name="HeatAmbienceAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub" unique_id=891358854]
 stream = ExtResource("27_heat_ambience")

@@ -7,6 +7,7 @@ public partial class PauseMenu : Control
 	{
 		None,
 		Restart,
+		ReplayTutorial,
 		MainMenu,
 		Quit
 	}
@@ -22,6 +23,7 @@ public partial class PauseMenu : Control
 	private Button _controlsButton;
 	private Button _encyclopediaButton;
 	private Button _restartButton;
+	private Button _tutorialButton;
 	private Button _mainMenuButton;
 	private Button _quitButton;
 	private Button _controlsBackButton;
@@ -50,6 +52,7 @@ public partial class PauseMenu : Control
 		_controlsButton = GetNode<Button>("%ControlsButton");
 		_encyclopediaButton = GetNode<Button>("%EncyclopediaButton");
 		_restartButton = GetNode<Button>("%RestartButton");
+		_tutorialButton = GetNode<Button>("%TutorialButton");
 		_mainMenuButton = GetNode<Button>("%MainMenuButton");
 		_quitButton = GetNode<Button>("%QuitButton");
 		_controlsBackButton = GetNode<Button>("%ControlsBackButton");
@@ -68,6 +71,7 @@ public partial class PauseMenu : Control
 		_controlsButton.Pressed += OpenControls;
 		_encyclopediaButton.Pressed += OpenEncyclopedia;
 		_restartButton.Pressed += RequestRestart;
+		_tutorialButton.Pressed += RequestTutorialReplay;
 		_mainMenuButton.Pressed += RequestMainMenu;
 		_quitButton.Pressed += RequestQuit;
 		_controlsBackButton.Pressed += CloseControls;
@@ -224,6 +228,15 @@ public partial class PauseMenu : Control
 			"Hauptmenü");
 	}
 
+	private void RequestTutorialReplay()
+	{
+		ShowConfirmation(
+			PendingAction.ReplayTutorial,
+			"Tutorial wiederholen?",
+			"Die aktuelle Partie wird beendet. Das Tutorial startet mit einer neuen Partie.",
+			"Tutorial starten");
+	}
+
 	private void RequestQuit()
 	{
 		ShowConfirmation(
@@ -267,6 +280,10 @@ public partial class PauseMenu : Control
 			case PendingAction.Restart:
 				GameManager.SkipTutorialOnNextStart();
 				ChangeScene(MainScenePath, "Partie");
+				break;
+			case PendingAction.ReplayTutorial:
+				GameManager.ReplayTutorialOnNextStart();
+				ChangeScene(MainScenePath, "Tutorial");
 				break;
 			case PendingAction.MainMenu:
 				GameManager.ClearTutorialSkipRequest();

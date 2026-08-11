@@ -1,5 +1,6 @@
 [gd_scene format=4 uid="uid://c6pr6g3kfetj6"]
 
+[ext_resource type="Script" uid="uid://dswtovmxx7vpi" path="res://scripts/board/HexTile.cs" id="1_hex_tile"]
 [ext_resource type="PackedScene" uid="uid://bo7c71b1l4jhf" path="res://assets/models/tiles/tile3.fbx" id="1_86rw7"]
 [ext_resource type="Texture2D" uid="uid://cj47kgomwwft8" path="res://assets/models/tiles/textures/tile3/tile3_Rock_AlbedoTransparency.png" id="2_2deet"]
 [ext_resource type="Texture2D" uid="uid://c1b3fwb01wucv" path="res://assets/models/tiles/textures/tile3/tile3_Rock_Normal.png" id="3_rn06m"]
@@ -10,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://b1tikic28ddfu" path="res://assets/models/tiles/textures/tile3/tile3_grass.fbx" id="8_axfrm"]
 [ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://assets/shaders/grass.tres" id="9_eh8ex"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://assets/shaders/leaves/windnoise.tres" id="10_fosnb"]
-[ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="11_wv37v"]
+[ext_resource type="PackedScene" uid="uid://dmfripbc5xbaq" path="res://assets/models/plants/grass/grass.fbx" id="11_wv37v"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_17btd"]
 albedo_texture = ExtResource("2_2deet")
@@ -102,7 +103,13 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_axfrm")
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_placement_indicator"]
+top_radius = 0.55
+bottom_radius = 0.55
+height = 0.45
+
 [node name="tile3" unique_id=1402458833 instance=ExtResource("1_86rw7")]
+script = ExtResource("1_hex_tile")
 
 [node name="Rock_Small_003" parent="." index="0" unique_id=784217929]
 material_override = SubResource("StandardMaterial3D_17btd")
@@ -123,6 +130,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1933471, 0.17313486, 0.1698
 transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0)
 visible = false
 mesh = SubResource("ArrayMesh_iyyd4")
+
+[node name="PlantAnchor" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+
+[node name="HandCardPlacementIndicator" type="Node3D" parent="."]
+transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 0, 0.35, 0)
+visible = false
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="HandCardPlacementIndicator"]
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_placement_indicator")
 
 [editable path="tile3_grass"]
 [editable path="tile3_grass/grass"]

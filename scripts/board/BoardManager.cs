@@ -3,12 +3,115 @@ using System.Collections.Generic;
 
 public partial class BoardManager : Node3D
 {
+	private static readonly string[] DefaultHexTileVariantPaths =
+	{
+		"res://scenes/board/tiles/HexTile1.tscn",
+		"res://scenes/board/tiles/HexTile2.tscn",
+		"res://scenes/board/tiles/HexTile3.tscn"
+	};
+	private const string DefaultSide1StonePath =
+		"res://assets/models/Hextilestones/Hextilestone_side1.glb";
+	private const string DefaultSide2StonePath =
+		"res://assets/models/Hextilestones/Hextilestone_side2.glb";
+	private const string DefaultCornerStonePath =
+		"res://assets/models/Hextilestones/Hextilestone_corner.glb";
+	private static readonly string[] DefaultOuterTreeScenePaths =
+	{
+		"res://assets/models/stylized_nature/CommonTree_1.gltf",
+		"res://assets/models/stylized_nature/Pine_1.gltf",
+		"res://assets/models/stylized_nature/Pine_2.gltf",
+		"res://assets/models/stylized_nature/Pine_3.gltf"
+	};
+	private static readonly string[] DefaultOuterDetailScenePaths =
+	{
+		"res://assets/models/stylized_nature/Bush_Common.gltf",
+		"res://assets/models/stylized_nature/Bush_Common_Flowers.gltf",
+		"res://assets/models/stylized_nature/Flower_3_Group.gltf",
+		"res://assets/models/stylized_nature/Mushroom_Common.gltf"
+	};
+
 	[ExportGroup("Balance")]
 	[Export] public GameConfig Balance;
 
 	[ExportGroup("Board Visual")]
 	[Export] public PackedScene HexTileScene;
+	[Export] public Godot.Collections.Array<PackedScene> HexTileVariants = new();
 	[Export] public float HexSize = 1.0f;
+
+	[ExportGroup("Stone Border")]
+	[Export] public bool ShowStoneBorder = true;
+	[Export] public PackedScene Side1StoneScene;
+	[Export] public PackedScene Side2StoneScene;
+	[Export] public PackedScene CornerStoneScene;
+
+	[Export(PropertyHint.Range, "-1.0,1.0,0.01")]
+	public float StoneBorderHeight = 0.13f;
+
+	[Export(PropertyHint.Range, "0.1,2.0,0.01")]
+	public float StoneBorderYScale = 1.0f;
+
+	[Export] public Vector3 Side1StoneModelOffset =
+		new Vector3(-13.20f, 0.0f, -4.17f);
+
+	[Export] public Vector3 Side2StoneModelOffset =
+		new Vector3(-14.41f, 0.0f, -2.17f);
+
+	[Export] public Vector3 CornerStoneModelOffset =
+		new Vector3(-14.05f, 0.07f, -6.15f);
+
+	[Export(PropertyHint.Range, "-180.0,180.0,1.0")]
+	public float CornerStoneRotationOffsetDegrees = 0.0f;
+
+	[ExportGroup("Decorative Outer Ring")]
+	[Export] public bool ShowDecorativeOuterRing = true;
+
+	[Export(PropertyHint.Range, "1,8,1")]
+	public int WaterGapRings = 4;
+
+	[Export(PropertyHint.Range, "1,8,1")]
+	public int DecorativeGroundRows = 5;
+
+	[Export(PropertyHint.Range, "-0.5,0.2,0.01")]
+	public float DecorativeGroundHeight = -0.04f;
+
+	[Export] public bool ShowDecorativeShoreStones = true;
+
+	[ExportGroup("Decorative Outer Vegetation")]
+	[Export] public bool ShowDecorativeOuterVegetation = true;
+	[Export] public Godot.Collections.Array<PackedScene> OuterTreeScenes = new();
+	[Export] public Godot.Collections.Array<PackedScene> OuterDetailScenes = new();
+
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float OuterTreeChance = 0.24f;
+
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float OuterDetailChance = 0.42f;
+
+	[Export(PropertyHint.Range, "0,4,1")]
+	public int OuterVegetationShoreClearRows = 1;
+
+	[Export(PropertyHint.Range, "0.0,0.8,0.01")]
+	public float OuterVegetationPositionRadius = 0.52f;
+
+	[Export(PropertyHint.Range, "-0.5,0.5,0.01")]
+	public float OuterVegetationHeightOffset = 0.02f;
+
+	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
+	public float OuterTreeMinimumScale = 0.50f;
+
+	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
+	public float OuterTreeMaximumScale = 0.68f;
+
+	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
+	public float OuterDetailMinimumScale = 0.55f;
+
+	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
+	public float OuterDetailMaximumScale = 0.90f;
+
+	[Export(PropertyHint.Range, "0.1,1.0,0.01")]
+	public float OuterFlowerScaleMultiplier = 0.55f;
+
+	[Export] public int OuterVegetationRandomSeed = 62831;
 
 	[ExportGroup("Starting Oak Visual")]
 	[Export(PropertyHint.Range, "0.05,2.0,0.01")]
@@ -66,18 +169,95 @@ public partial class BoardManager : Node3D
 	public BoardData BoardData { get; private set; } = new BoardData();
 
 	private readonly Dictionary<HexCoord, HexTile> _tileViews = new();
+	private readonly List<PackedScene> _activeHexTileVariants = new();
+	private readonly List<PackedScene> _activeOuterTreeScenes = new();
+	private readonly List<PackedScene> _activeOuterDetailScenes = new();
 	private Vector3 _boardWorldCenter = Vector3.Zero;
 
 	public override void _Ready()
 	{
 		Balance ??= GameConfig.LoadDefault();
-
-		if (HexTileScene == null)
-		{
-			HexTileScene = GD.Load<PackedScene>("res://scenes/board/tiles/HexTile2.tscn");
-		}
+		SetupHexTileVariants();
+		SetupStoneBorderScenes();
+		SetupOuterVegetationScenes();
 
 		GenerateBoard();
+	}
+
+	private void SetupHexTileVariants()
+	{
+		_activeHexTileVariants.Clear();
+
+		if (HexTileVariants != null)
+		{
+			foreach (PackedScene variant in HexTileVariants)
+			{
+				if (variant != null)
+					_activeHexTileVariants.Add(variant);
+			}
+		}
+
+		if (_activeHexTileVariants.Count == 0 && HexTileScene != null)
+			_activeHexTileVariants.Add(HexTileScene);
+
+		if (_activeHexTileVariants.Count > 0)
+			return;
+
+		foreach (string path in DefaultHexTileVariantPaths)
+		{
+			PackedScene variant = GD.Load<PackedScene>(path);
+
+			if (variant != null)
+				_activeHexTileVariants.Add(variant);
+		}
+	}
+
+	private void SetupStoneBorderScenes()
+	{
+		Side1StoneScene ??= GD.Load<PackedScene>(DefaultSide1StonePath);
+		Side2StoneScene ??= GD.Load<PackedScene>(DefaultSide2StonePath);
+		CornerStoneScene ??= GD.Load<PackedScene>(DefaultCornerStonePath);
+	}
+
+	private void SetupOuterVegetationScenes()
+	{
+		SetupSceneList(
+			OuterTreeScenes,
+			DefaultOuterTreeScenePaths,
+			_activeOuterTreeScenes);
+		SetupSceneList(
+			OuterDetailScenes,
+			DefaultOuterDetailScenePaths,
+			_activeOuterDetailScenes);
+	}
+
+	private static void SetupSceneList(
+		Godot.Collections.Array<PackedScene> configuredScenes,
+		string[] defaultPaths,
+		List<PackedScene> targetScenes)
+	{
+		targetScenes.Clear();
+
+		if (configuredScenes != null)
+		{
+			foreach (PackedScene scene in configuredScenes)
+			{
+				if (scene != null)
+					targetScenes.Add(scene);
+			}
+		}
+
+		if (targetScenes.Count > 0)
+			return;
+
+		foreach (string path in defaultPaths)
+		{
+			PackedScene scene = GD.Load<PackedScene>(path);
+			if (scene != null)
+				targetScenes.Add(scene);
+			else
+				GD.PushWarning($"BoardManager: Dekorationsszene fehlt: {path}");
+		}
 	}
 
 	public void GenerateBoard()
@@ -106,6 +286,9 @@ public partial class BoardManager : Node3D
 		{
 			CreateTileView(tileData);
 		}
+
+		CreateDecorativeOuterRing(balance);
+		CreateStoneBorder(balance);
 
 		GD.Print($"Board generated with {BoardData.Tiles.Count} tiles.");
 	}
@@ -185,15 +368,27 @@ public partial class BoardManager : Node3D
 
 	private void CreateTileView(HexTileData tileData)
 	{
-		if (HexTileScene == null)
+		if (_activeHexTileVariants.Count == 0)
 		{
-			GD.PrintErr("HexTileScene missing. Create scenes/board/HexTile.tscn first.");
+			GD.PrintErr("Keine HexTile-Variante konfiguriert.");
 			return;
 		}
 
-		HexTile tileView = HexTileScene.Instantiate<HexTile>();
+		uint visualHash = GetTileVisualHash(tileData.Coord);
+		int variantIndex = (int)(visualHash % (uint)_activeHexTileVariants.Count);
+		PackedScene tileScene = _activeHexTileVariants[variantIndex];
+		Node tileInstance = tileScene.Instantiate();
+
+		if (tileInstance is not HexTile tileView)
+		{
+			GD.PrintErr($"{tileScene.ResourcePath}: Der Root-Node muss HexTile verwenden.");
+			tileInstance.Free();
+			return;
+		}
 
 		tileView.Position = HexToWorld(tileData.Coord, HexSize);
+		int rotationStep = (int)((visualHash / (uint)_activeHexTileVariants.Count) % 6u);
+		tileView.Rotation = new Vector3(0.0f, rotationStep * Mathf.Pi / 3.0f, 0.0f);
 		tileView.ConfigureStartingOakScale(StartingOakScale);
 		tileView.ConfigureDeadPlantVisuals(
 			DeadPlantScale,
@@ -222,6 +417,453 @@ public partial class BoardManager : Node3D
 		AddChild(tileView);
 
 		_tileViews.Add(tileData.Coord, tileView);
+	}
+
+	private void CreateStoneBorder(GameConfig balance)
+	{
+		if (!ShowStoneBorder)
+			return;
+
+		if (!balance.UseRectangularBoard)
+		{
+			CreateRoundStoneBorder();
+			return;
+		}
+
+		int columns = System.Math.Max(balance.BoardColumns, 1);
+		int rows = System.Math.Max(balance.BoardRows, 1);
+		int firstQ = -(columns / 2);
+
+		for (int column = 0; column < columns; column++)
+		{
+			int q = firstQ + column;
+			int columnOffset = (int)System.Math.Floor(q / 2.0);
+
+			for (int row = 0; row < rows; row++)
+			{
+				bool isLeftSide = column == 0;
+				bool isRightSide = column == columns - 1;
+				bool isBack = row == 0;
+				bool isFront = row == rows - 1;
+				bool isCorner =
+					(isLeftSide || isRightSide) && (isBack || isFront);
+
+				if (!isLeftSide && !isRightSide && !isBack && !isFront)
+					continue;
+
+				HexCoord coord = new HexCoord(q, row - columnOffset);
+				HexTile tileView = GetTileView(coord);
+
+				if (tileView == null)
+					continue;
+
+				PackedScene stoneScene;
+				Vector3 modelOffset;
+				float rotationY;
+				string edgeName;
+
+				if (isCorner)
+				{
+					stoneScene = CornerStoneScene;
+					modelOffset = CornerStoneModelOffset;
+					rotationY = GetCornerStoneRotation(
+						isLeftSide,
+						isFront);
+					edgeName = "Corner";
+				}
+				else if (isLeftSide)
+				{
+					stoneScene = Side2StoneScene;
+					modelOffset = Side2StoneModelOffset;
+					rotationY = Mathf.Pi;
+					edgeName = "Left";
+				}
+				else if (isRightSide)
+				{
+					stoneScene = Side2StoneScene;
+					modelOffset = Side2StoneModelOffset;
+					rotationY = 0.0f;
+					edgeName = "Right";
+				}
+				else
+				{
+					bool useSide2 = isFront
+						? column % 2 != 0
+						: column % 2 == 0;
+					stoneScene = useSide2 ? Side2StoneScene : Side1StoneScene;
+					modelOffset = useSide2
+						? Side2StoneModelOffset
+						: Side1StoneModelOffset;
+					rotationY = isFront
+						? -Mathf.Pi / 2.0f
+						: Mathf.Pi / 2.0f;
+					edgeName = isFront ? "Front" : "Back";
+				}
+
+				CreateStoneBorderPiece(
+					stoneScene,
+					tileView.Position,
+					tileView.Coord,
+					modelOffset,
+					rotationY,
+					edgeName);
+			}
+		}
+	}
+
+	private void CreateRoundStoneBorder()
+	{
+		foreach (KeyValuePair<HexCoord, HexTile> tileEntry in _tileViews)
+		{
+			HexCoord coord = tileEntry.Key;
+			HexTile tileView = tileEntry.Value;
+			Vector3 tilePosition = GetRawHexPosition(coord, HexSize);
+			Vector3 outwardDirection = Vector3.Zero;
+			int missingNeighborCount = 0;
+
+			for (int directionIndex = 0;
+				directionIndex < HexDirections.Directions.Length;
+				directionIndex++)
+			{
+				HexCoord neighborCoord = HexDirections.GetNeighbor(
+					coord,
+					directionIndex);
+
+				if (BoardData.GetTile(neighborCoord) != null)
+					continue;
+
+				Vector3 neighborPosition = GetRawHexPosition(
+					neighborCoord,
+					HexSize);
+				outwardDirection += (neighborPosition - tilePosition).Normalized();
+				missingNeighborCount++;
+			}
+
+			if (missingNeighborCount == 0 || outwardDirection.IsZeroApprox())
+				continue;
+
+			bool isCorner = missingNeighborCount >= 3;
+			PackedScene stoneScene = isCorner
+				? CornerStoneScene
+				: Side2StoneScene;
+			Vector3 modelOffset = isCorner
+				? CornerStoneModelOffset
+				: Side2StoneModelOffset;
+			float rotationY = -Mathf.Atan2(
+				outwardDirection.Z,
+				outwardDirection.X);
+
+			if (isCorner)
+			{
+				rotationY += Mathf.Pi / 4.0f + Mathf.DegToRad(
+					CornerStoneRotationOffsetDegrees);
+			}
+
+			CreateStoneBorderPiece(
+				stoneScene,
+				tileView.Position,
+				coord,
+				modelOffset,
+				rotationY,
+				isCorner ? "RoundCorner" : "RoundEdge");
+		}
+	}
+
+	private void CreateDecorativeOuterRing(GameConfig balance)
+	{
+		if (!ShowDecorativeOuterRing || balance.UseRectangularBoard)
+			return;
+
+		int boardRadius = System.Math.Max(balance.BoardRadius, 1);
+		int waterGap = System.Math.Max(WaterGapRings, 1);
+		int groundRows = System.Math.Max(DecorativeGroundRows, 1);
+		int innerRadius = boardRadius + waterGap + 1;
+		int outerRadius = innerRadius + groundRows - 1;
+
+		for (int q = -outerRadius; q <= outerRadius; q++)
+		{
+			int rMinimum = System.Math.Max(-outerRadius, -q - outerRadius);
+			int rMaximum = System.Math.Min(outerRadius, -q + outerRadius);
+
+			for (int r = rMinimum; r <= rMaximum; r++)
+			{
+				HexCoord coord = new HexCoord(q, r);
+				int distance = GetHexDistance(coord);
+
+				if (distance < innerRadius)
+					continue;
+
+				Node3D decorativeTile = CreateDecorativeTile(coord);
+
+				if (decorativeTile != null &&
+					ShowDecorativeShoreStones &&
+					distance == innerRadius)
+				{
+					CreateDecorativeShoreStones(
+						coord,
+						decorativeTile,
+						innerRadius);
+				}
+
+				if (decorativeTile != null)
+				{
+					CreateOuterVegetation(
+						coord,
+						decorativeTile,
+						distance,
+						innerRadius);
+				}
+			}
+		}
+	}
+
+	private Node3D CreateDecorativeTile(HexCoord coord)
+	{
+		if (_activeHexTileVariants.Count == 0)
+			return null;
+
+		uint visualHash = GetTileVisualHash(coord);
+		int variantIndex = (int)(visualHash % (uint)_activeHexTileVariants.Count);
+		PackedScene tileScene = _activeHexTileVariants[variantIndex];
+		Node tileInstance = tileScene.Instantiate();
+
+		if (tileInstance is not Node3D decorativeTile)
+		{
+			GD.PrintErr($"{tileScene.ResourcePath}: Der Root-Node muss Node3D verwenden.");
+			tileInstance.Free();
+			return null;
+		}
+
+		int rotationStep = (int)(
+			(visualHash / (uint)_activeHexTileVariants.Count) % 6u);
+		decorativeTile.Name = $"DecorativeTile_{coord.Q}_{coord.R}";
+		decorativeTile.Position =
+			HexToWorld(coord, HexSize) + Vector3.Up * DecorativeGroundHeight;
+		decorativeTile.Rotation = new Vector3(
+			0.0f,
+			rotationStep * Mathf.Pi / 3.0f,
+			0.0f);
+		decorativeTile.ProcessMode = ProcessModeEnum.Disabled;
+
+		AddChild(decorativeTile);
+
+		return decorativeTile;
+	}
+
+	private void CreateOuterVegetation(
+		HexCoord coord,
+		Node3D decorativeTile,
+		int distance,
+		int innerRadius)
+	{
+		if (!ShowDecorativeOuterVegetation)
+			return;
+
+		int firstVegetationRadius =
+			innerRadius + System.Math.Max(OuterVegetationShoreClearRows, 0);
+		if (distance < firstVegetationRadius)
+			return;
+
+		float treeChance = _activeOuterTreeScenes.Count > 0
+			? Mathf.Clamp(OuterTreeChance, 0.0f, 1.0f)
+			: 0.0f;
+		float detailChance = _activeOuterDetailScenes.Count > 0
+			? Mathf.Clamp(OuterDetailChance, 0.0f, 1.0f - treeChance)
+			: 0.0f;
+
+		if (treeChance + detailChance <= 0.0f)
+			return;
+
+		uint visualHash = GetTileVisualHash(coord);
+		RandomNumberGenerator random = new RandomNumberGenerator
+		{
+			Seed = visualHash ^ (uint)System.Math.Max(OuterVegetationRandomSeed, 1)
+		};
+		float selection = random.Randf();
+		bool createTree = selection < treeChance;
+
+		if (!createTree && selection >= treeChance + detailChance)
+			return;
+
+		List<PackedScene> scenes = createTree
+			? _activeOuterTreeScenes
+			: _activeOuterDetailScenes;
+		PackedScene scene = scenes[random.RandiRange(0, scenes.Count - 1)];
+		Node instance = scene.Instantiate();
+
+		if (instance is not Node3D vegetation)
+		{
+			GD.PushWarning(
+				$"{scene.ResourcePath}: Der Root-Node muss Node3D verwenden.");
+			instance.Free();
+			return;
+		}
+
+		float positionRadius =
+			Mathf.Max(OuterVegetationPositionRadius, 0.0f) * HexSize;
+		float offsetDistance = Mathf.Sqrt(random.Randf()) * positionRadius;
+		float offsetAngle = random.RandfRange(0.0f, Mathf.Tau);
+		float minimumScale = createTree
+			? Mathf.Min(OuterTreeMinimumScale, OuterTreeMaximumScale)
+			: Mathf.Min(OuterDetailMinimumScale, OuterDetailMaximumScale);
+		float maximumScale = createTree
+			? Mathf.Max(OuterTreeMinimumScale, OuterTreeMaximumScale)
+			: Mathf.Max(OuterDetailMinimumScale, OuterDetailMaximumScale);
+		float uniformScale = random.RandfRange(
+			Mathf.Max(minimumScale, 0.01f),
+			Mathf.Max(maximumScale, 0.01f));
+
+		if (!createTree && scene.ResourcePath.EndsWith(
+			"Flower_3_Group.gltf",
+			System.StringComparison.OrdinalIgnoreCase))
+		{
+			uniformScale *= Mathf.Clamp(
+				OuterFlowerScaleMultiplier,
+				0.1f,
+				1.0f);
+		}
+
+		vegetation.Name =
+			$"OuterVegetation_{coord.Q}_{coord.R}";
+		vegetation.Position = new Vector3(
+			Mathf.Cos(offsetAngle) * offsetDistance,
+			OuterVegetationHeightOffset,
+			Mathf.Sin(offsetAngle) * offsetDistance);
+		vegetation.Rotation = new Vector3(
+			0.0f,
+			random.RandfRange(0.0f, Mathf.Tau),
+			0.0f);
+		vegetation.Scale = Vector3.One * uniformScale;
+		vegetation.ProcessMode = ProcessModeEnum.Disabled;
+
+		decorativeTile.AddChild(vegetation);
+	}
+
+	private void CreateDecorativeShoreStones(
+		HexCoord coord,
+		Node3D decorativeTile,
+		int innerRadius)
+	{
+		Vector3 tilePosition = GetRawHexPosition(coord, HexSize);
+		Vector3 inwardDirection = Vector3.Zero;
+		int inwardNeighborCount = 0;
+
+		for (int directionIndex = 0;
+			directionIndex < HexDirections.Directions.Length;
+			directionIndex++)
+		{
+			HexCoord neighborCoord = HexDirections.GetNeighbor(
+				coord,
+				directionIndex);
+
+			if (GetHexDistance(neighborCoord) >= innerRadius)
+				continue;
+
+			Vector3 neighborPosition = GetRawHexPosition(
+				neighborCoord,
+				HexSize);
+			inwardDirection += (neighborPosition - tilePosition).Normalized();
+			inwardNeighborCount++;
+		}
+
+		if (inwardNeighborCount == 0 || inwardDirection.IsZeroApprox())
+			return;
+
+		bool isCorner = inwardNeighborCount == 1;
+		PackedScene stoneScene = isCorner
+			? CornerStoneScene
+			: Side2StoneScene;
+		Vector3 modelOffset = isCorner
+			? CornerStoneModelOffset
+			: Side2StoneModelOffset;
+		float rotationY = -Mathf.Atan2(
+			inwardDirection.Z,
+			inwardDirection.X);
+
+		if (isCorner)
+		{
+			rotationY += Mathf.Pi / 4.0f + Mathf.DegToRad(
+				CornerStoneRotationOffsetDegrees);
+		}
+
+		CreateStoneBorderPiece(
+			stoneScene,
+			decorativeTile.Position,
+			coord,
+			modelOffset,
+			rotationY,
+			isCorner ? "OuterShoreCorner" : "OuterShoreEdge");
+	}
+
+	private float GetCornerStoneRotation(bool isLeftSide, bool isFront)
+	{
+		float rotationY;
+
+		if (!isLeftSide && isFront)
+			rotationY = 0.0f;
+		else if (isLeftSide && isFront)
+			rotationY = -Mathf.Pi / 2.0f;
+		else if (!isLeftSide)
+			rotationY = Mathf.Pi / 2.0f;
+		else
+			rotationY = Mathf.Pi;
+
+		return rotationY + Mathf.DegToRad(CornerStoneRotationOffsetDegrees);
+	}
+
+	private void CreateStoneBorderPiece(
+		PackedScene stoneScene,
+		Vector3 tilePosition,
+		HexCoord coord,
+		Vector3 modelOffset,
+		float rotationY,
+		string edgeName)
+	{
+		if (stoneScene == null)
+			return;
+
+		Node stoneInstance = stoneScene.Instantiate();
+
+		if (stoneInstance is not Node3D stoneModel)
+		{
+			GD.PrintErr($"{stoneScene.ResourcePath}: Der Root-Node muss Node3D verwenden.");
+			stoneInstance.Free();
+			return;
+		}
+
+		Node3D borderPiece = new Node3D
+		{
+			Name = $"StoneBorder_{edgeName}_{coord.Q}_{coord.R}",
+			Position = tilePosition + Vector3.Up * StoneBorderHeight,
+			Rotation = new Vector3(0.0f, rotationY, 0.0f),
+			Scale = new Vector3(1.0f, StoneBorderYScale, 1.0f)
+		};
+
+		stoneModel.Position = modelOffset;
+		borderPiece.AddChild(stoneModel);
+		AddChild(borderPiece);
+	}
+
+	private static int GetHexDistance(HexCoord coord)
+	{
+		return (
+			System.Math.Abs(coord.Q) +
+			System.Math.Abs(coord.R) +
+			System.Math.Abs(coord.Q + coord.R)) / 2;
+	}
+
+	private static uint GetTileVisualHash(HexCoord coord)
+	{
+		unchecked
+		{
+			uint hash = 0xA511E9B3u;
+			hash ^= (uint)coord.Q * 0x9E3779B1u;
+			hash ^= (uint)coord.R * 0x85EBCA77u;
+			hash ^= hash >> 16;
+			hash *= 0x7FEB352Du;
+			hash ^= hash >> 15;
+			return hash;
+		}
 	}
 
 	private Vector3 HexToWorld(HexCoord coord, float size)

@@ -17,7 +17,7 @@ public partial class CameraRigController : Node3D
 	[Export] public Camera3D Camera;
 
 	[ExportGroup("Input")]
-	[Export] public MouseButton YawButton = MouseButton.Left;
+	[Export] public MouseButton YawButton = MouseButton.Right;
 	[Export] public MouseButton PitchButton = MouseButton.Right;
 	[Export] public float YawSensitivity = 0.18f;
 	[Export] public float PitchSensitivity = 0.18f;
@@ -35,7 +35,7 @@ public partial class CameraRigController : Node3D
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float FocusMinDistance = 8.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
-	public float FocusMaxDistance = 24.0f;
+	public float FocusMaxDistance = 20.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float FocusDistance = 14.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
@@ -50,17 +50,17 @@ public partial class CameraRigController : Node3D
 	public float AllowedTreeSideAngleDegrees = 85.0f;
 
 	[ExportGroup("Yaw Limits")]
-	[Export] public bool LimitYaw = true;
+	[Export] public bool LimitYaw = false;
 	[Export] public float MinYawDegrees = -25.0f;
 	[Export] public float MaxYawDegrees = 115.0f;
 
 	[ExportGroup("Pitch Limits")]
-	[Export] public float MinPitchDegrees = 35.0f;
+	[Export] public float MinPitchDegrees = 20.0f;
 	[Export] public float MaxPitchDegrees = 70.0f;
 
 	[ExportGroup("Zoom")]
 	[Export] public float MinDistance = 8.0f;
-	[Export] public float MaxDistance = 38.0f;
+	[Export] public float MaxDistance = 28.0f;
 	[Export] public float ZoomStep = 2.0f;
 	[Export] public float ZoomSmoothSpeed = 10.0f;
 
@@ -69,7 +69,7 @@ public partial class CameraRigController : Node3D
 	[Export(PropertyHint.Range, "0.0,90.0,1.0")]
 	public float PitchZoomStartDegrees = 35.0f;
 	[Export(PropertyHint.Range, "0.0,8.0,0.1")]
-	public float MaxTopDownDistanceBonus = 3.0f;
+	public float MaxTopDownDistanceBonus = 1.5f;
 
 	[ExportGroup("Collision")]
 	[Export(PropertyHint.Range, "0.05,3.0,0.05")]
@@ -653,6 +653,9 @@ public partial class CameraRigController : Node3D
 
 	private float ClampYaw(float yaw)
 	{
+		if (!LimitYaw)
+			return yaw;
+
 		float clampedYaw = ClampConfiguredYaw(yaw);
 
 		if (!_hasBoardContext)
@@ -748,7 +751,9 @@ public partial class CameraRigController : Node3D
 			cameraPosition.Y,
 			_boardGroundY + GroundSafetyDistance);
 
-		if (_mainTreeTile == null || !IsInstanceValid(_mainTreeTile))
+		if (!LimitYaw ||
+			_mainTreeTile == null ||
+			!IsInstanceValid(_mainTreeTile))
 			return cameraPosition;
 
 		float treePlaneDistance = (

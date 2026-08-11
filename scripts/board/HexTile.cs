@@ -25,10 +25,10 @@ public partial class HexTile : Node3D
 	private bool _isTutorialHighlightActive;
 	private Tween _tutorialHighlightTween;
 
-	private const float TutorialHighlightMinAlpha = 0.55f;
-	private const float TutorialHighlightMaxAlpha = 0.88f;
-	private const float TutorialHighlightMinEmission = 1.9f;
-	private const float TutorialHighlightMaxEmission = 4.0f;
+	private const float TutorialHighlightMinAlpha = 0.22f;
+	private const float TutorialHighlightMaxAlpha = 0.38f;
+	private const float TutorialHighlightMinEmission = 0.0f;
+	private const float TutorialHighlightMaxEmission = 0.0f;
 	private const float TutorialHighlightPulseDuration = 0.85f;
 
 	private PlantInstance _renderedPlant;
@@ -438,14 +438,18 @@ public partial class HexTile : Node3D
 		if (_tileMesh == null)
 			return;
 
-		_tileMaterial = new StandardMaterial3D();
+		Material sourceMaterial = _tileMesh.MaterialOverride;
 
-		_tileMaterial.AlbedoColor = new Color("d8dbd5");
-		_tileMaterial.Roughness = 1.0f;
-		_tileMaterial.Metallic = 0.0f;
-		_tileMaterial.EmissionEnabled = false;
+		if (sourceMaterial == null && _tileMesh.Mesh.GetSurfaceCount() > 0)
+			sourceMaterial = _tileMesh.Mesh.SurfaceGetMaterial(0);
 
-		_tileMesh.MaterialOverride = _tileMaterial;
+		if (sourceMaterial is not StandardMaterial3D standardMaterial)
+			return;
+
+		_tileMaterial = standardMaterial.Duplicate() as StandardMaterial3D;
+
+		if (_tileMaterial != null)
+			_tileMesh.MaterialOverride = _tileMaterial;
 	}
 
 	private void EnsureCollision()
