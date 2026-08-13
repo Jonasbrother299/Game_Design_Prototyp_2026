@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile2.tscn" id="2_h5vyq"]
 [ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile3.tscn" id="3_bbgvc"]
 [ext_resource type="PackedScene" uid="uid://dr15dpset8y4s" path="res://scenes/board/plants/Oak.tscn" id="4_pcdc4"]
-[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_pcdc4"]
+[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_8ri4g"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="6_8h71w"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="7_mq23u"]
 [ext_resource type="PackedScene" uid="uid://dbeuslydoe41t" path="res://scenes/board/plants/Moss.tscn" id="8_drhma"]
@@ -18,34 +18,15 @@
 [ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://shaders/grass.tres" id="16_8ri4g"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="17_8ri4g"]
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_drhma"]
-panorama = ExtResource("5_pcdc4")
-filter = false
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_ikctr"]
+panorama = ExtResource("5_8ri4g")
 
-[sub_resource type="Sky" id="Sky_gsxep"]
-sky_material = SubResource("PanoramaSkyMaterial_drhma")
+[sub_resource type="Sky" id="Sky_cbfbo"]
+sky_material = SubResource("PanoramaSkyMaterial_ikctr")
 
-[sub_resource type="Environment" id="Environment_7r7g7"]
+[sub_resource type="Environment" id="Environment_purwd"]
 background_mode = 2
-background_color = Color(0.16, 0.19, 0.16, 1)
-sky = SubResource("Sky_gsxep")
-ambient_light_source = 3
-ambient_light_color = Color(0.94, 0.91697, 0.47939998, 1)
-ambient_light_sky_contribution = 0.34
-ambient_light_energy = 0.65
-reflected_light_source = 2
-glow_enabled = true
-glow_intensity = 1.02
-glow_strength = 0.99
-glow_hdr_threshold = 0.96
-volumetric_fog_enabled = true
-volumetric_fog_density = 0.002
-volumetric_fog_albedo = Color(0.83, 0.9943333, 1, 1)
-volumetric_fog_emission_energy = 0.0
-volumetric_fog_gi_inject = 0.37
-volumetric_fog_length = 9.7
-volumetric_fog_ambient_inject = 0.69
-volumetric_fog_sky_affect = 0.0
+sky = SubResource("Sky_cbfbo")
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_u0h22"]
 
@@ -284,7 +265,7 @@ light_angular_distance = 4.1
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2083708418]
-environment = SubResource("Environment_7r7g7")
+environment = SubResource("Environment_purwd")
 camera_attributes = SubResource("CameraAttributesPractical_u0h22")
 compositor = SubResource("Compositor_ln1tm")
 script = ExtResource("6_8h71w")
