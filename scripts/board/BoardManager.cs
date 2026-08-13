@@ -50,6 +50,9 @@ public partial class BoardManager : Node3D
 	[Export(PropertyHint.Range, "0.1,2.0,0.01")]
 	public float StoneBorderYScale = 1.0f;
 
+	[Export(PropertyHint.Range, "-0.5,0.5,0.01")]
+	public float StoneBorderOutwardOffset = 0.12f;
+
 	[Export] public Vector3 Side1StoneModelOffset =
 		new Vector3(-13.20f, 0.0f, -4.17f);
 
@@ -145,13 +148,13 @@ public partial class BoardManager : Node3D
 
 	[ExportGroup("Tree Shadow Visual")]
 	[Export] public Color TreeShadowColor =
-		new Color(0.055f, 0.08f, 0.045f, 0.66f);
+		new Color(0.015f, 0.025f, 0.012f, 0.86f);
 
 	[Export(PropertyHint.Range, "1.0,7.0,0.1")]
-	public float StartingOakShadowSize = 5.4f;
+	public float StartingOakShadowSize = 6.2f;
 
 	[Export] public Vector2 StartingOakShadowOffset =
-		new Vector2(0.0f, 0.45f);
+		Vector2.Zero;
 
 	[Export(PropertyHint.Range, "0.8,4.0,0.1")]
 	public float BirchShadowSize = 2.8f;
@@ -561,7 +564,8 @@ public partial class BoardManager : Node3D
 
 			CreateStoneBorderPiece(
 				stoneScene,
-				tileView.Position,
+				tileView.Position +
+					outwardDirection.Normalized() * StoneBorderOutwardOffset,
 				coord,
 				modelOffset,
 				rotationY,

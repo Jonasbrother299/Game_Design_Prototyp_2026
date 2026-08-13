@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
 [ext_resource type="Texture2D" uid="uid://dic4gqjj76o6b" path="res://assets/models/plants/birch/textures/leafsingle.png" id="8_5afiq"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/falling-leaves.gdshader" id="8_xt30k"]
-[ext_resource type="PackedScene" path="res://assets/models/StartingOak/Leaves.fbx" id="10_lto7e"]
+[ext_resource type="PackedScene" uid="uid://ca62oga4pshat" path="res://assets/models/StartingOak/Leaves.fbx" id="10_lto7e"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8uq3w"]
 render_priority = 0
@@ -96,7 +96,7 @@ subdivide_depth = 2
 
 [node name="Birch" unique_id=1076487804 instance=ExtResource("1_ctr7x")]
 
-[node name="BirchLeaves" parent="." index="0" unique_id=354483286]
+[node name="BirchLeaves" parent="." index="0" unique_id=987635161]
 transform = Transform3D(0.755, 0, 0, 0, 0.755, 0, 0, 0, 0.755, 3.4168153, 8.463474, -1.7497036)
 transparency = 1.0
 cast_shadow = 0
@@ -105,7 +105,7 @@ cast_shadow = 0
 material_override = SubResource("ShaderMaterial_8uq3w")
 multimesh = SubResource("MultiMesh_dwyv6")
 
-[node name="BirchUnified" parent="." index="1" unique_id=1719757081]
+[node name="BirchUnified" parent="." index="1" unique_id=1070848302]
 transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_4huw2")
 
@@ -122,7 +122,7 @@ draw_pass_1 = SubResource("PlaneMesh_5afiq")
 
 [node name="Leaves" parent="." index="3" unique_id=1896835900 instance=ExtResource("10_lto7e")]
 
-[node name="LeafMesh" parent="Leaves" index="0" unique_id=1314048655]
+[node name="LeafMesh" parent="Leaves" index="0" unique_id=1715098023]
 visible = false
 
 [editable path="Leaves"]

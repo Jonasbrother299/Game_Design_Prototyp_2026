@@ -11,8 +11,11 @@ public partial class GameManager : Node
 		ForceOnce
 	}
 
+	private const float PointerClickThreshold = 6.0f;
 	private const int MassPlantDeathThreshold = 15;
 	private static TutorialStartMode _tutorialStartMode;
+
+	public event Action<HexTile> TileInformationRequested;
 
 	private BoardManager _boardManager;
 	private TurnManager _turnManager;
@@ -30,6 +33,8 @@ public partial class GameManager : Node
 	private string _lastDebugMessage = "";
 	private bool _isCardDragActive;
 	private bool _isDayNightPresentationLocked;
+	private bool _isTileClickCandidate;
+	private Vector2 _tileClickPressPosition;
 	private bool _hasRecordedCompletedGame;
 
 	public override void _Ready()
@@ -170,24 +175,74 @@ public partial class GameManager : Node
 		if (_isDayNightPresentationLocked)
 			return;
 
+		if (inputEvent is InputEventMouseMotion mouseMotion)
+		{
+			if (_isTileClickCandidate &&
+				mouseMotion.Position.DistanceTo(_tileClickPressPosition) >
+				GetPointerClickThreshold())
+			{
+				_isTileClickCandidate = false;
+			}
+
+			return;
+		}
+
 		if (inputEvent is not InputEventMouseButton mouseButton ||
-			mouseButton.ButtonIndex != MouseButton.Left ||
-			!mouseButton.Pressed)
+			mouseButton.ButtonIndex != MouseButton.Left)
 			return;
 
-		if (!CanFocusTileFromMouse())
+		if (mouseButton.Pressed)
+		{
+			_isTileClickCandidate = CanFocusTileFromMouse();
+			_tileClickPressPosition = mouseButton.Position;
+
+			if (!mouseButton.DoubleClick || !_isTileClickCandidate)
+				return;
+
+			_isTileClickCandidate = false;
+			HandleTileDoubleClick(mouseButton.Position);
+			return;
+		}
+
+		bool shouldRequestInformation =
+			_isTileClickCandidate &&
+			mouseButton.Position.DistanceTo(_tileClickPressPosition) <=
+			GetPointerClickThreshold() &&
+			CanFocusTileFromMouse();
+		_isTileClickCandidate = false;
+
+		if (!shouldRequestInformation)
 			return;
 
 		HexTile clickedTile = GetHexTileUnderMouse(mouseButton.Position);
+		if (clickedTile == null)
+			return;
 
+		TileInformationRequested?.Invoke(clickedTile);
+	}
+
+	private float GetPointerClickThreshold()
+	{
+		return _cameraRig != null
+			? Mathf.Max(_cameraRig.DragThreshold, 0.0f)
+			: PointerClickThreshold;
+	}
+
+	private void HandleTileDoubleClick(Vector2 mousePosition)
+	{
+		HexTile clickedTile = GetHexTileUnderMouse(mousePosition);
 		if (clickedTile == null)
 			return;
 
 		bool isMainTree = clickedTile == _mainTreeTile;
-		if (isMainTree ? !mouseButton.DoubleClick : mouseButton.DoubleClick)
+		if (!isMainTree && clickedTile.Data?.Plant == null)
 			return;
 
-		if (!_cameraRig.FocusTile(clickedTile))
+		bool cameraChanged = isMainTree
+			? _cameraRig.ShowBoardOverview()
+			: _cameraRig.FocusTile(clickedTile);
+
+		if (!cameraChanged)
 			return;
 
 		GetViewport().SetInputAsHandled();
@@ -203,7 +258,10 @@ public partial class GameManager : Node
 		_cameraRig?.SetInteractionEnabled(!isLocked);
 
 		if (isLocked)
+		{
+			_isTileClickCandidate = false;
 			ClearCurrentPreview();
+		}
 
 		UpdateDiscardHandButtonState();
 	}
@@ -501,6 +559,7 @@ private void UpdateDiscardHandButtonState()
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 {
 	_isCardDragActive = true;
+	_isTileClickCandidate = false;
 	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
 
 	if (hoveredTile == null)

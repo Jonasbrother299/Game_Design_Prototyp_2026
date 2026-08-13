@@ -16,11 +16,9 @@
 [ext_resource type="Texture2D" uid="uid://c4htaarh2oul1" path="res://assets/ui/button/endTurn_button.png" id="12_end_turn"]
 [ext_resource type="PackedScene" path="res://scenes/UI/RoundDisplay.tscn" id="13_round"]
 [ext_resource type="Script" uid="uid://d2pvq043lauj3" path="res://scripts/UI/EndTurnButtonUI.cs" id="14_end_turn_feedback"]
-[ext_resource type="PackedScene" path="res://scenes/environment/GhibliBush.tscn" id="15_ghibli_bush"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EndGameScreen.tscn" id="16_end_game"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="17_drought_effect"]
 [ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="18_ui_font"]
-[ext_resource type="Script" uid="uid://gsrfwgwox6jb" path="res://scripts/visuals/GhibliBushBackdrop.cs" id="19_bush_backdrop"]
 [ext_resource type="Resource" uid="uid://d28g8w7xp712f" path="res://data/balance/game_balance.tres" id="20_balance"]
 [ext_resource type="Script" uid="uid://v7h0unjsq8uj" path="res://scripts/UI/DayCycleDisplayUI.cs" id="23_day_cycle_display"]
 [ext_resource type="Texture2D" uid="uid://c8gklubb702gq" path="res://assets/ui/decor/ivy_corner.svg" id="24_day_cycle_ivy"]
@@ -53,7 +51,6 @@ ssil_enabled = true
 ssil_radius = 6.1
 ssil_intensity = 3.25
 ssil_sharpness = 1.0
-glow_enabled = true
 glow_intensity = 1.14
 glow_strength = 0.54
 glow_bloom = 0.25
@@ -75,7 +72,7 @@ adjustment_saturation = 0.93
 
 [sub_resource type="Compositor" id="Compositor_vcsgt"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_dg70y"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gsxep"]
 render_priority = 0
 shader = ExtResource("8_gsxep")
 shader_parameter/surface_color = Color(0.14, 0.46, 0.54, 1)
@@ -206,6 +203,8 @@ transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
 StoneBorderYScale = 1.2000000000000002
+DecorativeGroundRows = 8
+OuterTreeChance = 0.42
 StartingOakScale = 0.75
 MushroomModelScale = 0.5
 FlowerModelScale = 0.5
@@ -232,8 +231,7 @@ script = ExtResource("17_drought_effect")
 
 [node name="StylizedWater" parent="." unique_id=1959249824 instance=ExtResource("30_stylized_water")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
-material_override = SubResource("ShaderMaterial_dg70y")
-UnderlayColor = Color(0.16078432, 0.5019608, 0.5686275, 1)
+material_override = SubResource("ShaderMaterial_gsxep")
 SurfaceCellScale = 1.63
 PatternSpeed = 0.22
 RefractionStrength = 0.0
@@ -248,11 +246,6 @@ ShowRainInEditor = false
 EditorRainIntensity = 1.44
 WaveHeight = 0.0
 EdgeFade = 4.0
-
-[node name="GhibliBushBackdrop" type="Node3D" parent="." unique_id=615135018]
-visible = false
-script = ExtResource("19_bush_backdrop")
-BushScene = ExtResource("15_ghibli_bush")
 
 [node name="CameraRig" type="Node3D" parent="." unique_id=484561498]
 script = ExtResource("5_vcsgt")

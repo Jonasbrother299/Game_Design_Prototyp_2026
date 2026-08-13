@@ -613,13 +613,13 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
 theme_override_font_sizes/font_size = 27
-text = "Vertikale Kamerasteuerung umkehren"
+text = "Vertikale Pan-Richtung umkehren"
 
 [node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
 theme_override_font_sizes/font_size = 22
-text = "Kehrt die Richtung beim Ziehen mit der rechten Maustaste um."
+text = "Kehrt die vertikale Bewegung beim Pannen mit der linken Maustaste um."
 
 [node name="InvertVerticalToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow"]
 unique_name_in_owner = true

@@ -49,10 +49,10 @@ public partial class HexTile : Node3D
 	public int MatureFlowerCount { get; private set; } = 4;
 	public float BirchModelScale { get; private set; } = 0.18f;
 	public Color TreeShadowColor { get; private set; } =
-		new Color(0.055f, 0.08f, 0.045f, 0.66f);
-	public float StartingOakShadowSize { get; private set; } = 5.4f;
+		new Color(0.015f, 0.025f, 0.012f, 0.86f);
+	public float StartingOakShadowSize { get; private set; } = 6.2f;
 	public Vector2 StartingOakShadowOffset { get; private set; } =
-		new Vector2(0.0f, 0.45f);
+		Vector2.Zero;
 	public float BirchShadowSize { get; private set; } = 2.8f;
 	public Vector2 BirchShadowOffset { get; private set; } =
 		new Vector2(0.0f, 0.18f);
@@ -917,7 +917,7 @@ void fragment() {
 			plant,
 			tile,
 			animateGrowth,
-			showTreeShadow: animateGrowth);
+			showTreeShadow: false);
 
 		if (factoryVisual != null)
 		{

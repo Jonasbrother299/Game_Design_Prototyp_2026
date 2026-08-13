@@ -115,8 +115,13 @@ public partial class StylizedWaterController : MeshInstance3D
 
 	[Export] public Vector2 WaterCenter = Vector2.Zero;
 
+	[ExportGroup("Underwater Ground")]
+	[Export(PropertyHint.Range, "-4.0,-0.2,0.05")]
+	public float UnderwaterGroundDepth = -1.35f;
+
 	private ShaderMaterial _waterMaterial;
 	private ShaderMaterial _underlayMaterial;
+	private MeshInstance3D _underlay;
 	private float _rainIntensity;
 	private float _targetRainIntensity;
 
@@ -192,10 +197,9 @@ public partial class StylizedWaterController : MeshInstance3D
 	{
 		_waterMaterial = DuplicateShaderMaterial(this);
 
-		MeshInstance3D underlay = GetNodeOrNull<MeshInstance3D>(
-			"CausticUnderlay");
-		if (underlay != null)
-			_underlayMaterial = DuplicateShaderMaterial(underlay);
+		_underlay = GetNodeOrNull<MeshInstance3D>("CausticUnderlay");
+		if (_underlay != null)
+			_underlayMaterial = DuplicateShaderMaterial(_underlay);
 	}
 
 	private static ShaderMaterial DuplicateShaderMaterial(
@@ -220,16 +224,32 @@ public partial class StylizedWaterController : MeshInstance3D
 
 	private void ApplyDimensions()
 	{
-		if (_waterMaterial == null)
-			return;
+		if (_waterMaterial != null)
+		{
+			_waterMaterial.SetShaderParameter("water_center", WaterCenter);
+			_waterMaterial.SetShaderParameter("water_radius", WaterRadius);
+			_waterMaterial.SetShaderParameter("edge_fade", EdgeFade);
+			_waterMaterial.SetShaderParameter("contact_width", ContactWidth);
+			_waterMaterial.SetShaderParameter(
+				"contact_softness",
+				ContactSoftness);
+		}
 
-		_waterMaterial.SetShaderParameter("water_center", WaterCenter);
-		_waterMaterial.SetShaderParameter("water_radius", WaterRadius);
-		_waterMaterial.SetShaderParameter("edge_fade", EdgeFade);
-		_waterMaterial.SetShaderParameter("contact_width", ContactWidth);
-		_waterMaterial.SetShaderParameter(
-			"contact_softness",
-			ContactSoftness);
+		if (_underlay != null)
+		{
+			Vector3 underlayPosition = _underlay.Position;
+			underlayPosition.Y = UnderwaterGroundDepth;
+			_underlay.Position = underlayPosition;
+		}
+
+		if (_underlayMaterial != null)
+		{
+			_underlayMaterial.SetShaderParameter("water_center", WaterCenter);
+			_underlayMaterial.SetShaderParameter(
+				"underlay_radius",
+				WaterRadius + 3.0f);
+		}
+
 	}
 
 	private void ApplyAppearance()
@@ -305,28 +325,29 @@ public partial class StylizedWaterController : MeshInstance3D
 			ApplyRainIntensity();
 		}
 
-		if (_underlayMaterial == null)
-			return;
+		if (_underlayMaterial != null)
+		{
+			_underlayMaterial.SetShaderParameter("underlay_color", UnderlayColor);
+			_underlayMaterial.SetShaderParameter("caustic_color", LineColor);
+			_underlayMaterial.SetShaderParameter("cell_scale", UnderlayCellScale);
+			_underlayMaterial.SetShaderParameter("animation_speed", PatternSpeed);
+			_underlayMaterial.SetShaderParameter(
+				"line_wobble_strength",
+				LineWobbleStrength);
+			_underlayMaterial.SetShaderParameter(
+				"line_bulge_strength",
+				LineBulgeStrength);
+			_underlayMaterial.SetShaderParameter(
+				"line_bulge_size",
+				LineBulgeSize);
+			_underlayMaterial.SetShaderParameter(
+				"line_bulge_scale",
+				LineBulgeScale);
+			_underlayMaterial.SetShaderParameter(
+				"line_distortion_scale",
+				LineDistortionScale);
+		}
 
-		_underlayMaterial.SetShaderParameter("underlay_color", UnderlayColor);
-		_underlayMaterial.SetShaderParameter("caustic_color", LineColor);
-		_underlayMaterial.SetShaderParameter("cell_scale", UnderlayCellScale);
-		_underlayMaterial.SetShaderParameter("animation_speed", PatternSpeed);
-		_underlayMaterial.SetShaderParameter(
-			"line_wobble_strength",
-			LineWobbleStrength);
-		_underlayMaterial.SetShaderParameter(
-			"line_bulge_strength",
-			LineBulgeStrength);
-		_underlayMaterial.SetShaderParameter(
-			"line_bulge_size",
-			LineBulgeSize);
-		_underlayMaterial.SetShaderParameter(
-			"line_bulge_scale",
-			LineBulgeScale);
-		_underlayMaterial.SetShaderParameter(
-			"line_distortion_scale",
-			LineDistortionScale);
 	}
 
 	private void ApplyRainIntensity()
