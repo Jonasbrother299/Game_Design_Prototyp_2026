@@ -2,14 +2,15 @@
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
 [ext_resource type="Texture2D" uid="uid://b0uxrhu6vcoih" path="res://assets/cards/card_blume.png" id="2_card"]
-[ext_resource type="PackedScene" uid="uid://b5w5jfsbhydt" path="res://assets/models/plants/SpiderliliFlower/Spidelilie.fbx" id="3_model"]
+[ext_resource type="PackedScene" path="res://assets/models/plants/SpiderliliFlower/Spidelilie_Mature.glb" id="3_model"]
+[ext_resource type="PackedScene" path="res://assets/models/plants/SpiderliliFlower/Spidelilie_Stage1.glb" id="4_stage_1"]
+[ext_resource type="PackedScene" path="res://assets/models/plants/SpiderliliFlower/Spidelilie_Stage2.glb" id="5_stage_2"]
 
 [resource]
 script = ExtResource("1_plant")
 Type = 3
 DisplayName = "Blume"
 StartingHandCopies = 1
-DrawWeight = 1
 WaterConsumption = 2
 WaterProduction = 2
 GrowthRounds = 2
@@ -20,3 +21,4 @@ EffectType = 3
 NeighborSpreadDenominatorReduction = 1
 CardImage = ExtResource("2_card")
 PlantScene = ExtResource("3_model")
+GrowthStageScenes = Array[PackedScene]([ExtResource("4_stage_1"), ExtResource("5_stage_2")])

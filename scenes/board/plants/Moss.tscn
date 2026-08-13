@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://dbeuslydoe41t"]
+
+[ext_resource type="PackedScene" uid="uid://ccnrnc7ds03h3" path="res://assets/models/plants/Moss/Moss.fbx" id="1_uej0n"]
+[ext_resource type="Texture2D" uid="uid://bnlp8ddi5hbme" path="res://assets/models/plants/Moss/textures/Moss_Ground_AlbedoTransparency.png" id="2_dxob2"]
+[ext_resource type="Texture2D" uid="uid://gckim386p0ne" path="res://assets/models/plants/Moss/textures/Moss_Ground_Normal.png" id="3_rq4l1"]
+[ext_resource type="Material" uid="uid://v0fgmrlyoypy" path="res://assets/models/plants/Moss/textures/mossmaterial.tres" id="4_qmn5a"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vsu6i"]
+albedo_texture = ExtResource("2_dxob2")
+normal_enabled = true
+normal_texture = ExtResource("3_rq4l1")
+
+[node name="Moss" unique_id=499062124 instance=ExtResource("1_uej0n")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.031319797, 0)
+
+[node name="Ground" parent="." index="0" unique_id=557134802]
+material_override = SubResource("StandardMaterial3D_vsu6i")
+
+[node name="Moss1" parent="." index="1" unique_id=1051811425]
+material_override = ExtResource("4_qmn5a")
+
+[node name="Moss2" parent="." index="2" unique_id=1920262016]
+material_override = ExtResource("4_qmn5a")
+
+[node name="Moss3" parent="." index="3" unique_id=1072879353]
+material_override = ExtResource("4_qmn5a")
+
+[node name="Moss4" parent="." index="4" unique_id=2087693042]
+material_override = ExtResource("4_qmn5a")

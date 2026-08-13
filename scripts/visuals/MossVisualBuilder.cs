@@ -4,10 +4,56 @@ public static class MossVisualBuilder
 {
 	public static Node3D Create(PlantInstance plant)
 	{
-		Node3D root = new Node3D();
-		root.Name = "Moss_Visual";
-
 		int stage = GetStage(plant);
+		Node3D modelVisual = CreateModelVisual(plant, stage);
+		if (modelVisual != null)
+			return modelVisual;
+
+		return CreateFallbackVisual(stage);
+	}
+
+	private static Node3D CreateModelVisual(
+		PlantInstance plant,
+		int stage)
+	{
+		PackedScene plantScene = plant?.Definition?.PlantScene;
+		if (plantScene == null)
+			return null;
+
+		Node instance = plantScene.Instantiate();
+		if (instance is not Node3D root)
+		{
+			instance.Free();
+			GD.PushWarning(
+				"MossVisualBuilder: PlantScene benötigt einen Node3D-Root.");
+			return null;
+		}
+
+		root.Name = "Moss_Visual";
+		SetPartVisible(root, "Ground", false);
+		SetPartVisible(root, "Moss1", true);
+		SetPartVisible(root, "Moss2", stage >= 2);
+		SetPartVisible(root, "Moss3", stage >= 3);
+		SetPartVisible(root, "Moss4", stage >= 3);
+		return root;
+	}
+
+	private static void SetPartVisible(
+		Node3D root,
+		string nodeName,
+		bool visible)
+	{
+		Node3D part = root.GetNodeOrNull<Node3D>(nodeName);
+		if (part != null)
+			part.Visible = visible;
+	}
+
+	private static Node3D CreateFallbackVisual(int stage)
+	{
+		Node3D root = new Node3D
+		{
+			Name = "Moss_Visual"
+		};
 
 		switch (stage)
 		{

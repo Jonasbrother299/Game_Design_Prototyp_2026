@@ -4,8 +4,18 @@ using System.Collections.Generic;
 
 public partial class GameManager : Node
 {
+	private enum TutorialStartMode
+	{
+		ProfileDefault,
+		SkipOnce,
+		ForceOnce
+	}
+
+	private const float PointerClickThreshold = 6.0f;
 	private const int MassPlantDeathThreshold = 15;
-	private static bool _skipTutorialOnNextStart;
+	private static TutorialStartMode _tutorialStartMode;
+
+	public event Action<HexTile> TileInformationRequested;
 
 	private BoardManager _boardManager;
 	private TurnManager _turnManager;
@@ -18,10 +28,13 @@ public partial class GameManager : Node
 	private HexTile _currentPreviewTile;
 	private TutorialManager _tutorialManager;
 	private readonly GlobalStatisticsManager _statisticsManager = new();
+	private readonly DeveloperProfileSettings _profileSettings = new();
 	private readonly HashSet<int> _recordedMassPlantDeathRounds = new();
 	private string _lastDebugMessage = "";
 	private bool _isCardDragActive;
 	private bool _isDayNightPresentationLocked;
+	private bool _isTileClickCandidate;
+	private Vector2 _tileClickPressPosition;
 	private bool _hasRecordedCompletedGame;
 
 	public override void _Ready()
@@ -66,31 +79,63 @@ public partial class GameManager : Node
 
 		_recordedMassPlantDeathRounds.Clear();
 		_hasRecordedCompletedGame = false;
+		bool shouldStartTutorial = ShouldStartTutorial();
 		_turnManager.ResetProgressStateForNewGame();
+		if (!shouldStartTutorial)
+		{
+			_turnManager.Config.EventsUnlocked = true;
+			_turnManager.Config.ForceRainAsFirstEvent = false;
+		}
 		_turnManager.StartGame();
 		PlaceStarterOak();
 		ConfigureCameraRig();
 		RefreshGameInterfaces();
 
-		if (!ConsumeTutorialSkipRequest())
+		if (shouldStartTutorial)
 			StartTutorial();
 	}
 
 	public static void SkipTutorialOnNextStart()
 	{
-		_skipTutorialOnNextStart = true;
+		_tutorialStartMode = TutorialStartMode.SkipOnce;
+	}
+
+	public static void ReplayTutorialOnNextStart()
+	{
+		_tutorialStartMode = TutorialStartMode.ForceOnce;
 	}
 
 	public static void ClearTutorialSkipRequest()
 	{
-		_skipTutorialOnNextStart = false;
+		_tutorialStartMode = TutorialStartMode.ProfileDefault;
 	}
 
-	private static bool ConsumeTutorialSkipRequest()
+	private bool ShouldStartTutorial()
 	{
-		bool shouldSkip = _skipTutorialOnNextStart;
-		_skipTutorialOnNextStart = false;
-		return shouldSkip;
+		TutorialStartMode startMode = ConsumeTutorialStartMode();
+		if (startMode == TutorialStartMode.ForceOnce)
+			return true;
+
+		if (startMode == TutorialStartMode.SkipOnce)
+			return false;
+
+		try
+		{
+			return !_profileSettings.Load().HasSeenTutorial;
+		}
+		catch (Exception exception)
+		{
+			GD.PushWarning(
+				$"GameManager: Tutorialstatus konnte nicht geladen werden: {exception.Message}");
+			return true;
+		}
+	}
+
+	private static TutorialStartMode ConsumeTutorialStartMode()
+	{
+		TutorialStartMode startMode = _tutorialStartMode;
+		_tutorialStartMode = TutorialStartMode.ProfileDefault;
+		return startMode;
 	}
 
 	private void ConnectCardHand()
@@ -130,27 +175,74 @@ public partial class GameManager : Node
 		if (_isDayNightPresentationLocked)
 			return;
 
+		if (inputEvent is InputEventMouseMotion mouseMotion)
+		{
+			if (_isTileClickCandidate &&
+				mouseMotion.Position.DistanceTo(_tileClickPressPosition) >
+				GetPointerClickThreshold())
+			{
+				_isTileClickCandidate = false;
+			}
+
+			return;
+		}
+
 		if (inputEvent is not InputEventMouseButton mouseButton ||
-			mouseButton.ButtonIndex != MouseButton.Left ||
-			!mouseButton.Pressed)
+			mouseButton.ButtonIndex != MouseButton.Left)
 			return;
 
-		if (!CanFocusTileFromMouse())
+		if (mouseButton.Pressed)
+		{
+			_isTileClickCandidate = CanFocusTileFromMouse();
+			_tileClickPressPosition = mouseButton.Position;
+
+			if (!mouseButton.DoubleClick || !_isTileClickCandidate)
+				return;
+
+			_isTileClickCandidate = false;
+			HandleTileDoubleClick(mouseButton.Position);
+			return;
+		}
+
+		bool shouldRequestInformation =
+			_isTileClickCandidate &&
+			mouseButton.Position.DistanceTo(_tileClickPressPosition) <=
+			GetPointerClickThreshold() &&
+			CanFocusTileFromMouse();
+		_isTileClickCandidate = false;
+
+		if (!shouldRequestInformation)
 			return;
 
-		bool isMainTree = IsMainTreeVisualUnderMouse(mouseButton.Position);
-		HexTile clickedTile = isMainTree
-			? _mainTreeTile
-			: GetHexTileUnderMouse(mouseButton.Position);
-
+		HexTile clickedTile = GetHexTileUnderMouse(mouseButton.Position);
 		if (clickedTile == null)
 			return;
 
-		isMainTree = isMainTree || clickedTile == _mainTreeTile;
-		if (isMainTree ? !mouseButton.DoubleClick : mouseButton.DoubleClick)
+		TileInformationRequested?.Invoke(clickedTile);
+	}
+
+	private float GetPointerClickThreshold()
+	{
+		return _cameraRig != null
+			? Mathf.Max(_cameraRig.DragThreshold, 0.0f)
+			: PointerClickThreshold;
+	}
+
+	private void HandleTileDoubleClick(Vector2 mousePosition)
+	{
+		HexTile clickedTile = GetHexTileUnderMouse(mousePosition);
+		if (clickedTile == null)
 			return;
 
-		if (!_cameraRig.FocusTile(clickedTile))
+		bool isMainTree = clickedTile == _mainTreeTile;
+		if (!isMainTree && clickedTile.Data?.Plant == null)
+			return;
+
+		bool cameraChanged = isMainTree
+			? _cameraRig.ShowBoardOverview()
+			: _cameraRig.FocusTile(clickedTile);
+
+		if (!cameraChanged)
 			return;
 
 		GetViewport().SetInputAsHandled();
@@ -166,7 +258,10 @@ public partial class GameManager : Node
 		_cameraRig?.SetInteractionEnabled(!isLocked);
 
 		if (isLocked)
+		{
+			_isTileClickCandidate = false;
 			ClearCurrentPreview();
+		}
 
 		UpdateDiscardHandButtonState();
 	}
@@ -273,82 +368,6 @@ public partial class GameManager : Node
 		}
 	}
 
-	private bool IsMainTreeVisualUnderMouse(Vector2 mousePosition)
-	{
-		if (_mainTreeTile == null || !IsInstanceValid(_mainTreeTile))
-			return false;
-
-		Camera3D camera = GetViewport().GetCamera3D();
-		Node treeVisual = _mainTreeTile.FindChild(
-			"StartingOak_Visual",
-			recursive: true,
-			owned: false);
-
-		if (camera == null || treeVisual == null)
-			return false;
-
-		Rect2 screenBounds = default;
-		bool hasScreenBounds = false;
-		ExpandVisualScreenBounds(
-			treeVisual,
-			camera,
-			ref screenBounds,
-			ref hasScreenBounds);
-
-		return hasScreenBounds && screenBounds.Grow(8.0f).HasPoint(mousePosition);
-	}
-
-	private static void ExpandVisualScreenBounds(
-		Node node,
-		Camera3D camera,
-		ref Rect2 screenBounds,
-		ref bool hasScreenBounds)
-	{
-		if (node is VisualInstance3D visual && visual.Visible)
-		{
-			Aabb bounds = visual.GetAabb();
-
-			for (int x = 0; x <= 1; x++)
-			{
-				for (int y = 0; y <= 1; y++)
-				{
-					for (int z = 0; z <= 1; z++)
-					{
-						Vector3 corner = bounds.Position + new Vector3(
-							bounds.Size.X * x,
-							bounds.Size.Y * y,
-							bounds.Size.Z * z);
-						Vector3 worldCorner = visual.GlobalTransform * corner;
-
-						if (camera.IsPositionBehind(worldCorner))
-							continue;
-
-						Vector2 screenCorner = camera.UnprojectPosition(worldCorner);
-
-						if (!hasScreenBounds)
-						{
-							screenBounds = new Rect2(screenCorner, Vector2.Zero);
-							hasScreenBounds = true;
-						}
-						else
-						{
-							screenBounds = screenBounds.Expand(screenCorner);
-						}
-					}
-				}
-			}
-		}
-
-		foreach (Node child in node.GetChildren())
-		{
-			ExpandVisualScreenBounds(
-				child,
-				camera,
-				ref screenBounds,
-				ref hasScreenBounds);
-		}
-	}
-
 	private bool CanFocusTileFromMouse()
 	{
 		if (_cameraRig == null ||
@@ -365,26 +384,37 @@ public partial class GameManager : Node
 			hoveredControl.MouseFilter != Control.MouseFilterEnum.Stop;
 	}
 
-private void StartTutorial()
-{
-	Node currentScene = GetTree().CurrentScene;
-
-	if (currentScene == null)
-		return;
-
-	TutorialOverlay overlay = currentScene.GetNodeOrNull<TutorialOverlay>("UI/CanvasLayer/TutorialOverlay");
-
-	if (overlay == null)
+	private void StartTutorial()
 	{
-		GD.PrintErr("TutorialOverlay not found. Expected path: UI/CanvasLayer/TutorialOverlay");
-		return;
-	}
+		Node currentScene = GetTree().CurrentScene;
 
-	_tutorialManager = new TutorialManager();
-	_tutorialManager.Name = "TutorialManager";
-	currentScene.AddChild(_tutorialManager);
-	_tutorialManager.Start(overlay, _boardManager, _cardHand, _turnManager);
-}
+		if (currentScene == null)
+			return;
+
+		TutorialOverlay overlay = currentScene.GetNodeOrNull<TutorialOverlay>(
+			"UI/CanvasLayer/TutorialOverlay");
+
+		if (overlay == null)
+		{
+			GD.PrintErr("TutorialOverlay not found. Expected path: UI/CanvasLayer/TutorialOverlay");
+			return;
+		}
+
+		_tutorialManager = new TutorialManager();
+		_tutorialManager.Name = "TutorialManager";
+		currentScene.AddChild(_tutorialManager);
+		_tutorialManager.Start(overlay, _boardManager, _cardHand, _turnManager);
+
+		try
+		{
+			_profileSettings.MarkTutorialSeen();
+		}
+		catch (Exception exception)
+		{
+			GD.PushWarning(
+				$"GameManager: Tutorialstatus konnte nicht gespeichert werden: {exception.Message}");
+		}
+	}
 
 private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 {
@@ -529,6 +559,7 @@ private void UpdateDiscardHandButtonState()
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 {
 	_isCardDragActive = true;
+	_isTileClickCandidate = false;
 	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
 
 	if (hoveredTile == null)

@@ -2,6 +2,8 @@ using Godot;
 
 public static class TreeCanopyShadowBuilder
 {
+	internal const uint ReceiverLayerMask = 1u << 19;
+
 	private const string LeafTexturePath =
 		"res://assets/textures/leaves/tree_canopy_shadow.svg";
 
@@ -29,7 +31,7 @@ public static class TreeCanopyShadowBuilder
 
 		float safeCanopySize = Mathf.Max(0.1f, canopySize);
 
-		Decal canopyDecal = new Decal
+		Decal canopyShadow = new Decal
 		{
 			Name = "CanopyShadow",
 			TextureAlbedo = _leafTexture,
@@ -37,15 +39,14 @@ public static class TreeCanopyShadowBuilder
 			AlbedoMix = 1.0f,
 			Size = new Vector3(
 				safeCanopySize,
-				0.32f,
+				4.0f,
 				safeCanopySize),
-			Position = new Vector3(0.0f, 0.06f, 0.0f),
+			Position = new Vector3(0.0f, 1.5f, 0.0f),
 			RotationDegrees = new Vector3(0.0f, -12.0f, 0.0f),
-			UpperFade = 0.0f,
-			LowerFade = 0.0f
+			CullMask = ReceiverLayerMask
 		};
 
-		root.AddChild(canopyDecal);
+		root.AddChild(canopyShadow);
 		return root;
 	}
 }

@@ -149,23 +149,29 @@ public static class PlantDatabase
 
 		if (plant.Type == PlantType.Mushroom)
 		{
+			if (plant.PlantScene == null)
+				errors.Add("Pilzmodell fehlt");
+		}
+
+		if (plant.Type == PlantType.Flower)
+		{
+			if (plant.PlantScene == null)
+				errors.Add("Reifes Blumenmodell fehlt");
+
 			if (plant.GrowthStageScenes == null ||
-				plant.GrowthStageScenes.Count != 3)
+				plant.GrowthStageScenes.Count != 2)
 			{
-				errors.Add("Für den Pilz müssen genau drei Wachstumsmodelle hinterlegt sein");
+				errors.Add("Für die Blume müssen genau zwei Wachstumsmodelle hinterlegt sein");
 			}
 			else
 			{
 				for (int i = 0; i < plant.GrowthStageScenes.Count; i++)
 				{
 					if (plant.GrowthStageScenes[i] == null)
-						errors.Add($"Pilz-Wachstumsmodell {i + 1} fehlt");
+						errors.Add($"Blumen-Wachstumsmodell {i + 1} fehlt");
 				}
 			}
 		}
-
-		if (plant.Type == PlantType.Flower && plant.PlantScene == null)
-			errors.Add("Blumenmodell fehlt");
 
 		if (plant.Type == PlantType.Birch && plant.PlantScene == null)
 			errors.Add("Birkenmodell fehlt");

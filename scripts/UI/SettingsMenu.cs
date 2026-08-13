@@ -6,7 +6,8 @@ public partial class SettingsMenu : Control
 	{
 		Audio,
 		Display,
-		Controls
+		Controls,
+		Developer
 	}
 
 	[Signal]
@@ -15,6 +16,12 @@ public partial class SettingsMenu : Control
 	private const string SettingsPath = "user://settings.cfg";
 	private const string MusicBusName = "Music";
 	private const string EffectsBusName = "Effects";
+	private const string PlantingBusName = "Planting";
+	private const string ForestAmbienceBusName = "ForestAmbience";
+	private const string WaterAmbienceBusName = "WaterAmbience";
+	private const string HeatAmbienceBusName = "HeatAmbience";
+	private const string RainAmbienceBusName = "RainAmbience";
+	private const string HeavyRainAmbienceBusName = "HeavyRainAmbience";
 	private const string CameraSensitivitySetting =
 		"gameplay/camera_sensitivity_multiplier";
 	private const string ZoomSensitivitySetting =
@@ -37,15 +44,29 @@ public partial class SettingsMenu : Control
 	private Button _audioTabButton;
 	private Button _displayTabButton;
 	private Button _controlsTabButton;
+	private Button _developerTabButton;
 	private Control _audioPage;
 	private Control _displayPage;
 	private Control _controlsPage;
+	private Control _developerPage;
 	private HSlider _masterVolumeSlider;
 	private Label _masterVolumeValue;
 	private HSlider _musicVolumeSlider;
 	private Label _musicVolumeValue;
 	private HSlider _effectsVolumeSlider;
 	private Label _effectsVolumeValue;
+	private HSlider _plantingVolumeSlider;
+	private Label _plantingVolumeValue;
+	private HSlider _forestAmbienceVolumeSlider;
+	private Label _forestAmbienceVolumeValue;
+	private HSlider _waterAmbienceVolumeSlider;
+	private Label _waterAmbienceVolumeValue;
+	private HSlider _heatAmbienceVolumeSlider;
+	private Label _heatAmbienceVolumeValue;
+	private HSlider _rainAmbienceVolumeSlider;
+	private Label _rainAmbienceVolumeValue;
+	private HSlider _heavyRainAmbienceVolumeSlider;
+	private Label _heavyRainAmbienceVolumeValue;
 	private CheckButton _muteToggle;
 	private CheckButton _fullscreenToggle;
 	private CheckButton _vsyncToggle;
@@ -65,19 +86,39 @@ public partial class SettingsMenu : Control
 	{
 		EnsureAudioBus(MusicBusName);
 		EnsureAudioBus(EffectsBusName);
+		EnsureAudioBus(PlantingBusName, EffectsBusName);
+		EnsureAudioBus(ForestAmbienceBusName, EffectsBusName);
+		EnsureAudioBus(WaterAmbienceBusName, EffectsBusName);
+		EnsureAudioBus(HeatAmbienceBusName, EffectsBusName);
+		EnsureAudioBus(RainAmbienceBusName, EffectsBusName);
+		EnsureAudioBus(HeavyRainAmbienceBusName, EffectsBusName);
 
 		_audioTabButton = GetNode<Button>("%AudioTabButton");
 		_displayTabButton = GetNode<Button>("%DisplayTabButton");
 		_controlsTabButton = GetNode<Button>("%ControlsTabButton");
+		_developerTabButton = GetNode<Button>("%DeveloperTabButton");
 		_audioPage = GetNode<Control>("%AudioPage");
 		_displayPage = GetNode<Control>("%DisplayPage");
 		_controlsPage = GetNode<Control>("%ControlsPage");
+		_developerPage = GetNode<Control>("%DeveloperPage");
 		_masterVolumeSlider = GetNode<HSlider>("%MasterVolumeSlider");
 		_masterVolumeValue = GetNode<Label>("%MasterVolumeValue");
 		_musicVolumeSlider = GetNode<HSlider>("%MusicVolumeSlider");
 		_musicVolumeValue = GetNode<Label>("%MusicVolumeValue");
 		_effectsVolumeSlider = GetNode<HSlider>("%EffectsVolumeSlider");
 		_effectsVolumeValue = GetNode<Label>("%EffectsVolumeValue");
+		_plantingVolumeSlider = GetNode<HSlider>("%PlantingVolumeSlider");
+		_plantingVolumeValue = GetNode<Label>("%PlantingVolumeValue");
+		_forestAmbienceVolumeSlider = GetNode<HSlider>("%ForestAmbienceVolumeSlider");
+		_forestAmbienceVolumeValue = GetNode<Label>("%ForestAmbienceVolumeValue");
+		_waterAmbienceVolumeSlider = GetNode<HSlider>("%WaterAmbienceVolumeSlider");
+		_waterAmbienceVolumeValue = GetNode<Label>("%WaterAmbienceVolumeValue");
+		_heatAmbienceVolumeSlider = GetNode<HSlider>("%HeatAmbienceVolumeSlider");
+		_heatAmbienceVolumeValue = GetNode<Label>("%HeatAmbienceVolumeValue");
+		_rainAmbienceVolumeSlider = GetNode<HSlider>("%RainAmbienceVolumeSlider");
+		_rainAmbienceVolumeValue = GetNode<Label>("%RainAmbienceVolumeValue");
+		_heavyRainAmbienceVolumeSlider = GetNode<HSlider>("%HeavyRainAmbienceVolumeSlider");
+		_heavyRainAmbienceVolumeValue = GetNode<Label>("%HeavyRainAmbienceVolumeValue");
 		_muteToggle = GetNode<CheckButton>("%MuteToggle");
 		_fullscreenToggle = GetNode<CheckButton>("%FullscreenToggle");
 		_vsyncToggle = GetNode<CheckButton>("%VsyncToggle");
@@ -100,9 +141,37 @@ public partial class SettingsMenu : Control
 		_audioTabButton.Pressed += () => SetSection(SettingsSection.Audio);
 		_displayTabButton.Pressed += () => SetSection(SettingsSection.Display);
 		_controlsTabButton.Pressed += () => SetSection(SettingsSection.Controls);
+		_developerTabButton.Pressed += () => SetSection(SettingsSection.Developer);
 		_masterVolumeSlider.ValueChanged += OnMasterVolumeChanged;
 		_musicVolumeSlider.ValueChanged += OnMusicVolumeChanged;
 		_effectsVolumeSlider.ValueChanged += OnEffectsVolumeChanged;
+		_plantingVolumeSlider.ValueChanged += value =>
+			OnIndividualVolumeChanged(PlantingBusName, _plantingVolumeValue, value);
+		_forestAmbienceVolumeSlider.ValueChanged += value =>
+			OnIndividualVolumeChanged(
+				ForestAmbienceBusName,
+				_forestAmbienceVolumeValue,
+				value);
+		_waterAmbienceVolumeSlider.ValueChanged += value =>
+			OnIndividualVolumeChanged(
+				WaterAmbienceBusName,
+				_waterAmbienceVolumeValue,
+				value);
+		_heatAmbienceVolumeSlider.ValueChanged += value =>
+			OnIndividualVolumeChanged(
+				HeatAmbienceBusName,
+				_heatAmbienceVolumeValue,
+				value);
+		_rainAmbienceVolumeSlider.ValueChanged += value =>
+			OnIndividualVolumeChanged(
+				RainAmbienceBusName,
+				_rainAmbienceVolumeValue,
+				value);
+		_heavyRainAmbienceVolumeSlider.ValueChanged += value =>
+			OnIndividualVolumeChanged(
+				HeavyRainAmbienceBusName,
+				_heavyRainAmbienceVolumeValue,
+				value);
 		_muteToggle.Toggled += OnMuteToggled;
 		_fullscreenToggle.Toggled += OnFullscreenToggled;
 		_vsyncToggle.Toggled += OnVsyncToggled;
@@ -143,9 +212,11 @@ public partial class SettingsMenu : Control
 		_audioPage.Visible = section == SettingsSection.Audio;
 		_displayPage.Visible = section == SettingsSection.Display;
 		_controlsPage.Visible = section == SettingsSection.Controls;
+		_developerPage.Visible = section == SettingsSection.Developer;
 		_audioTabButton.ButtonPressed = section == SettingsSection.Audio;
 		_displayTabButton.ButtonPressed = section == SettingsSection.Display;
 		_controlsTabButton.ButtonPressed = section == SettingsSection.Controls;
+		_developerTabButton.ButtonPressed = section == SettingsSection.Developer;
 	}
 
 	private void LoadSettings()
@@ -153,6 +224,12 @@ public partial class SettingsMenu : Control
 		float masterVolume = GetBusVolume("Master");
 		float musicVolume = GetBusVolume(MusicBusName);
 		float effectsVolume = GetBusVolume(EffectsBusName);
+		float plantingVolume = GetBusVolume(PlantingBusName);
+		float forestAmbienceVolume = GetBusVolume(ForestAmbienceBusName);
+		float waterAmbienceVolume = GetBusVolume(WaterAmbienceBusName);
+		float heatAmbienceVolume = GetBusVolume(HeatAmbienceBusName);
+		float rainAmbienceVolume = GetBusVolume(RainAmbienceBusName);
+		float heavyRainAmbienceVolume = GetBusVolume(HeavyRainAmbienceBusName);
 		bool muted = IsBusMuted("Master");
 
 		DisplayServer.WindowMode windowMode = DisplayServer.WindowGetMode();
@@ -180,6 +257,39 @@ public partial class SettingsMenu : Control
 				.AsSingle();
 			effectsVolume = config
 				.GetValue("audio", "effects_volume", effectsVolume)
+				.AsSingle();
+			plantingVolume = config
+				.GetValue("developer_audio", "planting_volume", plantingVolume)
+				.AsSingle();
+			forestAmbienceVolume = config
+				.GetValue(
+					"developer_audio",
+					"forest_ambience_volume",
+					forestAmbienceVolume)
+				.AsSingle();
+			waterAmbienceVolume = config
+				.GetValue(
+					"developer_audio",
+					"water_ambience_volume",
+					waterAmbienceVolume)
+				.AsSingle();
+			heatAmbienceVolume = config
+				.GetValue(
+					"developer_audio",
+					"heat_ambience_volume",
+					heatAmbienceVolume)
+				.AsSingle();
+			rainAmbienceVolume = config
+				.GetValue(
+					"developer_audio",
+					"rain_ambience_volume",
+					rainAmbienceVolume)
+				.AsSingle();
+			heavyRainAmbienceVolume = config
+				.GetValue(
+					"developer_audio",
+					"heavy_rain_ambience_volume",
+					heavyRainAmbienceVolume)
 				.AsSingle();
 			muted = config.GetValue("audio", "muted", muted).AsBool();
 			fullscreen = config
@@ -214,6 +324,12 @@ public partial class SettingsMenu : Control
 		ApplyBusVolume("Master", masterVolume);
 		ApplyBusVolume(MusicBusName, musicVolume);
 		ApplyBusVolume(EffectsBusName, effectsVolume);
+		ApplyBusVolume(PlantingBusName, plantingVolume);
+		ApplyBusVolume(ForestAmbienceBusName, forestAmbienceVolume);
+		ApplyBusVolume(WaterAmbienceBusName, waterAmbienceVolume);
+		ApplyBusVolume(HeatAmbienceBusName, heatAmbienceVolume);
+		ApplyBusVolume(RainAmbienceBusName, rainAmbienceVolume);
+		ApplyBusVolume(HeavyRainAmbienceBusName, heavyRainAmbienceVolume);
 		ApplyMasterMute(muted);
 		ApplyFullscreen(fullscreen);
 		ApplyVsync(vsyncEnabled);
@@ -234,6 +350,12 @@ public partial class SettingsMenu : Control
 		_masterVolumeSlider.Value = ToPercent(masterVolume);
 		_musicVolumeSlider.Value = ToPercent(musicVolume);
 		_effectsVolumeSlider.Value = ToPercent(effectsVolume);
+		_plantingVolumeSlider.Value = ToPercent(plantingVolume);
+		_forestAmbienceVolumeSlider.Value = ToPercent(forestAmbienceVolume);
+		_waterAmbienceVolumeSlider.Value = ToPercent(waterAmbienceVolume);
+		_heatAmbienceVolumeSlider.Value = ToPercent(heatAmbienceVolume);
+		_rainAmbienceVolumeSlider.Value = ToPercent(rainAmbienceVolume);
+		_heavyRainAmbienceVolumeSlider.Value = ToPercent(heavyRainAmbienceVolume);
 		_muteToggle.ButtonPressed = muted;
 		_fullscreenToggle.ButtonPressed = fullscreen;
 		_vsyncToggle.ButtonPressed = vsyncEnabled;
@@ -244,6 +366,7 @@ public partial class SettingsMenu : Control
 			ToOverviewDistancePercent(boardOverviewDistance);
 		_invertVerticalToggle.ButtonPressed = invertVertical;
 		UpdateVolumeLabels();
+		UpdateDeveloperVolumeLabels();
 		UpdateControlLabels();
 	}
 
@@ -262,6 +385,30 @@ public partial class SettingsMenu : Control
 			"audio",
 			"effects_volume",
 			(float)(_effectsVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"developer_audio",
+			"planting_volume",
+			(float)(_plantingVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"developer_audio",
+			"forest_ambience_volume",
+			(float)(_forestAmbienceVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"developer_audio",
+			"water_ambience_volume",
+			(float)(_waterAmbienceVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"developer_audio",
+			"heat_ambience_volume",
+			(float)(_heatAmbienceVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"developer_audio",
+			"rain_ambience_volume",
+			(float)(_rainAmbienceVolumeSlider.Value / 100.0));
+		config.SetValue(
+			"developer_audio",
+			"heavy_rain_ambience_volume",
+			(float)(_heavyRainAmbienceVolumeSlider.Value / 100.0));
 		config.SetValue("audio", "muted", _muteToggle.ButtonPressed);
 		config.SetValue("display", "fullscreen", _fullscreenToggle.ButtonPressed);
 		config.SetValue("display", "vsync", _vsyncToggle.ButtonPressed);
@@ -313,6 +460,15 @@ public partial class SettingsMenu : Control
 	{
 		ApplyBusVolume(EffectsBusName, (float)(value / 100.0));
 		UpdateVolumeLabels();
+	}
+
+	private static void OnIndividualVolumeChanged(
+		string busName,
+		Label valueLabel,
+		double value)
+	{
+		ApplyBusVolume(busName, (float)(value / 100.0));
+		valueLabel.Text = FormatPercent(value);
 	}
 
 	private void OnMuteToggled(bool enabled)
@@ -386,6 +542,21 @@ public partial class SettingsMenu : Control
 		_effectsVolumeValue.Text = FormatPercent(_effectsVolumeSlider.Value);
 	}
 
+	private void UpdateDeveloperVolumeLabels()
+	{
+		_plantingVolumeValue.Text = FormatPercent(_plantingVolumeSlider.Value);
+		_forestAmbienceVolumeValue.Text =
+			FormatPercent(_forestAmbienceVolumeSlider.Value);
+		_waterAmbienceVolumeValue.Text =
+			FormatPercent(_waterAmbienceVolumeSlider.Value);
+		_heatAmbienceVolumeValue.Text =
+			FormatPercent(_heatAmbienceVolumeSlider.Value);
+		_rainAmbienceVolumeValue.Text =
+			FormatPercent(_rainAmbienceVolumeSlider.Value);
+		_heavyRainAmbienceVolumeValue.Text =
+			FormatPercent(_heavyRainAmbienceVolumeSlider.Value);
+	}
+
 	private void UpdateControlLabels()
 	{
 		_cameraSensitivityValue.Text = FormatPercent(_cameraSensitivitySlider.Value);
@@ -427,15 +598,19 @@ public partial class SettingsMenu : Control
 		return closestIndex;
 	}
 
-	private static void EnsureAudioBus(string busName)
+	private static void EnsureAudioBus(
+		string busName,
+		string sendBusName = "Master")
 	{
-		if (AudioServer.GetBusIndex(busName) >= 0)
-			return;
+		int busIndex = AudioServer.GetBusIndex(busName);
+		if (busIndex < 0)
+		{
+			AudioServer.AddBus();
+			busIndex = AudioServer.BusCount - 1;
+			AudioServer.SetBusName(busIndex, busName);
+		}
 
-		AudioServer.AddBus();
-		int busIndex = AudioServer.BusCount - 1;
-		AudioServer.SetBusName(busIndex, busName);
-		AudioServer.SetBusSend(busIndex, "Master");
+		AudioServer.SetBusSend(busIndex, sendBusName);
 	}
 
 	private static float GetBusVolume(string busName)

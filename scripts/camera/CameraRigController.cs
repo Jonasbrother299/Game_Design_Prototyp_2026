@@ -17,10 +17,15 @@ public partial class CameraRigController : Node3D
 	[Export] public Camera3D Camera;
 
 	[ExportGroup("Input")]
-	[Export] public MouseButton YawButton = MouseButton.Left;
-	[Export] public MouseButton PitchButton = MouseButton.Right;
+	[Export] public MouseButton YawButton = MouseButton.Right;
+	[Export] public MouseButton PanButton = MouseButton.Left;
 	[Export] public float YawSensitivity = 0.18f;
-	[Export] public float PitchSensitivity = 0.18f;
+	[Export(PropertyHint.Range, "0.0005,0.01,0.0005")]
+	public float PanSensitivity = 0.0025f;
+	[Export(PropertyHint.Range, "0.0,20.0,0.5")]
+	public float DragThreshold = 6.0f;
+	[Export(PropertyHint.Range, "0.0,10.0,0.25")]
+	public float PanBoundsPadding = 2.0f;
 	[Export] public float SmoothSpeed = 10.0f;
 
 	[ExportGroup("Focus")]
@@ -35,7 +40,7 @@ public partial class CameraRigController : Node3D
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float FocusMinDistance = 8.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
-	public float FocusMaxDistance = 24.0f;
+	public float FocusMaxDistance = 20.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float FocusDistance = 14.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
@@ -50,17 +55,17 @@ public partial class CameraRigController : Node3D
 	public float AllowedTreeSideAngleDegrees = 85.0f;
 
 	[ExportGroup("Yaw Limits")]
-	[Export] public bool LimitYaw = true;
+	[Export] public bool LimitYaw = false;
 	[Export] public float MinYawDegrees = -25.0f;
 	[Export] public float MaxYawDegrees = 115.0f;
 
 	[ExportGroup("Pitch Limits")]
-	[Export] public float MinPitchDegrees = 35.0f;
+	[Export] public float MinPitchDegrees = 20.0f;
 	[Export] public float MaxPitchDegrees = 70.0f;
 
 	[ExportGroup("Zoom")]
 	[Export] public float MinDistance = 8.0f;
-	[Export] public float MaxDistance = 38.0f;
+	[Export] public float MaxDistance = 28.0f;
 	[Export] public float ZoomStep = 2.0f;
 	[Export] public float ZoomSmoothSpeed = 10.0f;
 
@@ -69,7 +74,7 @@ public partial class CameraRigController : Node3D
 	[Export(PropertyHint.Range, "0.0,90.0,1.0")]
 	public float PitchZoomStartDegrees = 35.0f;
 	[Export(PropertyHint.Range, "0.0,8.0,0.1")]
-	public float MaxTopDownDistanceBonus = 3.0f;
+	public float MaxTopDownDistanceBonus = 1.5f;
 
 	[ExportGroup("Collision")]
 	[Export(PropertyHint.Range, "0.05,3.0,0.05")]
@@ -83,8 +88,6 @@ public partial class CameraRigController : Node3D
 	[Export] public float StartDistance = 16.0f;
 
 	[ExportGroup("Overview")]
-	[Export(PropertyHint.Range, "0.0,89.0,1.0")]
-	public float OverviewPitchDegrees = 18.0f;
 	[Export(PropertyHint.Range, "0.5,1.5,0.025")]
 	public float OverviewDistanceMultiplier = 0.875f;
 
@@ -92,8 +95,12 @@ public partial class CameraRigController : Node3D
 	public bool InteractionEnabled => _interactionEnabled;
 
 	private bool _interactionEnabled = true;
+	private bool _isYawButtonPressed;
+	private bool _isPanButtonPressed;
 	private bool _isYawDragging;
-	private bool _isPitchDragging;
+	private bool _isPanning;
+	private Vector2 _yawPressPosition;
+	private Vector2 _panPressPosition;
 
 	private float _targetYaw;
 	private float _targetPitch;
@@ -116,7 +123,6 @@ public partial class CameraRigController : Node3D
 	private float _boardGroundY;
 	private bool _hasBoardContext;
 	private bool _isBoardOverviewActive;
-	private readonly HashSet<HexTile> _overviewTiles = new();
 
 	private float _generalYaw;
 	private float _generalPitch;
@@ -239,7 +245,7 @@ public partial class CameraRigController : Node3D
 		if (!_interactionEnabled || tile == null || !IsInstanceValid(tile))
 			return false;
 
-		if (_overviewTiles.Contains(tile))
+		if (tile == _mainTreeTile)
 			return ShowBoardOverview();
 
 		if (!HasTileFocus)
@@ -251,8 +257,7 @@ public partial class CameraRigController : Node3D
 
 		_isBoardOverviewActive = false;
 		_focusedTile = tile;
-		_isYawDragging = false;
-		_isPitchDragging = false;
+		ResetPointerDragState();
 
 		float minPitch = Mathf.DegToRad(GetMinimumPitchDegrees());
 		float maxPitch = Mathf.DegToRad(GetMaximumPitchDegrees());
@@ -277,16 +282,12 @@ public partial class CameraRigController : Node3D
 
 		_focusedTile = null;
 		_isBoardOverviewActive = true;
-		_isYawDragging = false;
-		_isPitchDragging = false;
+		ResetPointerDragState();
 
 		float overviewYaw = _hasBoardContext
 			? ClampYaw(Mathf.Atan2(_treeFrontDirection.X, _treeFrontDirection.Z))
 			: ClampYaw(Mathf.DegToRad(StartYawDegrees));
-		float overviewPitch = Mathf.DegToRad(Mathf.Clamp(
-			OverviewPitchDegrees,
-			GetMinimumPitchDegrees(),
-			GetMaximumPitchDegrees()));
+		float overviewPitch = _targetPitch;
 		float overviewDistance = GetMaximumDistanceForPitch(overviewPitch);
 
 		BeginFocusTransition(
@@ -305,8 +306,7 @@ public partial class CameraRigController : Node3D
 
 		_focusedTile = null;
 		_isBoardOverviewActive = false;
-		_isYawDragging = false;
-		_isPitchDragging = false;
+		ResetPointerDragState();
 
 		float minPitch = Mathf.DegToRad(GetMinimumPitchDegrees());
 		float maxPitch = Mathf.DegToRad(GetMaximumPitchDegrees());
@@ -332,8 +332,7 @@ public partial class CameraRigController : Node3D
 		if (isEnabled)
 			return;
 
-		_isYawDragging = false;
-		_isPitchDragging = false;
+		ResetPointerDragState();
 	}
 
 	private void HandleMouseButtons(InputEvent inputEvent)
@@ -342,10 +341,22 @@ public partial class CameraRigController : Node3D
 			return;
 
 		if (mouseButton.ButtonIndex == YawButton)
-			_isYawDragging = mouseButton.Pressed;
+		{
+			_isYawButtonPressed = mouseButton.Pressed;
+			_isYawDragging = false;
 
-		if (mouseButton.ButtonIndex == PitchButton)
-			_isPitchDragging = mouseButton.Pressed;
+			if (mouseButton.Pressed)
+				_yawPressPosition = mouseButton.Position;
+		}
+
+		if (mouseButton.ButtonIndex == PanButton)
+		{
+			_isPanButtonPressed = mouseButton.Pressed;
+			_isPanning = false;
+
+			if (mouseButton.Pressed)
+				_panPressPosition = mouseButton.Position;
+		}
 	}
 
 	private void HandleMouseMotion(InputEvent inputEvent)
@@ -357,32 +368,81 @@ public partial class CameraRigController : Node3D
 		float sensitivityMultiplier = GetSettingMultiplier(
 			CameraSensitivitySetting);
 
-		if (_isYawDragging)
+		if (_isYawButtonPressed)
 		{
-			_targetYaw -= Mathf.DegToRad(
-				delta.X * YawSensitivity * sensitivityMultiplier);
-			_targetYaw = ClampYaw(_targetYaw);
+			_isYawDragging |= mouseMotion.Position.DistanceTo(_yawPressPosition) >=
+				DragThreshold;
+
+			if (_isYawDragging)
+			{
+				_targetYaw -= Mathf.DegToRad(
+					delta.X * YawSensitivity * sensitivityMultiplier);
+				_targetYaw = ClampYaw(_targetYaw);
+			}
 		}
 
-		if (_isPitchDragging)
+		if (_isPanButtonPressed)
 		{
-			float verticalDirection = GetInvertVerticalSetting() ? -1.0f : 1.0f;
-			_targetPitch -= Mathf.DegToRad(
-				delta.Y *
-				PitchSensitivity *
-				sensitivityMultiplier *
-				verticalDirection);
+			bool wasPanning = _isPanning;
+			_isPanning |= mouseMotion.Position.DistanceTo(_panPressPosition) >=
+				DragThreshold;
 
-			float minPitch = Mathf.DegToRad(GetMinimumPitchDegrees());
-			float maxPitch = Mathf.DegToRad(GetMaximumPitchDegrees());
+			if (_isPanning)
+			{
+				if (!wasPanning)
+					CancelFocusTransitionForPanning();
 
-			_targetPitch = Mathf.Clamp(_targetPitch, minPitch, maxPitch);
-			_targetDistance = Mathf.Min(
-				_targetDistance,
-				GetMaximumDistanceForPitch(_targetPitch));
+				PanByMouseDelta(delta, sensitivityMultiplier);
+			}
 		}
 
 		UpdateTransitionTargets();
+	}
+
+	private void PanByMouseDelta(Vector2 delta, float sensitivityMultiplier)
+	{
+		float panScale = PanSensitivity * Mathf.Max(_targetDistance, 1.0f) *
+			sensitivityMultiplier;
+		float verticalDirection = GetInvertVerticalSetting() ? -1.0f : 1.0f;
+		Vector3 screenRight = new Vector3(
+			Mathf.Cos(_targetYaw),
+			0.0f,
+			-Mathf.Sin(_targetYaw));
+		Vector3 screenForward = new Vector3(
+			-Mathf.Sin(_targetYaw),
+			0.0f,
+			-Mathf.Cos(_targetYaw));
+
+		Vector3 panOffset = (
+			-screenRight * delta.X -
+			screenForward * delta.Y * verticalDirection
+		) * panScale;
+
+		_targetPivot = ClampPivotToBoard(_targetPivot + panOffset);
+	}
+
+	private void CancelFocusTransitionForPanning()
+	{
+		if (_isFocusTransitionActive)
+		{
+			_targetPivot = _currentPivot;
+			_targetYaw = _currentYaw;
+			_targetPitch = _currentPitch;
+			_targetDistance = _currentDistance;
+			_isFocusTransitionActive = false;
+		}
+
+		_focusedTile = null;
+		_isBoardOverviewActive = false;
+		RefreshCollisionExclusions(_focusTarget);
+	}
+
+	private void ResetPointerDragState()
+	{
+		_isYawButtonPressed = false;
+		_isPanButtonPressed = false;
+		_isYawDragging = false;
+		_isPanning = false;
 	}
 
 	private void HandleZoom(InputEvent inputEvent)
@@ -578,9 +638,6 @@ public partial class CameraRigController : Node3D
 
 	private void UpdateBoardSpatialContext(BoardManager boardManager)
 	{
-		_overviewTiles.Clear();
-		_overviewTiles.Add(_mainTreeTile);
-
 		List<HexTile> tileViews = new();
 		Vector3 positionSum = Vector3.Zero;
 
@@ -605,9 +662,6 @@ public partial class CameraRigController : Node3D
 		_boardSideExtent = 0.0f;
 		_boardFrontExtent = 0.0f;
 
-		List<(HexTile Tile, float DistanceSquared, float SideDistance)>
-			overviewCandidates = new();
-
 		foreach (HexTile tileView in tileViews)
 		{
 			Vector3 centerOffset = tileView.GlobalPosition - _boardCenter;
@@ -619,40 +673,14 @@ public partial class CameraRigController : Node3D
 				_boardFrontExtent,
 				centerOffset.Dot(_treeFrontDirection));
 
-			if (tileView == _mainTreeTile)
-				continue;
-
-			Vector3 treeOffset = tileView.GlobalPosition - _mainTreeTile.GlobalPosition;
-			treeOffset.Y = 0.0f;
-
-			if (treeOffset.Dot(_treeFrontDirection) <= 0.001f)
-				continue;
-
-			overviewCandidates.Add((
-				tileView,
-				treeOffset.LengthSquared(),
-				Mathf.Abs(treeOffset.Dot(_boardSideDirection))));
 		}
-
-		overviewCandidates.Sort((left, right) =>
-		{
-			float distanceDifference =
-				left.DistanceSquared - right.DistanceSquared;
-
-			if (Mathf.Abs(distanceDifference) > 0.001f)
-				return distanceDifference < 0.0f ? -1 : 1;
-
-			return left.SideDistance.CompareTo(right.SideDistance);
-		});
-
-		int overviewTileCount = Mathf.Min(3, overviewCandidates.Count);
-
-		for (int index = 0; index < overviewTileCount; index++)
-			_overviewTiles.Add(overviewCandidates[index].Tile);
 	}
 
 	private float ClampYaw(float yaw)
 	{
+		if (!LimitYaw)
+			return yaw;
+
 		float clampedYaw = ClampConfiguredYaw(yaw);
 
 		if (!_hasBoardContext)
@@ -748,7 +776,9 @@ public partial class CameraRigController : Node3D
 			cameraPosition.Y,
 			_boardGroundY + GroundSafetyDistance);
 
-		if (_mainTreeTile == null || !IsInstanceValid(_mainTreeTile))
+		if (!LimitYaw ||
+			_mainTreeTile == null ||
+			!IsInstanceValid(_mainTreeTile))
 			return cameraPosition;
 
 		float treePlaneDistance = (
@@ -762,6 +792,30 @@ public partial class CameraRigController : Node3D
 		}
 
 		return cameraPosition;
+	}
+
+	private Vector3 ClampPivotToBoard(Vector3 pivot)
+	{
+		if (!_hasBoardContext)
+			return pivot;
+
+		Vector3 offset = pivot - _boardCenter;
+		float verticalOffset = offset.Y;
+		float sideExtent = _boardSideExtent + PanBoundsPadding;
+		float frontExtent = _boardFrontExtent + PanBoundsPadding;
+		float sideDistance = Mathf.Clamp(
+			offset.Dot(_boardSideDirection),
+			-sideExtent,
+			sideExtent);
+		float frontDistance = Mathf.Clamp(
+			offset.Dot(_treeFrontDirection),
+			-frontExtent,
+			frontExtent);
+
+		return _boardCenter +
+			_boardSideDirection * sideDistance +
+			_treeFrontDirection * frontDistance +
+			Vector3.Up * verticalOffset;
 	}
 
 	private float GetCollisionSafeDistance(

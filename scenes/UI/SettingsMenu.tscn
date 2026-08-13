@@ -112,7 +112,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.27, 0.17, 1)
 theme_override_font_sizes/font_size = 23
-text = "Audio, Anzeige und Kamerasteuerung"
+text = "Audio, Anzeige, Kamerasteuerung und Entwickleroptionen"
 horizontal_alignment = 1
 
 [node name="TabBarPanel" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
@@ -126,7 +126,7 @@ alignment = 1
 
 [node name="AudioTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 64)
+custom_minimum_size = Vector2(300, 64)
 layout_mode = 2
 toggle_mode = true
 button_pressed = true
@@ -135,7 +135,7 @@ text = "♪  AUDIO"
 
 [node name="DisplayTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 64)
+custom_minimum_size = Vector2(300, 64)
 layout_mode = 2
 toggle_mode = true
 theme_override_font_sizes/font_size = 24
@@ -143,11 +143,19 @@ text = "▣  ANZEIGE"
 
 [node name="ControlsTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 64)
+custom_minimum_size = Vector2(300, 64)
 layout_mode = 2
 toggle_mode = true
 theme_override_font_sizes/font_size = 24
 text = "◆  STEUERUNG"
+
+[node name="DeveloperTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 64)
+layout_mode = 2
+toggle_mode = true
+theme_override_font_sizes/font_size = 24
+text = "ENTWICKLER"
 
 [node name="AudioPage" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
@@ -605,18 +613,240 @@ size_flags_horizontal = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
 theme_override_font_sizes/font_size = 27
-text = "Vertikale Kamerasteuerung umkehren"
+text = "Vertikale Pan-Richtung umkehren"
 
 [node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
 theme_override_font_sizes/font_size = 22
-text = "Kehrt die Richtung beim Ziehen mit der rechten Maustaste um."
+text = "Kehrt die vertikale Bewegung beim Pannen mit der linken Maustaste um."
 
 [node name="InvertVerticalToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 52)
 layout_mode = 2
+
+[node name="DeveloperPage" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("SectionStyle")
+
+[node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.43, 0.22, 1)
+theme_override_font_sizes/font_size = 38
+text = "Entwickler: Audioquellen"
+
+[node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
+theme_override_font_sizes/font_size = 22
+text = "Passe einzelne Spielklänge relativ zur Effektlautstärke an."
+
+[node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+layout_mode = 2
+
+[node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PlantingRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/PlantingRow"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Einpflanzen"
+vertical_alignment = 1
+
+[node name="PlantingVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/PlantingRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="PlantingVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/PlantingRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ForestAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/ForestAmbienceRow"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Waldambiente"
+vertical_alignment = 1
+
+[node name="ForestAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/ForestAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="ForestAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/ForestAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="WaterAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/WaterAmbienceRow"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Wasserplätschern"
+vertical_alignment = 1
+
+[node name="WaterAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/WaterAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="WaterAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/WaterAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="HeatAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeatAmbienceRow"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Hitze und Grillen"
+vertical_alignment = 1
+
+[node name="HeatAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeatAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="HeatAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeatAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="RainAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RainAmbienceRow"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Regen"
+vertical_alignment = 1
+
+[node name="RainAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RainAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="RainAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RainAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="HeavyRainAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeavyRainAmbienceRow"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Starkregen"
+vertical_alignment = 1
+
+[node name="HeavyRainAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeavyRainAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="HeavyRainAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeavyRainAmbienceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
 
 [node name="SaveHint" type="Label" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2

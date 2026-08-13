@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://v0fgmrlyoypy"]
+
+[ext_resource type="Texture2D" uid="uid://0p68jp66bytp" path="res://assets/models/plants/Moss/textures/Moss_Moss_AlbedoTransparency.png" id="1_ls6fu"]
+[ext_resource type="Texture2D" uid="uid://bridfcx1mtjce" path="res://assets/models/plants/Moss/textures/Moss_Moss_Normal.png" id="2_dakli"]
+
+[resource]
+albedo_texture = ExtResource("1_ls6fu")
+normal_enabled = true
+normal_texture = ExtResource("2_dakli")

@@ -25,10 +25,10 @@ public partial class HexTile : Node3D
 	private bool _isTutorialHighlightActive;
 	private Tween _tutorialHighlightTween;
 
-	private const float TutorialHighlightMinAlpha = 0.55f;
-	private const float TutorialHighlightMaxAlpha = 0.88f;
-	private const float TutorialHighlightMinEmission = 1.9f;
-	private const float TutorialHighlightMaxEmission = 4.0f;
+	private const float TutorialHighlightMinAlpha = 0.22f;
+	private const float TutorialHighlightMaxAlpha = 0.38f;
+	private const float TutorialHighlightMinEmission = 0.0f;
+	private const float TutorialHighlightMaxEmission = 0.0f;
 	private const float TutorialHighlightPulseDuration = 0.85f;
 
 	private PlantInstance _renderedPlant;
@@ -49,10 +49,10 @@ public partial class HexTile : Node3D
 	public int MatureFlowerCount { get; private set; } = 4;
 	public float BirchModelScale { get; private set; } = 0.18f;
 	public Color TreeShadowColor { get; private set; } =
-		new Color(0.055f, 0.08f, 0.045f, 0.66f);
-	public float StartingOakShadowSize { get; private set; } = 5.4f;
+		new Color(0.015f, 0.025f, 0.012f, 0.86f);
+	public float StartingOakShadowSize { get; private set; } = 6.2f;
 	public Vector2 StartingOakShadowOffset { get; private set; } =
-		new Vector2(0.0f, 0.45f);
+		Vector2.Zero;
 	public float BirchShadowSize { get; private set; } = 2.8f;
 	public Vector2 BirchShadowOffset { get; private set; } =
 		new Vector2(0.0f, 0.18f);
@@ -438,14 +438,18 @@ public partial class HexTile : Node3D
 		if (_tileMesh == null)
 			return;
 
-		_tileMaterial = new StandardMaterial3D();
+		Material sourceMaterial = _tileMesh.MaterialOverride;
 
-		_tileMaterial.AlbedoColor = new Color("d8dbd5");
-		_tileMaterial.Roughness = 1.0f;
-		_tileMaterial.Metallic = 0.0f;
-		_tileMaterial.EmissionEnabled = false;
+		if (sourceMaterial == null && _tileMesh.Mesh.GetSurfaceCount() > 0)
+			sourceMaterial = _tileMesh.Mesh.SurfaceGetMaterial(0);
 
-		_tileMesh.MaterialOverride = _tileMaterial;
+		if (sourceMaterial is not StandardMaterial3D standardMaterial)
+			return;
+
+		_tileMaterial = standardMaterial.Duplicate() as StandardMaterial3D;
+
+		if (_tileMaterial != null)
+			_tileMesh.MaterialOverride = _tileMaterial;
 	}
 
 	private void EnsureCollision()
@@ -731,7 +735,7 @@ void fragment() {
 		if (Data == null)
 			return;
 
-		UpdateTileMaterial();
+		//UpdateTileMaterial();
 		RebuildPlantVisual();
 		RebuildEffectVisual();
 
@@ -741,7 +745,7 @@ void fragment() {
 		}
 	}
 
-	private void UpdateTileMaterial()
+	/* private void UpdateTileMaterial()
 	{
 		if (_tileMesh == null || _tileMesh.Mesh == null)
 		{
@@ -773,7 +777,7 @@ void fragment() {
 		_tileMaterial.Uv1Scale = new Vector3(1.5f, 1.5f, 1.0f);
 
 		_tileMesh.MaterialOverride = _tileMaterial;
-	}
+	} */
 
 	private Color GetLightLevelTint()
 	{
@@ -913,7 +917,7 @@ void fragment() {
 			plant,
 			tile,
 			animateGrowth,
-			showTreeShadow: animateGrowth);
+			showTreeShadow: false);
 
 		if (factoryVisual != null)
 		{

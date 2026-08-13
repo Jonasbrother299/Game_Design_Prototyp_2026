@@ -55,12 +55,14 @@ public partial class GameHub : Control
 	private GameManager _gameManager;
 	private AudioStreamPlayer _plantPlacementAudio;
 	private AudioStreamPlayer _forestAmbienceAudio;
+	private AudioStreamPlayer _waterAmbienceAudio;
 	private AudioStreamPlayer _heatAmbienceAudio;
 	private AudioStreamPlayer _rainAmbienceAudio;
 	private AudioStreamPlayer _heavyRainAmbienceAudio;
 	private bool _environmentalAudioEventsConnected;
 	private CanvasLayer _rainLensLayer;
 	private RainLensCyaniluxOverlay _rainLensOverlay;
+	private StylizedWaterController _stylizedWater;
 	private Tween _feedbackTimelineTween;
 	private Tween _dayNightTransitionTween;
 	private float _feedbackSequenceEndDelay;
@@ -200,6 +202,8 @@ public partial class GameHub : Control
 		_droughtWorldEffect =
 			currentScene.GetNodeOrNull<DroughtWorldEffect>("WorldEnvironment");
 		_gameManager = currentScene.GetNodeOrNull<GameManager>("GameManager");
+		_stylizedWater =
+			currentScene.GetNodeOrNull<StylizedWaterController>("StylizedWater");
 		SetupEnvironmentalAudio();
 
 		_rainLensOverlay =
@@ -313,20 +317,18 @@ public partial class GameHub : Control
 	private void OnEventActivated(GameEventType eventType)
 	{
 		_eventDisplay?.ShowActivated(EventDatabase.Get(eventType));
+		_dayCycleDisplay?.SetEvent(eventType);
 		UpdateWaterPreview();
 
 		if (eventType == GameEventType.Rain ||
 			eventType == GameEventType.HeavyRain)
 		{
-			_dayCycleDisplay?.SetWeather(
-				hasRain: true,
-				hasHeavyRain: eventType == GameEventType.HeavyRain);
-
 			if (_rainLensLayer != null)
 				_rainLensLayer.Visible = true;
 
 			float intensity = eventType == GameEventType.HeavyRain ? 0.90f : 0.62f;
 			_rainLensOverlay?.StartRain(intensity);
+			UpdateWaterRainFromState();
 		}
 
 		UpdateEnvironmentalAudio();
@@ -339,6 +341,8 @@ public partial class GameHub : Control
 			: null;
 		if (activeEvent?.Definition != null)
 			_eventDisplay?.ShowActivated(activeEvent.Definition);
+		_dayCycleDisplay?.SetEvent(
+			activeEvent?.Definition?.Type ?? GameEventType.None);
 
 		bool hasRain = false;
 		bool hasHeavyRain = false;
@@ -355,7 +359,10 @@ public partial class GameHub : Control
 			}
 		}
 
-		_dayCycleDisplay?.SetWeather(hasRain, hasHeavyRain);
+		_stylizedWater?.SetRainState(
+			hasRain,
+			hasHeavyRain,
+			immediate: true);
 		UpdateEnvironmentalAudio();
 
 		if (!hasRain)
@@ -832,6 +839,10 @@ public partial class GameHub : Control
 	private void OnEventPhaseResolved(EventPhaseResult result)
 	{
 		_eventDisplay?.ShowPhaseResult(result);
+		_dayCycleDisplay?.SetEvent(
+			result.ActiveEvents.Count > 0
+				? result.ActiveEvents[0]
+				: GameEventType.None);
 
 		bool hasHeavyRain = false;
 		foreach (GameEventType eventType in result.ActiveEvents)
@@ -842,15 +853,39 @@ public partial class GameHub : Control
 				break;
 			}
 		}
-		_dayCycleDisplay?.SetWeather(
-			ContainsRainEvent(result.ActiveEvents),
-			hasHeavyRain);
+		bool hasRain = ContainsRainEvent(result.ActiveEvents);
+		_stylizedWater?.SetRainState(hasRain, hasHeavyRain);
 		UpdateEnvironmentalAudio();
 
-		if (!ContainsRainEvent(result.ActiveEvents))
+		if (!hasRain)
 		{
 			_rainLensOverlay?.StopRain();
 		}
+	}
+
+	private void UpdateWaterRainFromState()
+	{
+		bool hasRain = false;
+		bool hasHeavyRain = false;
+
+		if (_turnManager?.State != null)
+		{
+			foreach (ActiveGameEvent gameEvent in
+				_turnManager.State.ActiveEvents)
+			{
+				if (gameEvent?.Definition?.Type == GameEventType.HeavyRain)
+				{
+					hasRain = true;
+					hasHeavyRain = true;
+				}
+				else if (gameEvent?.Definition?.Type == GameEventType.Rain)
+				{
+					hasRain = true;
+				}
+			}
+		}
+
+		_stylizedWater?.SetRainState(hasRain, hasHeavyRain);
 	}
 
 	private static bool ContainsRainEvent(
@@ -875,6 +910,8 @@ public partial class GameHub : Control
 			"PlantPlacementAudio");
 		_forestAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
 			"ForestAmbienceAudio");
+		_waterAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
+			"WaterAmbienceAudio");
 		_heatAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
 			"HeatAmbienceAudio");
 		_rainAmbienceAudio = GetNodeOrNull<AudioStreamPlayer>(
@@ -886,6 +923,7 @@ public partial class GameHub : Control
 			return;
 
 		SubscribeEnvironmentalAudio(_forestAmbienceAudio);
+		SubscribeEnvironmentalAudio(_waterAmbienceAudio);
 		SubscribeEnvironmentalAudio(_heatAmbienceAudio);
 		SubscribeEnvironmentalAudio(_rainAmbienceAudio);
 		SubscribeEnvironmentalAudio(_heavyRainAmbienceAudio);
@@ -904,6 +942,7 @@ public partial class GameHub : Control
 			return;
 
 		UnsubscribeEnvironmentalAudio(_forestAmbienceAudio);
+		UnsubscribeEnvironmentalAudio(_waterAmbienceAudio);
 		UnsubscribeEnvironmentalAudio(_heatAmbienceAudio);
 		UnsubscribeEnvironmentalAudio(_rainAmbienceAudio);
 		UnsubscribeEnvironmentalAudio(_heavyRainAmbienceAudio);
@@ -948,6 +987,7 @@ public partial class GameHub : Control
 		}
 
 		SetAmbientPlayback(_forestAmbienceAudio, !hasRain);
+		SetAmbientPlayback(_waterAmbienceAudio, true);
 		SetAmbientPlayback(_heatAmbienceAudio, !hasRain && hasHeat);
 		SetAmbientPlayback(_rainAmbienceAudio, hasRain && !hasHeavyRain);
 		SetAmbientPlayback(_heavyRainAmbienceAudio, hasHeavyRain);
@@ -956,6 +996,7 @@ public partial class GameHub : Control
 	private void StopEnvironmentalAudio()
 	{
 		SetAmbientPlayback(_forestAmbienceAudio, false);
+		SetAmbientPlayback(_waterAmbienceAudio, false);
 		SetAmbientPlayback(_heatAmbienceAudio, false);
 		SetAmbientPlayback(_rainAmbienceAudio, false);
 		SetAmbientPlayback(_heavyRainAmbienceAudio, false);
