@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
 [ext_resource type="Script" uid="uid://bmkr0iwrxjhmu" path="res://scripts/UI/CardHandUI.cs" id="7_nxtc6"]
 [ext_resource type="Script" uid="uid://cnektqrt4t5n5" path="res://scripts/UI/GameHub.cs" id="8_ghub"]
-[ext_resource type="Shader" uid="uid://n0o6njhdxrw6" path="res://assets/shaders/stylized_water.gdshader" id="8_gsxep"]
+[ext_resource type="Shader" uid="uid://n0o6njhdxrw6" path="res://shaders/stylized_water.gdshader" id="8_gsxep"]
 [ext_resource type="PackedScene" uid="uid://ccsqc8nj81y5c" path="res://scenes/tutorial/TutorialOverlay.tscn" id="9_tutorial"]
 [ext_resource type="PackedScene" path="res://scenes/UI/PauseMenu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" uid="uid://dbsnedk2icmha" path="res://scenes/UI/Water.tscn" id="11_water"]

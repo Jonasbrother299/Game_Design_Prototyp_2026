@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PlantDefinition" format=3 uid="uid://b5awnltws0s1k"]
 
 [ext_resource type="Script" uid="uid://cx0mxdvhm3vok" path="res://scripts/plants/PlantDefinition.cs" id="1_plant"]
-[ext_resource type="Texture2D" uid="uid://6qgcaj0r7kpl" path="res://assets/cards/card_moos.png" id="2_card"]
+[ext_resource type="Texture2D" path="res://assets/cards/card_moos.png" id="2_card"]
 [ext_resource type="PackedScene" uid="uid://dbeuslydoe41t" path="res://scenes/board/plants/Moss.tscn" id="2_tk7rn"]
 
 [resource]

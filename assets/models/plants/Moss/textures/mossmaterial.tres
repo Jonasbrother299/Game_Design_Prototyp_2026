@@ -1,7 +1,7 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://v0fgmrlyoypy"]
 
-[ext_resource type="Texture2D" uid="uid://uypyixxnsqny" path="res://assets/models/plants/Moss/textures/Moss_Moss_AlbedoTransparency.png" id="1_ls6fu"]
-[ext_resource type="Texture2D" uid="uid://deakkmucub3fo" path="res://assets/models/plants/Moss/textures/Moss_Moss_Normal.png" id="2_dakli"]
+[ext_resource type="Texture2D" path="res://assets/models/plants/Moss/textures/Moss_Moss_AlbedoTransparency.png" id="1_ls6fu"]
+[ext_resource type="Texture2D" path="res://assets/models/plants/Moss/textures/Moss_Moss_Normal.png" id="2_dakli"]
 
 [resource]
 albedo_texture = ExtResource("1_ls6fu")

@@ -80,7 +80,7 @@ public partial class PauseMenu : Control
 		_settingsMenu.Closed += OnSettingsClosed;
 		_encyclopediaMenu.Closed += OnEncyclopediaClosed;
 
-		_gameHub = GetNodeOrNull<GameHub>("../GameHub");
+		_gameHub = GetTree().CurrentScene?.GetNodeOrNull<GameHub>("UI/CanvasLayer/GameHub");
 		if (_gameHub != null)
 			_gameHub.MenuRequested += OpenPauseMenu;
 		else

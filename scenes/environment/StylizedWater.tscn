@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://bfjv28ce1p0ke"]
 
-[ext_resource type="Shader" path="res://assets/shaders/stylized_water.gdshader" id="1_water_shader"]
+[ext_resource type="Shader" path="res://shaders/stylized_water.gdshader" id="1_water_shader"]
 [ext_resource type="Script" path="res://scripts/visuals/StylizedWaterController.cs" id="2_water_controller"]
-[ext_resource type="Shader" path="res://assets/shaders/stylized_water_caustic_underlay.gdshader" id="3_caustic_shader"]
+[ext_resource type="Shader" path="res://shaders/stylized_water_caustic_underlay.gdshader" id="3_caustic_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
 render_priority = 0
