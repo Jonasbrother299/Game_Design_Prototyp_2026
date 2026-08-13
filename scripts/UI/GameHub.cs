@@ -317,15 +317,12 @@ public partial class GameHub : Control
 	private void OnEventActivated(GameEventType eventType)
 	{
 		_eventDisplay?.ShowActivated(EventDatabase.Get(eventType));
+		_dayCycleDisplay?.SetEvent(eventType);
 		UpdateWaterPreview();
 
 		if (eventType == GameEventType.Rain ||
 			eventType == GameEventType.HeavyRain)
 		{
-			_dayCycleDisplay?.SetWeather(
-				hasRain: true,
-				hasHeavyRain: eventType == GameEventType.HeavyRain);
-
 			if (_rainLensLayer != null)
 				_rainLensLayer.Visible = true;
 
@@ -344,6 +341,8 @@ public partial class GameHub : Control
 			: null;
 		if (activeEvent?.Definition != null)
 			_eventDisplay?.ShowActivated(activeEvent.Definition);
+		_dayCycleDisplay?.SetEvent(
+			activeEvent?.Definition?.Type ?? GameEventType.None);
 
 		bool hasRain = false;
 		bool hasHeavyRain = false;
@@ -360,7 +359,6 @@ public partial class GameHub : Control
 			}
 		}
 
-		_dayCycleDisplay?.SetWeather(hasRain, hasHeavyRain);
 		_stylizedWater?.SetRainState(
 			hasRain,
 			hasHeavyRain,
@@ -841,6 +839,10 @@ public partial class GameHub : Control
 	private void OnEventPhaseResolved(EventPhaseResult result)
 	{
 		_eventDisplay?.ShowPhaseResult(result);
+		_dayCycleDisplay?.SetEvent(
+			result.ActiveEvents.Count > 0
+				? result.ActiveEvents[0]
+				: GameEventType.None);
 
 		bool hasHeavyRain = false;
 		foreach (GameEventType eventType in result.ActiveEvents)
@@ -852,7 +854,6 @@ public partial class GameHub : Control
 			}
 		}
 		bool hasRain = ContainsRainEvent(result.ActiveEvents);
-		_dayCycleDisplay?.SetWeather(hasRain, hasHeavyRain);
 		_stylizedWater?.SetRainState(hasRain, hasHeavyRain);
 		UpdateEnvironmentalAudio();
 

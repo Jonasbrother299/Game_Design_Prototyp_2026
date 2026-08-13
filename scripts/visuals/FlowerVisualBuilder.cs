@@ -62,26 +62,30 @@ public static class FlowerVisualBuilder
 		float modelScale,
 		int matureFlowerCount)
 	{
+		int stage = Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 3);
 		PackedScene flowerScene = plant?.Definition?.PlantScene;
+		Godot.Collections.Array<PackedScene> growthScenes =
+			plant?.Definition?.GrowthStageScenes;
+
+		if (stage < 3 &&
+			growthScenes != null &&
+			growthScenes.Count >= 2)
+		{
+			flowerScene = growthScenes[stage - 1];
+		}
 
 		if (flowerScene == null)
 			return false;
 
-		int stage = Mathf.Clamp(plant?.VisualGrowthStage ?? 1, 1, 3);
 		int maximumCount = Mathf.Clamp(
 			matureFlowerCount,
 			1,
 			ClusterOffsets.Length);
-		int visibleCount = stage switch
+		int visibleCount = stage < 3 ? 1 : maximumCount;
+		float stageVisibilityScale = stage switch
 		{
-			1 => 1,
-			2 => Mathf.Min(2, maximumCount),
-			_ => maximumCount
-		};
-		float stageScale = stage switch
-		{
-			1 => 0.70f,
-			2 => 0.85f,
+			1 => 1.6f,
+			2 => 1.15f,
 			_ => 1.0f
 		};
 		float safeModelScale = Mathf.Max(0.01f, modelScale);
@@ -103,7 +107,7 @@ public static class FlowerVisualBuilder
 				new Vector3(0.0f, ClusterRotations[i], 0.0f);
 			flowerModel.Scale *=
 				safeModelScale *
-				stageScale *
+				stageVisibilityScale *
 				ClusterScaleMultipliers[i];
 
 			root.AddChild(flowerModel);

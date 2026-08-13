@@ -21,7 +21,6 @@
 [ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="18_ui_font"]
 [ext_resource type="Resource" uid="uid://d28g8w7xp712f" path="res://data/balance/game_balance.tres" id="20_balance"]
 [ext_resource type="Script" uid="uid://v7h0unjsq8uj" path="res://scripts/UI/DayCycleDisplayUI.cs" id="23_day_cycle_display"]
-[ext_resource type="Texture2D" uid="uid://c8gklubb702gq" path="res://assets/ui/decor/ivy_corner.svg" id="24_day_cycle_ivy"]
 [ext_resource type="AudioStream" uid="uid://us03fk4xjdkg" path="res://assets/audio/Sound effects/Einpflanzen.mp3" id="25_planting_audio"]
 [ext_resource type="AudioStream" uid="uid://g5cendvai7jb" path="res://assets/audio/ambiente/Waldambiente.mp3" id="26_forest_ambience"]
 [ext_resource type="AudioStream" uid="uid://37t50n3wvk1j" path="res://assets/audio/ambiente/Hitze/crickets-cicadas.mp3" id="27_heat_ambience"]
@@ -30,6 +29,12 @@
 [ext_resource type="PackedScene" uid="uid://bfjv28ce1p0ke" path="res://scenes/environment/StylizedWater.tscn" id="30_stylized_water"]
 [ext_resource type="AudioStream" uid="uid://u54mqbnxhwgf" path="res://assets/audio/ambiente/Wasser/Wasser1.mp3" id="31_water_ambience"]
 [ext_resource type="Script" uid="uid://ba25cwqxtd843" path="res://scripts/UI/FpsDisplay.cs" id="32_fps_display"]
+[ext_resource type="Texture2D" uid="uid://c4e5hmqihy3xa" path="res://assets/wetter_Icons/Sonne.png" id="33_sun_icon"]
+[ext_resource type="Texture2D" uid="uid://chbo2fm2hf12q" path="res://assets/wetter_Icons/Regen.png" id="34_rain_icon"]
+[ext_resource type="Texture2D" uid="uid://c5kuppen3oetq" path="res://assets/wetter_Icons/Dürre.png" id="35_drought_icon"]
+[ext_resource type="Texture2D" uid="uid://dpmwg6sfp3qpn" path="res://assets/wetter_Icons/Hitzetag.png" id="36_heat_day_icon"]
+[ext_resource type="Texture2D" uid="uid://mjs4kopcsm1l" path="res://assets/wetter_Icons/Wind.png" id="37_wind_icon"]
+[ext_resource type="Texture2D" uid="uid://m4yufk3qc4gv" path="res://assets/wetter_Icons/Schädlinge.png" id="38_pests_icon"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_e2s0e"]
 panorama = ExtResource("5_ma7h6")
@@ -72,7 +77,7 @@ adjustment_saturation = 0.93
 
 [sub_resource type="Compositor" id="Compositor_vcsgt"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_gsxep"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_g6wdg"]
 render_priority = 0
 shader = ExtResource("8_gsxep")
 shader_parameter/surface_color = Color(0.14, 0.46, 0.54, 1)
@@ -112,21 +117,6 @@ shader_parameter/rain_ripple_brightness = 0.31
 shader_parameter/water_center = Vector2(0, 0)
 shader_parameter/water_radius = 16.0
 shader_parameter/edge_fade = 4.0
-
-[sub_resource type="StyleBoxFlat" id="DayCycleFrameStyle"]
-bg_color = Color(0.89, 0.77, 0.59, 0.96)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.25, 0.32, 0.17, 0.96)
-corner_radius_top_left = 88
-corner_radius_top_right = 88
-corner_radius_bottom_right = 88
-corner_radius_bottom_left = 88
-shadow_color = Color(0.03, 0.05, 0.02, 0.64)
-shadow_size = 8
-shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleDiscardNormal"]
 content_margin_left = 18.0
@@ -231,7 +221,7 @@ script = ExtResource("17_drought_effect")
 
 [node name="StylizedWater" parent="." unique_id=1959249824 instance=ExtResource("30_stylized_water")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
-material_override = SubResource("ShaderMaterial_gsxep")
+material_override = SubResource("ShaderMaterial_g6wdg")
 SurfaceCellScale = 1.63
 PatternSpeed = 0.22
 RefractionStrength = 0.0
@@ -312,100 +302,27 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.05, 0.12, 0.3, 0)
 
-[node name="DayCycleFrame" type="PanelContainer" parent="UI/CanvasLayer/GameHub" unique_id=1516620199]
-z_index = 11
-layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -88.0
-offset_top = 16.0
-offset_right = 88.0
-offset_bottom = 192.0
-grow_horizontal = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("DayCycleFrameStyle")
-
 [node name="DayCycleDisplay" type="TextureRect" parent="UI/CanvasLayer/GameHub" unique_id=1252813340]
 z_index = 12
 layout_mode = 0
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -64.0
-offset_top = 40.0
-offset_right = 64.0
-offset_bottom = 168.0
+offset_left = -80.0
+offset_top = 16.0
+offset_right = 80.0
+offset_bottom = 176.0
 grow_horizontal = 2
 tooltip_text = "Tag"
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 script = ExtResource("23_day_cycle_display")
-
-[node name="DayCycleIvyTopLeft" type="TextureRect" parent="UI/CanvasLayer/GameHub" unique_id=991895740]
-self_modulate = Color(1, 1, 1, 0.88)
-z_index = 13
-layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -118.0
-offset_right = -30.0
-offset_bottom = 33.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("24_day_cycle_ivy")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="DayCycleIvyTopRight" type="TextureRect" parent="UI/CanvasLayer/GameHub" unique_id=1814360473]
-self_modulate = Color(1, 1, 1, 0.88)
-z_index = 13
-layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = 30.0
-offset_right = 118.0
-offset_bottom = 33.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("24_day_cycle_ivy")
-expand_mode = 1
-stretch_mode = 5
-flip_h = true
-
-[node name="DayCycleIvyBottomLeft" type="TextureRect" parent="UI/CanvasLayer/GameHub" unique_id=1777980907]
-self_modulate = Color(1, 1, 1, 0.88)
-z_index = 13
-layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -118.0
-offset_top = 175.0
-offset_right = -30.0
-offset_bottom = 208.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("24_day_cycle_ivy")
-expand_mode = 1
-stretch_mode = 5
-flip_v = true
-
-[node name="DayCycleIvyBottomRight" type="TextureRect" parent="UI/CanvasLayer/GameHub" unique_id=1970319376]
-self_modulate = Color(1, 1, 1, 0.88)
-z_index = 13
-layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = 30.0
-offset_top = 175.0
-offset_right = 118.0
-offset_bottom = 208.0
-grow_horizontal = 2
-mouse_filter = 2
-texture = ExtResource("24_day_cycle_ivy")
-expand_mode = 1
-stretch_mode = 5
-flip_h = true
-flip_v = true
+SunIcon = ExtResource("33_sun_icon")
+RainIcon = ExtResource("34_rain_icon")
+DroughtIcon = ExtResource("35_drought_icon")
+HeatDayIcon = ExtResource("36_heat_day_icon")
+WindIcon = ExtResource("37_wind_icon")
+PestsIcon = ExtResource("38_pests_icon")
 
 [node name="PlantPlacementAudio" type="AudioStreamPlayer" parent="UI/CanvasLayer/GameHub" unique_id=77255394]
 stream = ExtResource("25_planting_audio")
