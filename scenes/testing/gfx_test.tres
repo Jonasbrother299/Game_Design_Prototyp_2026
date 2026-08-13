@@ -1,0 +1,22 @@
+[gd_resource type="VisualShader" format=3 uid="uid://d3c6g1jp7bjq7"]
+
+[ext_resource type="Texture2D" uid="uid://bevgld0dey7x4" path="res://assets/models/skybox/skydome.png" id="1_i70ec"]
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_pywgs"]
+texture = ExtResource("1_i70ec")
+
+[sub_resource type="VisualShaderNodeUVFunc" id="VisualShaderNodeUVFunc_4bex3"]
+default_input_values = [1, Vector2(100, 1), 2, Vector2(0, 0)]
+function = 1
+
+[resource]
+mode = 3
+flags/use_half_res_pass = false
+flags/use_quarter_res_pass = false
+flags/disable_fog = false
+flags/use_debanding = false
+nodes/sky/3/node = SubResource("VisualShaderNodeTexture_pywgs")
+nodes/sky/3/position = Vector2(-60, 120)
+nodes/sky/4/node = SubResource("VisualShaderNodeUVFunc_4bex3")
+nodes/sky/4/position = Vector2(-320, 200)
+nodes/sky/connections = PackedInt32Array(4, 0, 3, 0, 3, 0, 0, 0)

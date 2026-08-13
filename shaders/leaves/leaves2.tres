@@ -1,0 +1,115 @@
+[gd_resource type="Shader" format=3 uid="uid://be3i1atnjiy3u"]
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, depth_test_default, cull_disabled, diffuse_lambert, specular_schlick_ggx, depth_prepass_alpha;
+
+uniform sampler2D WindNoise;
+uniform sampler2D LeaveTexture;
+uniform float UVScaleX : hint_range(0, 10.0);
+uniform float UVScaleY : hint_range(0, 10.0);
+uniform vec3 foliage_colour1 : source_color = vec3(0.13, 0.33, 0.25) ;
+uniform vec3 foliage_colour2 : source_color = vec3(0.13, 0.33, 0.25) ;
+
+varying vec3 instance_pos;
+
+
+
+void vertex() {
+// Input:6
+	vec3 n_out6p0 = VERTEX;
+
+
+// Input:14
+	vec3 n_out14p0 = NODE_POSITION_WORLD;
+
+
+// VectorDecompose:15
+	float n_out15p0 = n_out14p0.x;
+	float n_out15p1 = n_out14p0.y;
+	float n_out15p2 = n_out14p0.z;
+
+
+// VectorCompose:16
+	vec2 n_out16p0 = vec2(n_out15p0, n_out15p2);
+
+
+// Input:12
+	float n_out12p0 = TIME;
+
+
+// FloatOp:13
+	float n_out13p0 = n_out16p0.x + n_out12p0;
+
+
+// UVFunc:11
+	vec2 n_in11p1 = vec2(0.05000, 0.05000);
+	vec2 n_out11p0 = vec2(n_out13p0) * n_in11p1 + UV;
+
+
+	vec4 n_out9p0;
+// Texture2D:9
+	n_out9p0 = texture(WindNoise, n_out11p0);
+
+
+// VectorDecompose:4
+	float n_out4p0 = vec2(n_out14p0.xy).x;
+	float n_out4p1 = vec2(n_out14p0.xy).y;
+
+
+// FloatFunc:5
+	float n_out5p0 = sin(n_out4p1);
+
+
+// VectorOp:10
+	vec3 n_out10p0 = vec3(n_out9p0.xyz) * vec3(n_out5p0);
+
+
+// FloatOp:17
+	float n_in17p1 = 0.20000;
+	float n_out17p0 = n_out10p0.x * n_in17p1;
+
+
+// VectorOp:7
+	vec3 n_out7p0 = n_out6p0 + vec3(n_out17p0);
+	
+	instance_pos = MODEL_MATRIX[1].xyz;
+
+
+// Output:0
+	VERTEX = n_out7p0;
+
+
+}
+
+void fragment() {
+// Texture2D:3
+	vec2 lUV = UV * vec2(UVScaleX, UVScaleY);
+
+	vec4 n_out3p0 = texture(LeaveTexture, lUV);
+	float n_out3p4 = n_out3p0.a;
+
+
+// ColorConstant:5
+	vec4 n_out5p0 = vec4(0.364946, 0.643970, 0.000000, 1.000000);
+
+
+// ColorConstant:4
+	vec4 n_out4p0 = vec4(0.124764, 0.214166, 0.000000, 1.000000);
+
+
+	vec3 n_out6p0 = mix(foliage_colour1, foliage_colour2, -instance_pos.y);
+
+
+// VectorOp:7
+	vec3 n_out7p0 = vec3(n_out3p0.xyz) * n_out6p0;
+	
+
+
+// Output:0
+	ALBEDO = n_out7p0;
+	ALPHA = n_out3p4;
+
+
+}
+"

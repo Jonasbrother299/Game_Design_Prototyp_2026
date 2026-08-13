@@ -55,6 +55,11 @@ op_type = 0
 billboard_type = 2
 keep_scale = true
 
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_vif81"]
+input_name = "node_position_world"
+
+[sub_resource type="VisualShaderNodeVectorDecompose" id="VisualShaderNodeVectorDecompose_5kttf"]
+
 [sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_s0ys3"]
 input_name = "uv"
 
@@ -117,7 +122,11 @@ nodes/vertex/16/node = SubResource("VisualShaderNodeVectorOp_uo6tq")
 nodes/vertex/16/position = Vector2(-1220, -400)
 nodes/vertex/17/node = SubResource("VisualShaderNodeBillboard_kgka3")
 nodes/vertex/17/position = Vector2(0, 580)
-nodes/vertex/connections = PackedInt32Array(2, 0, 3, 0, 6, 0, 5, 0, 7, 0, 8, 2, 8, 0, 9, 0, 10, 0, 8, 0, 13, 0, 14, 0, 14, 0, 15, 0, 15, 0, 16, 0, 11, 0, 16, 1, 16, 0, 10, 2, 14, 2, 15, 1, 3, 1, 4, 0, 5, 0, 0, 0, 4, 0, 12, 0, 12, 0, 9, 1, 9, 0, 5, 1, 17, 0, 0, 10)
+nodes/vertex/18/node = SubResource("VisualShaderNodeInput_vif81")
+nodes/vertex/18/position = Vector2(-1280, 680)
+nodes/vertex/19/node = SubResource("VisualShaderNodeVectorDecompose_5kttf")
+nodes/vertex/19/position = Vector2(-900, 640)
+nodes/vertex/connections = PackedInt32Array(2, 0, 3, 0, 6, 0, 5, 0, 7, 0, 8, 2, 8, 0, 9, 0, 10, 0, 8, 0, 13, 0, 14, 0, 14, 0, 15, 0, 15, 0, 16, 0, 11, 0, 16, 1, 16, 0, 10, 2, 14, 2, 15, 1, 5, 0, 0, 0, 4, 0, 12, 0, 12, 0, 9, 1, 9, 0, 5, 1, 17, 0, 0, 10, 3, 1, 4, 0, 18, 0, 19, 0)
 nodes/fragment/2/node = SubResource("VisualShaderNodeTexture_hw6rg")
 nodes/fragment/2/position = Vector2(-500, -440)
 nodes/fragment/3/node = SubResource("VisualShaderNodeVectorCompose_a1hl3")
