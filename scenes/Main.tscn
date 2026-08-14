@@ -47,8 +47,8 @@ background_mode = 2
 background_color = Color(0.16, 0.19, 0.16, 1)
 sky = SubResource("Sky_gsxep")
 ambient_light_source = 3
-ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_energy = 0.38
+ambient_light_color = Color(0.918757, 0.82014173, 0.67005384, 1)
+ambient_light_energy = 0.0
 reflected_light_source = 2
 tonemap_mode = 2
 tonemap_exposure = 0.95
@@ -62,12 +62,14 @@ glow_bloom = 0.25
 fog_enabled = true
 fog_light_color = Color(0.12, 0.23, 0.19, 1)
 fog_light_energy = 0.75
+fog_sun_scatter = 1.0
 fog_aerial_perspective = 0.2
 fog_sky_affect = 0.35
-volumetric_fog_density = 0.0103
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0024
 volumetric_fog_emission_energy = 316.85
-volumetric_fog_gi_inject = 8.09
 volumetric_fog_anisotropy = 0.9
+volumetric_fog_length = 23.37
 volumetric_fog_ambient_inject = 16.0
 adjustment_enabled = true
 adjustment_contrast = 1.05
@@ -192,13 +194,14 @@ corner_radius_bottom_left = 12
 transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0, 0)
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
+GrassOuterMargin = 0.31
 StoneBorderYScale = 1.2000000000000002
 DecorativeGroundRows = 8
 OuterTreeChance = 0.42
-StartingOakScale = 0.75
+StartingOakScale = 0.65
 MushroomModelScale = 0.5
 FlowerModelScale = 0.5
-BirchModelScale = 0.7
+BirchModelScale = 0.44
 
 [node name="TurnManager" type="Node3D" parent="." unique_id=1470133694]
 script = ExtResource("1_elqb8")
@@ -208,9 +211,13 @@ Config = ExtResource("20_balance")
 script = ExtResource("3_rarhs")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=664851863]
-transform = Transform3D(-0.07661462, 0.7050285, -0.7050284, 1.916959e-09, 0.7071068, 0.7071068, 0.9970607, 0.05417466, -0.054174572, 0, 1.2775217, 1.4064736)
-light_color = Color(1, 0.8862745, 0.7607843, 1)
-light_energy = 1.1
+transform = Transform3D(0.7523971, -0.5703108, 0.3296119, -0.516126, -0.19950591, 0.8329533, -0.40928274, -0.796833, -0.44445992, 0, 1.2775217, 1.4064736)
+light_color = Color(0.9674689, 0.90008366, 0.7625296, 1)
+light_energy = 2.433
+light_indirect_energy = 0.84
+light_volumetric_fog_energy = 1.08
+light_angular_distance = 4.1
+shadow_enabled = true
 shadow_opacity = 0.7
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]

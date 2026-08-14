@@ -9,9 +9,10 @@
 [ext_resource type="Texture2D" uid="uid://bot1ov0gvtgl8" path="res://assets/models/tiles/textures/tile3/tile3_Ground_Normal.png" id="6_50lcr"]
 [ext_resource type="Texture2D" uid="uid://8yosltwdhnro" path="res://assets/models/tiles/textures/tile3/tile3_Ground_Roughness.png" id="7_5yran"]
 [ext_resource type="PackedScene" uid="uid://b1tikic28ddfu" path="res://assets/models/tiles/textures/tile3/tile3_grass.fbx" id="8_axfrm"]
-[ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://shaders/grass.tres" id="9_eh8ex"]
+[ext_resource type="Shader" path="res://shaders/anime-grass.gdshader" id="9_eh8ex"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="10_fosnb"]
 [ext_resource type="PackedScene" uid="uid://dmfripbc5xbaq" path="res://assets/models/plants/grass/grass.fbx" id="11_wv37v"]
+[ext_resource type="Texture2D" uid="uid://b1uhljqahla82" path="res://assets/models/plants/grass/grass_DefaultMaterial_AlbedoTransparency.png" id="12_grass"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_17btd"]
 albedo_texture = ExtResource("2_2deet")
@@ -29,7 +30,8 @@ normal_texture = ExtResource("6_50lcr")
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_51bqj"]
 render_priority = 0
 shader = ExtResource("9_eh8ex")
-shader_parameter/WindNoise = ExtResource("10_fosnb")
+shader_parameter/grass_texture = ExtResource("12_grass")
+shader_parameter/wind_noise = ExtResource("10_fosnb")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sm764"]
 
@@ -120,6 +122,7 @@ material_override = SubResource("StandardMaterial3D_02ojw")
 [node name="tile3_grass" parent="." index="2" unique_id=195225169 instance=ExtResource("8_axfrm")]
 
 [node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="tile3_grass/Tile3_Grass" parent_id_path=PackedInt32Array(195225169, 1661187506) index="0" unique_id=320732372]
+cast_shadow = 0
 material_override = SubResource("ShaderMaterial_51bqj")
 multimesh = SubResource("MultiMesh_k3vn3")
 

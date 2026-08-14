@@ -1,15 +1,15 @@
 [gd_scene format=4 uid="uid://dr15dpset8y4s"]
 
-[ext_resource type="PackedScene" uid="uid://0rxs3d327h6p" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
+[ext_resource type="PackedScene" uid="uid://c5tqlhs18x8wh" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
 [ext_resource type="Shader" uid="uid://s86vd8ar5cut" path="res://shaders/leaves/leaves.tres" id="2_1fak0"]
 [ext_resource type="Shader" uid="uid://be3i1atnjiy3u" path="res://shaders/leaves/leaves2.tres" id="2_fuj60"]
 [ext_resource type="Texture2D" uid="uid://b5e3ckjtf8ep8" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_AlbedoTransparency.png" id="3_4ko5o"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="3_517jn"]
 [ext_resource type="Texture2D" uid="uid://cma6m8qnpttwr" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_Normal.png" id="4_517jn"]
-[ext_resource type="Texture2D" uid="uid://co2j3k8mbytiy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
-[ext_resource type="Texture2D" uid="uid://bqotbqkr8h83r" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
+[ext_resource type="Texture2D" uid="uid://cimhpa33cbnvy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
+[ext_resource type="Texture2D" uid="uid://drf63y0mhai0k" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_fuj60"]
-[ext_resource type="PackedScene" uid="uid://b8oynmrgq0n47" path="res://assets/models/StartingOak/Leaves.fbx" id="9_enswe"]
+[ext_resource type="PackedScene" uid="uid://ca62oga4pshat" path="res://assets/models/StartingOak/Leaves.fbx" id="9_enswe"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_iwnxv"]
 render_priority = -1

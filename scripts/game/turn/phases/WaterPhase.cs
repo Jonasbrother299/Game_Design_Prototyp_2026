@@ -3,18 +3,22 @@ using System.Collections.Generic;
 
 public sealed class WaterPhase
 {
-	public WaterPhaseResult Resolve(TurnPhaseContext context, int round)
+	public WaterPhaseResult Resolve(
+		TurnPhaseContext context,
+		int round,
+		WaterManagementMode waterManagement)
 	{
 		int startingWater = context.State.Water;
 		WaterBalanceCalculation balance = WaterBalanceCalculator.Calculate(
 			context.BoardManager,
-			context.State.ActiveEvents);
+			context.State.ActiveEvents,
+			waterManagement);
 
 		TickActiveEvents(context.State.ActiveEvents);
 		context.State.Water += balance.NetChange;
 
 		GD.Print(
-			$"Water balance: events {balance.EventWaterModifier}, " +
+			$"Water balance ({waterManagement}): events {balance.EventWaterModifier}, " +
 			$"+{balance.PlantWaterProduction} production " +
 			$"-{balance.PlantWaterConsumption} consumption. " +
 			$"Water: {context.State.Water}");

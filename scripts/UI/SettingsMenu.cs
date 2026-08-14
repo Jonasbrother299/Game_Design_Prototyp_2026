@@ -14,6 +14,8 @@ public partial class SettingsMenu : Control
 	public delegate void ClosedEventHandler();
 
 	private const string SettingsPath = "user://settings.cfg";
+	private const string DeveloperSection = "developer";
+	private const string DayNightCycleEnabledKey = "day_night_cycle_enabled";
 	private const string MusicBusName = "Music";
 	private const string EffectsBusName = "Effects";
 	private const string PlantingBusName = "Planting";
@@ -67,6 +69,15 @@ public partial class SettingsMenu : Control
 	private Label _rainAmbienceVolumeValue;
 	private HSlider _heavyRainAmbienceVolumeSlider;
 	private Label _heavyRainAmbienceVolumeValue;
+	private CheckButton _dayNightCycleToggle;
+	private CheckButton _grassVisibilityToggle;
+	private CheckButton _tileModelsVisibilityToggle;
+	private CheckButton _plantsVisibilityToggle;
+	private CheckButton _stoneBorderVisibilityToggle;
+	private CheckButton _outerRingVisibilityToggle;
+	private CheckButton _waterVisibilityToggle;
+	private CheckButton _shadowsToggle;
+	private Label _drawCallsValue;
 	private CheckButton _muteToggle;
 	private CheckButton _fullscreenToggle;
 	private CheckButton _vsyncToggle;
@@ -119,6 +130,15 @@ public partial class SettingsMenu : Control
 		_rainAmbienceVolumeValue = GetNode<Label>("%RainAmbienceVolumeValue");
 		_heavyRainAmbienceVolumeSlider = GetNode<HSlider>("%HeavyRainAmbienceVolumeSlider");
 		_heavyRainAmbienceVolumeValue = GetNode<Label>("%HeavyRainAmbienceVolumeValue");
+		_dayNightCycleToggle = GetNode<CheckButton>("%DayNightCycleToggle");
+		_grassVisibilityToggle = GetNode<CheckButton>("%GrassVisibilityToggle");
+		_tileModelsVisibilityToggle = GetNode<CheckButton>("%TileModelsVisibilityToggle");
+		_plantsVisibilityToggle = GetNode<CheckButton>("%PlantsVisibilityToggle");
+		_stoneBorderVisibilityToggle = GetNode<CheckButton>("%StoneBorderVisibilityToggle");
+		_outerRingVisibilityToggle = GetNode<CheckButton>("%OuterRingVisibilityToggle");
+		_waterVisibilityToggle = GetNode<CheckButton>("%WaterVisibilityToggle");
+		_shadowsToggle = GetNode<CheckButton>("%ShadowsToggle");
+		_drawCallsValue = GetNode<Label>("%DrawCallsValue");
 		_muteToggle = GetNode<CheckButton>("%MuteToggle");
 		_fullscreenToggle = GetNode<CheckButton>("%FullscreenToggle");
 		_vsyncToggle = GetNode<CheckButton>("%VsyncToggle");
@@ -181,7 +201,26 @@ public partial class SettingsMenu : Control
 		_tileFocusDistanceSlider.ValueChanged += OnControlSettingChanged;
 		_boardOverviewDistanceSlider.ValueChanged += OnControlSettingChanged;
 		_invertVerticalToggle.Toggled += OnInvertVerticalToggled;
+		_grassVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_tileModelsVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_plantsVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_stoneBorderVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerRingVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_waterVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_shadowsToggle.Toggled += OnRenderDiagnosticToggled;
 		_backButton.Pressed += Close;
+
+		UpdateRenderDiagnosticsAvailability();
+	}
+
+	public override void _Process(double delta)
+	{
+		if (!Visible || !_developerPage.Visible)
+			return;
+
+		int drawCalls = (int)Performance.GetMonitor(
+			Performance.Monitor.RenderTotalDrawCallsInFrame);
+		_drawCallsValue.Text = $"Zeichenaufrufe gesamt: {drawCalls}";
 	}
 
 	public override void _UnhandledInput(InputEvent inputEvent)
@@ -196,6 +235,7 @@ public partial class SettingsMenu : Control
 	public void Open()
 	{
 		SetSection(SettingsSection.Audio);
+		UpdateRenderDiagnosticsAvailability();
 		Show();
 		_audioTabButton.GrabFocus();
 	}
@@ -245,6 +285,7 @@ public partial class SettingsMenu : Control
 		float tileFocusDistance = 14.0f;
 		float boardOverviewDistance = 0.875f;
 		bool invertVertical = false;
+		bool dayNightCycleEnabled = true;
 
 		ConfigFile config = new ConfigFile();
 		if (config.Load(SettingsPath) == Error.Ok)
@@ -319,6 +360,12 @@ public partial class SettingsMenu : Control
 			invertVertical = config
 				.GetValue("controls", "invert_vertical", invertVertical)
 				.AsBool();
+			dayNightCycleEnabled = config
+				.GetValue(
+					DeveloperSection,
+					DayNightCycleEnabledKey,
+					dayNightCycleEnabled)
+				.AsBool();
 		}
 
 		ApplyBusVolume("Master", masterVolume);
@@ -365,6 +412,7 @@ public partial class SettingsMenu : Control
 		_boardOverviewDistanceSlider.Value =
 			ToOverviewDistancePercent(boardOverviewDistance);
 		_invertVerticalToggle.ButtonPressed = invertVertical;
+		_dayNightCycleToggle.ButtonPressed = dayNightCycleEnabled;
 		UpdateVolumeLabels();
 		UpdateDeveloperVolumeLabels();
 		UpdateControlLabels();
@@ -436,10 +484,26 @@ public partial class SettingsMenu : Control
 			"controls",
 			"invert_vertical",
 			_invertVerticalToggle.ButtonPressed);
+		config.SetValue(
+			DeveloperSection,
+			DayNightCycleEnabledKey,
+			_dayNightCycleToggle.ButtonPressed);
 
 		Error error = config.Save(SettingsPath);
 		if (error != Error.Ok)
 			GD.PushWarning($"SettingsMenu: Einstellungen konnten nicht gespeichert werden: {error}");
+	}
+
+	internal static bool IsDayNightCycleEnabled()
+	{
+		ConfigFile config = new ConfigFile();
+
+		if (config.Load(SettingsPath) != Error.Ok)
+			return true;
+
+		return config
+			.GetValue(DeveloperSection, DayNightCycleEnabledKey, true)
+			.AsBool();
 	}
 
 	private void OnMasterVolumeChanged(double value)
@@ -515,6 +579,51 @@ public partial class SettingsMenu : Control
 	private void OnInvertVerticalToggled(bool enabled)
 	{
 		ApplyCurrentControlSettings();
+	}
+
+	private void OnRenderDiagnosticToggled(bool enabled)
+	{
+		ApplyRenderDiagnostics();
+	}
+
+	private void UpdateRenderDiagnosticsAvailability()
+	{
+		Node currentScene = GetTree().CurrentScene;
+		bool hasBoard = currentScene?.GetNodeOrNull<BoardManager>("BoardManager") != null;
+
+		_grassVisibilityToggle.Disabled = !hasBoard;
+		_tileModelsVisibilityToggle.Disabled = !hasBoard;
+		_plantsVisibilityToggle.Disabled = !hasBoard;
+		_stoneBorderVisibilityToggle.Disabled = !hasBoard;
+		_outerRingVisibilityToggle.Disabled = !hasBoard;
+		_waterVisibilityToggle.Disabled = !hasBoard;
+		_shadowsToggle.Disabled = !hasBoard;
+	}
+
+	private void ApplyRenderDiagnostics()
+	{
+		Node currentScene = GetTree().CurrentScene;
+		BoardManager boardManager =
+			currentScene?.GetNodeOrNull<BoardManager>("BoardManager");
+
+		if (boardManager == null)
+			return;
+
+		boardManager.SetRenderGroupVisibility(
+			_grassVisibilityToggle.ButtonPressed,
+			_tileModelsVisibilityToggle.ButtonPressed,
+			_plantsVisibilityToggle.ButtonPressed,
+			_stoneBorderVisibilityToggle.ButtonPressed,
+			_outerRingVisibilityToggle.ButtonPressed);
+
+		Node3D water = currentScene.GetNodeOrNull<Node3D>("StylizedWater");
+		if (water != null)
+			water.Visible = _waterVisibilityToggle.ButtonPressed;
+
+		DirectionalLight3D directionalLight =
+			currentScene.GetNodeOrNull<DirectionalLight3D>("DirectionalLight3D");
+		if (directionalLight != null)
+			directionalLight.ShadowEnabled = _shadowsToggle.ButtonPressed;
 	}
 
 	private void ApplyCurrentControlSettings()

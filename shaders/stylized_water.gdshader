@@ -642,12 +642,9 @@ void fragment()
 	float rain_highlight = 0.0;
 	if (rain_level > 0.001)
 	{
-		float intensity_density = 1.0 + max(
-			rain_amount - 1.0,
-			0.0) * 1.25;
 		float rain_density = max(
 			rain_ripple_density,
-			0.1) * intensity_density;
+			0.1);
 		float rain_time = TIME * rain_ripple_speed;
 		float rain_layer_a = rain_ripple_layer(
 			relative_position,
