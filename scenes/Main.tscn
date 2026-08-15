@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
 [ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
-[ext_resource type="Texture2D" uid="uid://do4o77k1d2o8j" path="res://assets/textures/hdris/painterly_forest_panorama.png" id="5_ma7h6"]
+[ext_resource type="Texture2D" uid="uid://ccd27e47wv0yh" path="res://assets/textures/hdris/anime_sky_panorama.png" id="5_ma7h6"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
@@ -44,11 +44,12 @@ sky_material = SubResource("PanoramaSkyMaterial_e2s0e")
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 2
-background_color = Color(0.16, 0.19, 0.16, 1)
+background_color = Color(0.42, 0.65, 0.78, 1)
 sky = SubResource("Sky_gsxep")
+sky_rotation = Vector3(6.2831855, -3.4609878, 6.2831855)
 ambient_light_source = 3
-ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_energy = 0.38
+ambient_light_color = Color(0.918757, 0.82014173, 0.67005384, 1)
+ambient_light_energy = 0.0
 reflected_light_source = 2
 tonemap_mode = 2
 tonemap_exposure = 0.95
@@ -60,14 +61,16 @@ glow_intensity = 1.14
 glow_strength = 0.54
 glow_bloom = 0.25
 fog_enabled = true
-fog_light_color = Color(0.12, 0.23, 0.19, 1)
+fog_light_color = Color(0.014987877, 0.047895856, 0.03264719, 1)
 fog_light_energy = 0.75
-fog_aerial_perspective = 0.2
+fog_sun_scatter = 0.03
+fog_aerial_perspective = 0.017
 fog_sky_affect = 0.35
-volumetric_fog_density = 0.0103
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0024
 volumetric_fog_emission_energy = 316.85
-volumetric_fog_gi_inject = 8.09
 volumetric_fog_anisotropy = 0.9
+volumetric_fog_length = 23.37
 volumetric_fog_ambient_inject = 16.0
 adjustment_enabled = true
 adjustment_contrast = 1.05
@@ -115,7 +118,7 @@ shader_parameter/rain_ripple_size = 0.19
 shader_parameter/rain_ripple_speed = 1.64
 shader_parameter/rain_ripple_brightness = 0.31
 shader_parameter/water_center = Vector2(0, 0)
-shader_parameter/water_radius = 16.0
+shader_parameter/water_radius = 26.4
 shader_parameter/edge_fade = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleDiscardNormal"]
@@ -192,13 +195,18 @@ corner_radius_bottom_left = 12
 transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0, 0)
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
+HexSize = 1.25
+GrassInstancesPerTile = 512
+GrassWindWaveSpeed = 0.11
+GrassWindWaveStrength = 0.065
+GrassWindDetailSpeed = 0.83
 StoneBorderYScale = 1.2000000000000002
 DecorativeGroundRows = 8
 OuterTreeChance = 0.42
-StartingOakScale = 0.75
-MushroomModelScale = 0.5
+StartingOakScale = 0.65
+MushroomModelScale = 0.65
 FlowerModelScale = 0.5
-BirchModelScale = 0.7
+BirchModelScale = 0.44
 
 [node name="TurnManager" type="Node3D" parent="." unique_id=1470133694]
 script = ExtResource("1_elqb8")
@@ -208,9 +216,13 @@ Config = ExtResource("20_balance")
 script = ExtResource("3_rarhs")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=664851863]
-transform = Transform3D(-0.07661462, 0.7050285, -0.7050284, 1.916959e-09, 0.7071068, 0.7071068, 0.9970607, 0.05417466, -0.054174572, 0, 1.2775217, 1.4064736)
-light_color = Color(1, 0.8862745, 0.7607843, 1)
-light_energy = 1.1
+transform = Transform3D(0.7523971, -0.5703108, 0.3296119, -0.516126, -0.19950591, 0.8329533, -0.40928274, -0.796833, -0.44445992, 0, 1.2775217, 1.4064736)
+light_color = Color(0.9674689, 0.90008366, 0.7625296, 1)
+light_energy = 2.433
+light_indirect_energy = 0.84
+light_volumetric_fog_energy = 1.08
+light_angular_distance = 4.1
+shadow_enabled = true
 shadow_opacity = 0.7
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]
@@ -235,6 +247,7 @@ RainRippleDensity = 2.64
 ShowRainInEditor = false
 EditorRainIntensity = 1.44
 WaveHeight = 0.0
+WaterRadius = 26.4
 EdgeFade = 4.0
 
 [node name="CameraRig" type="Node3D" parent="." unique_id=484561498]

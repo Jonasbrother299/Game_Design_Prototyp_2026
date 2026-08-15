@@ -37,11 +37,6 @@ public static class MushroomVisualBuilder
 
 		AddMushroomModels(root, plant, modelScale);
 
-		if (plant != null && plant.IsMature)
-		{
-			AddProductionAura(root);
-		}
-
 		return root;
 	}
 
@@ -80,28 +75,4 @@ public static class MushroomVisualBuilder
 		}
 	}
 
-	private static void AddProductionAura(Node3D root)
-	{
-		CylinderMesh mesh = new CylinderMesh();
-		mesh.TopRadius = 0.46f;
-		mesh.BottomRadius = 0.46f;
-		mesh.Height = 0.012f;
-		mesh.RadialSegments = 48;
-
-		MeshInstance3D aura = new MeshInstance3D();
-		aura.Name = "ProductionAura";
-		aura.Mesh = mesh;
-		aura.Position = new Vector3(0.0f, 0.01f, 0.0f);
-
-		StandardMaterial3D material = new StandardMaterial3D();
-		material.AlbedoColor = new Color(0.30f, 0.85f, 0.38f, 0.28f);
-		material.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
-		material.Roughness = 0.8f;
-		material.EmissionEnabled = true;
-		material.Emission = new Color(0.25f, 0.75f, 0.35f);
-		material.EmissionEnergyMultiplier = 0.35f;
-
-		aura.MaterialOverride = material;
-		root.AddChild(aura);
-	}
 }

@@ -16,6 +16,11 @@ public partial class TurnManager : Node
 	public event Action<GameState> GameEnded;
 
 	[Export] public GameConfig Config;
+
+	[ExportGroup("Developer Testing")]
+	[Export] public WaterManagementMode WaterManagement =
+		WaterManagementMode.CurrentAllPlants;
+
 	public GameState State { get; private set; }
 	public bool CanDiscardHand =>
 		State != null &&
@@ -93,7 +98,10 @@ public partial class TurnManager : Node
 
 		EndTurnRequested?.Invoke(resolvedRound);
 
-		WaterPhaseResult waterResult = _waterPhase.Resolve(context, resolvedRound);
+		WaterPhaseResult waterResult = _waterPhase.Resolve(
+			context,
+			resolvedRound,
+			WaterManagement);
 		WaterPhaseResolved?.Invoke(waterResult);
 
 		SpreadPhaseResult spreadResult = _spreadPhase.Resolve(context, resolvedRound);

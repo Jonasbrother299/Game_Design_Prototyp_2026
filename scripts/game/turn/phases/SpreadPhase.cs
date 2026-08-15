@@ -157,6 +157,11 @@ public sealed class SpreadPhase
 		HexTileData sourceTile,
 		PlantDefinition definition)
 	{
+		if (definition.Type == PlantType.Birch)
+		{
+			return GetValidTreeSpreadTargets(boardManager, sourceTile, definition);
+		}
+
 		List<HexTileData> result = new();
 
 		foreach (HexTileData neighbor in boardManager.GetFreeNeighborTiles(sourceTile.Coord))
@@ -168,5 +173,61 @@ public sealed class SpreadPhase
 		}
 
 		return result;
+	}
+
+	private static List<HexTileData> GetValidTreeSpreadTargets(
+		BoardManager boardManager,
+		HexTileData sourceTile,
+		PlantDefinition definition)
+	{
+		List<HexTileData> result = new();
+
+		foreach (HexTileData candidate in boardManager.BoardData.Tiles.Values)
+		{
+			if (GetHexDistance(sourceTile.Coord, candidate.Coord) != 2 ||
+				!candidate.CanPlacePlant(definition) ||
+				HasAdjacentTree(boardManager, candidate.Coord))
+			{
+				continue;
+			}
+
+			result.Add(candidate);
+		}
+
+		return result;
+	}
+
+	private static bool HasAdjacentTree(BoardManager boardManager, HexCoord coord)
+	{
+		foreach (HexTileData neighbor in boardManager.GetNeighborData(coord))
+		{
+			if (IsTree(neighbor.Plant) || IsTree(neighbor.DeadPlant))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static bool IsTree(PlantInstance plant)
+	{
+		if (plant == null)
+		{
+			return false;
+		}
+
+		PlantType type = plant.Definition.Type;
+		return type == PlantType.Oak || type == PlantType.Birch;
+	}
+
+	private static int GetHexDistance(HexCoord first, HexCoord second)
+	{
+		int qDifference = first.Q - second.Q;
+		int rDifference = first.R - second.R;
+
+		return (System.Math.Abs(qDifference) +
+			System.Math.Abs(rDifference) +
+			System.Math.Abs(qDifference + rDifference)) / 2;
 	}
 }

@@ -1,6 +1,13 @@
 using System;
 using System.Collections.Generic;
 
+public enum WaterManagementMode
+{
+	CurrentAllPlants,
+	GrowthOnly,
+	MatureOnly
+}
+
 public sealed class WaterBalanceCalculation
 {
 	public int EventWaterModifier { get; }
@@ -30,7 +37,8 @@ public static class WaterBalanceCalculator
 {
 	public static WaterBalanceCalculation Calculate(
 		BoardManager boardManager,
-		IReadOnlyList<ActiveGameEvent> activeEvents)
+		IReadOnlyList<ActiveGameEvent> activeEvents,
+		WaterManagementMode waterManagement = WaterManagementMode.CurrentAllPlants)
 	{
 		int eventWaterModifier = CalculateEventModifier(activeEvents);
 		int totalProduction = 0;
@@ -51,7 +59,7 @@ public static class WaterBalanceCalculator
 			if (tile.Plant == null)
 				continue;
 
-			int consumption = tile.Plant.GetWaterConsumption();
+			int consumption = GetWaterConsumption(tile.Plant, waterManagement);
 			int production = tile.Plant.GetWaterProduction();
 			int adjacentBonus = GetAdjacentProductionBonus(boardManager, tile);
 
@@ -71,6 +79,20 @@ public static class WaterBalanceCalculator
 			totalProduction,
 			totalConsumption,
 			plants);
+	}
+
+	private static int GetWaterConsumption(
+		PlantInstance plant,
+		WaterManagementMode waterManagement)
+	{
+		int consumption = plant.GetWaterConsumption();
+
+		return waterManagement switch
+		{
+			WaterManagementMode.GrowthOnly => plant.IsMature ? 0 : consumption,
+			WaterManagementMode.MatureOnly => plant.IsMature ? consumption : 0,
+			_ => consumption
+		};
 	}
 
 	private static int CalculateEventModifier(

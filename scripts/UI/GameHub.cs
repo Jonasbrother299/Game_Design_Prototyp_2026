@@ -425,6 +425,12 @@ public partial class GameHub : Control
 
 	private void OnEndTurnRequested(int _)
 	{
+		if (!SettingsMenu.IsDayNightCycleEnabled())
+		{
+			ResetDayNightPresentation();
+			return;
+		}
+
 		_gameManager?.SetDayNightPresentationInputLocked(true);
 		float userInterfaceDuration = StartDayNightTransition();
 		float worldDuration = _droughtWorldEffect?.PlayDayNightCycle() ?? 0.0f;
@@ -827,7 +833,8 @@ public partial class GameHub : Control
 
 		WaterBalanceCalculation balance = WaterBalanceCalculator.Calculate(
 			_boardManager,
-			_turnManager.State.ActiveEvents);
+			_turnManager.State.ActiveEvents,
+			_turnManager.WaterManagement);
 
 		_waterDisplay.ShowPreview(
 			balance.NetChange,

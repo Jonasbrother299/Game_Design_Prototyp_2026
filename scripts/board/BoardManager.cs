@@ -36,7 +36,30 @@ public partial class BoardManager : Node3D
 	[ExportGroup("Board Visual")]
 	[Export] public PackedScene HexTileScene;
 	[Export] public Godot.Collections.Array<PackedScene> HexTileVariants = new();
-	[Export] public float HexSize = 1.0f;
+	[Export(PropertyHint.Range, "0.8,1.5,0.05")]
+	public float HexSize = 1.15f;
+
+	[ExportGroup("Grass Visual")]
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassBaseDensity = 1.0f;
+
+	[Export(PropertyHint.Range, "64,512,16")]
+	public int GrassInstancesPerTile = 320;
+
+	[Export(PropertyHint.Range, "0.0,1.0,0.005")]
+	public float GrassWindWaveSpeed = 0.035f;
+
+	[Export(PropertyHint.Range, "0.0,0.2,0.005")]
+	public float GrassWindWaveStrength = 0.075f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
+	public float GrassWindDetailSpeed = 0.07f;
+
+	[Export(PropertyHint.Range, "0.0,0.1,0.002")]
+	public float GrassWindDetailStrength = 0.012f;
+
+	[Export(PropertyHint.Range, "0.0,0.8,0.01")]
+	public float GrassOuterMargin = 0.16f;
 
 	[ExportGroup("Stone Border")]
 	[Export] public bool ShowStoneBorder = true;
@@ -369,6 +392,45 @@ public partial class BoardManager : Node3D
 		}
 	}
 
+	public void SetRenderGroupVisibility(
+		bool grassVisible,
+		bool tileModelsVisible,
+		bool plantsVisible,
+		bool stoneBorderVisible,
+		bool outerRingVisible)
+	{
+		foreach (HexTile tileView in _tileViews.Values)
+		{
+			tileView.SetRenderGroupVisibility(
+				grassVisible,
+				tileModelsVisible,
+				plantsVisible);
+		}
+
+		foreach (Node child in GetChildren())
+		{
+			string childName = child.Name.ToString();
+
+			if (childName.StartsWith(
+				"StoneBorder_",
+				System.StringComparison.Ordinal))
+			{
+				if (child is Node3D stoneBorder)
+					stoneBorder.Visible = stoneBorderVisible;
+
+				continue;
+			}
+
+			if (childName.StartsWith(
+				"DecorativeTile_",
+				System.StringComparison.Ordinal) &&
+				child is Node3D decorativeTile)
+			{
+				decorativeTile.Visible = outerRingVisible;
+			}
+		}
+	}
+
 	private void CreateTileView(HexTileData tileData)
 	{
 		if (_activeHexTileVariants.Count == 0)
@@ -389,9 +451,11 @@ public partial class BoardManager : Node3D
 			return;
 		}
 
-		tileView.Position = HexToWorld(tileData.Coord, HexSize);
+		Vector3 tilePosition = HexToWorld(tileData.Coord, HexSize);
+		tileView.Position = tilePosition;
 		int rotationStep = (int)((visualHash / (uint)_activeHexTileVariants.Count) % 6u);
 		tileView.Rotation = new Vector3(0.0f, rotationStep * Mathf.Pi / 3.0f, 0.0f);
+		tileView.ConfigureTileVisualScale(HexSize);
 		tileView.ConfigureStartingOakScale(StartingOakScale);
 		tileView.ConfigureDeadPlantVisuals(
 			DeadPlantScale,
@@ -415,11 +479,62 @@ public partial class BoardManager : Node3D
 			SunTileTint,
 			PartialShadeTileTint,
 			ShadeTileTint);
+		tileView.ConfigureGrassVisual(
+			GrassBaseDensity,
+			GrassInstancesPerTile,
+			GrassWindWaveSpeed,
+			GrassWindWaveStrength,
+			GrassWindDetailSpeed,
+			GrassWindDetailStrength,
+			ToGlobal(tilePosition),
+			HexSize * Mathf.Sqrt(3.0f) * 0.5f,
+			GrassOuterMargin,
+			GetGrassBorderDirections(tileData.Coord),
+			GetGrassOuterEdges(tileData.Coord));
+		AddChild(tileView);
 		tileView.Setup(tileData);
 
-		AddChild(tileView);
-
 		_tileViews.Add(tileData.Coord, tileView);
+	}
+
+	private Vector2[] GetGrassBorderDirections(HexCoord coord)
+	{
+		Vector2[] borderDirections = new Vector2[HexDirections.Directions.Length];
+		Vector3 tilePosition = GetRawHexPosition(coord, HexSize);
+
+		for (int directionIndex = 0;
+			directionIndex < HexDirections.Directions.Length;
+			directionIndex++)
+		{
+			HexCoord neighborCoord = HexDirections.GetNeighbor(coord, directionIndex);
+			Vector3 neighborPosition = GetRawHexPosition(neighborCoord, HexSize);
+			Vector3 worldDirection = GlobalTransform.Basis *
+				(neighborPosition - tilePosition);
+			worldDirection.Y = 0.0f;
+			worldDirection = worldDirection.Normalized();
+
+			borderDirections[directionIndex] =
+				new Vector2(worldDirection.X, worldDirection.Z);
+		}
+
+		return borderDirections;
+	}
+
+	private float[] GetGrassOuterEdges(HexCoord coord)
+	{
+		float[] outerEdges = new float[HexDirections.Directions.Length];
+
+		for (int directionIndex = 0;
+			directionIndex < HexDirections.Directions.Length;
+			directionIndex++)
+		{
+			HexCoord neighborCoord = HexDirections.GetNeighbor(coord, directionIndex);
+			outerEdges[directionIndex] = BoardData.GetTile(neighborCoord) == null
+				? 1.0f
+				: 0.0f;
+		}
+
+		return outerEdges;
 	}
 
 	private void CreateStoneBorder(GameConfig balance)
@@ -565,7 +680,8 @@ public partial class BoardManager : Node3D
 			CreateStoneBorderPiece(
 				stoneScene,
 				tileView.Position +
-					outwardDirection.Normalized() * StoneBorderOutwardOffset,
+					outwardDirection.Normalized() *
+					StoneBorderOutwardOffset * HexSize,
 				coord,
 				modelOffset,
 				rotationY,
@@ -647,6 +763,8 @@ public partial class BoardManager : Node3D
 			0.0f,
 			rotationStep * Mathf.Pi / 3.0f,
 			0.0f);
+		float tileScale = Mathf.Max(HexSize, 0.1f);
+		decorativeTile.Scale = new Vector3(tileScale, 1.0f, tileScale);
 		decorativeTile.ProcessMode = ProcessModeEnum.Disabled;
 
 		AddChild(decorativeTile);
@@ -704,7 +822,7 @@ public partial class BoardManager : Node3D
 		}
 
 		float positionRadius =
-			Mathf.Max(OuterVegetationPositionRadius, 0.0f) * HexSize;
+			Mathf.Max(OuterVegetationPositionRadius, 0.0f);
 		float offsetDistance = Mathf.Sqrt(random.Randf()) * positionRadius;
 		float offsetAngle = random.RandfRange(0.0f, Mathf.Tau);
 		float minimumScale = createTree
@@ -737,7 +855,11 @@ public partial class BoardManager : Node3D
 			0.0f,
 			random.RandfRange(0.0f, Mathf.Tau),
 			0.0f);
-		vegetation.Scale = Vector3.One * uniformScale;
+		float inverseTileScale = 1.0f / Mathf.Max(HexSize, 0.1f);
+		vegetation.Scale = new Vector3(
+			uniformScale * inverseTileScale,
+			uniformScale,
+			uniformScale * inverseTileScale);
 		vegetation.ProcessMode = ProcessModeEnum.Disabled;
 
 		decorativeTile.AddChild(vegetation);
@@ -840,7 +962,7 @@ public partial class BoardManager : Node3D
 			Name = $"StoneBorder_{edgeName}_{coord.Q}_{coord.R}",
 			Position = tilePosition + Vector3.Up * StoneBorderHeight,
 			Rotation = new Vector3(0.0f, rotationY, 0.0f),
-			Scale = new Vector3(1.0f, StoneBorderYScale, 1.0f)
+			Scale = new Vector3(HexSize, StoneBorderYScale, HexSize)
 		};
 
 		stoneModel.Position = modelOffset;

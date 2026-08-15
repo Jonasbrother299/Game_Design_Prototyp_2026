@@ -58,6 +58,11 @@ public class PlantInstance
 
 	public int GetWaterConsumption()
 	{
+		if (Definition.Type == PlantType.Moss && WasCreatedBySpread && !IsMature)
+		{
+			return 0;
+		}
+
 		return Definition.WaterConsumption;
 	}
 

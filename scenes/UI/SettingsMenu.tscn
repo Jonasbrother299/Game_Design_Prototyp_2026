@@ -626,28 +626,30 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 52)
 layout_mode = 2
 
-[node name="DeveloperPage" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
+[node name="DeveloperPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("SectionStyle")
+horizontal_scroll_mode = 0
 
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.43, 0.22, 1)
 theme_override_font_sizes/font_size = 38
-text = "Entwickler: Audioquellen"
+text = "Entwickleroptionen"
 
 [node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
 theme_override_font_sizes/font_size = 22
-text = "Passe einzelne Spielklänge relativ zur Effektlautstärke an."
+text = "Steuere Rundenpräsentation, Renderdiagnose und einzelne Spielklänge."
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
 layout_mode = 2
@@ -655,6 +657,108 @@ layout_mode = 2
 [node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="DayNightCycleRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow"]
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Tag-Nacht-Zyklus"
+
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 20
+text = "Spielt beim Rundenende den Wechsel von Tag zu Nacht und zurück."
+
+[node name="DayNightCycleToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 52)
+layout_mode = 2
+button_pressed = true
+
+[node name="RenderDiagnosticsTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Renderdiagnose"
+
+[node name="RenderDiagnosticsHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 20
+text = "Blende Gruppen einzeln aus und vergleiche danach die Zeichenaufrufe."
+
+[node name="DrawCallsValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 23
+text = "Zeichenaufrufe gesamt: 0"
+
+[node name="RenderDiagnosticsToggles" type="HFlowContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 8
+
+[node name="GrassVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Gras"
+
+[node name="TileModelsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Tile-Modelle"
+
+[node name="PlantsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Pflanzen"
+
+[node name="StoneBorderVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Steinrand"
+
+[node name="OuterRingVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Außenring"
+
+[node name="WaterVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Wasser"
+
+[node name="ShadowsToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Schatten"
 
 [node name="PlantingRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
 custom_minimum_size = Vector2(0, 52)
@@ -852,7 +956,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.32, 0.2, 1)
 theme_override_font_sizes/font_size = 22
-text = "Änderungen wirken sofort und werden beim Schließen gespeichert."
+text = "Einstellungen werden gespeichert; die Renderdiagnose gilt nur für die laufende Partie."
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="CenterContainer/SettingsPanel/Content"]

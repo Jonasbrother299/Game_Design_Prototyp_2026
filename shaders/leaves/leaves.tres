@@ -82,6 +82,7 @@ void vertex() {
 
 void fragment() {
 // Texture2D:3
+
 	vec4 n_out3p0 = texture(LeaveTexture, UV);
 	float n_out3p4 = n_out3p0.a;
 
