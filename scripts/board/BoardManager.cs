@@ -36,7 +36,8 @@ public partial class BoardManager : Node3D
 	[ExportGroup("Board Visual")]
 	[Export] public PackedScene HexTileScene;
 	[Export] public Godot.Collections.Array<PackedScene> HexTileVariants = new();
-	[Export] public float HexSize = 1.0f;
+	[Export(PropertyHint.Range, "0.8,1.5,0.05")]
+	public float HexSize = 1.15f;
 
 	[ExportGroup("Grass Visual")]
 	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
@@ -49,13 +50,13 @@ public partial class BoardManager : Node3D
 	public float GrassWindWaveSpeed = 0.035f;
 
 	[Export(PropertyHint.Range, "0.0,0.2,0.005")]
-	public float GrassWindWaveStrength = 0.04f;
+	public float GrassWindWaveStrength = 0.075f;
 
 	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
 	public float GrassWindDetailSpeed = 0.07f;
 
 	[Export(PropertyHint.Range, "0.0,0.1,0.002")]
-	public float GrassWindDetailStrength = 0.004f;
+	public float GrassWindDetailStrength = 0.012f;
 
 	[Export(PropertyHint.Range, "0.0,0.8,0.01")]
 	public float GrassOuterMargin = 0.16f;
@@ -454,6 +455,7 @@ public partial class BoardManager : Node3D
 		tileView.Position = tilePosition;
 		int rotationStep = (int)((visualHash / (uint)_activeHexTileVariants.Count) % 6u);
 		tileView.Rotation = new Vector3(0.0f, rotationStep * Mathf.Pi / 3.0f, 0.0f);
+		tileView.ConfigureTileVisualScale(HexSize);
 		tileView.ConfigureStartingOakScale(StartingOakScale);
 		tileView.ConfigureDeadPlantVisuals(
 			DeadPlantScale,
@@ -678,7 +680,8 @@ public partial class BoardManager : Node3D
 			CreateStoneBorderPiece(
 				stoneScene,
 				tileView.Position +
-					outwardDirection.Normalized() * StoneBorderOutwardOffset,
+					outwardDirection.Normalized() *
+					StoneBorderOutwardOffset * HexSize,
 				coord,
 				modelOffset,
 				rotationY,
@@ -760,6 +763,8 @@ public partial class BoardManager : Node3D
 			0.0f,
 			rotationStep * Mathf.Pi / 3.0f,
 			0.0f);
+		float tileScale = Mathf.Max(HexSize, 0.1f);
+		decorativeTile.Scale = new Vector3(tileScale, 1.0f, tileScale);
 		decorativeTile.ProcessMode = ProcessModeEnum.Disabled;
 
 		AddChild(decorativeTile);
@@ -817,7 +822,7 @@ public partial class BoardManager : Node3D
 		}
 
 		float positionRadius =
-			Mathf.Max(OuterVegetationPositionRadius, 0.0f) * HexSize;
+			Mathf.Max(OuterVegetationPositionRadius, 0.0f);
 		float offsetDistance = Mathf.Sqrt(random.Randf()) * positionRadius;
 		float offsetAngle = random.RandfRange(0.0f, Mathf.Tau);
 		float minimumScale = createTree
@@ -850,7 +855,11 @@ public partial class BoardManager : Node3D
 			0.0f,
 			random.RandfRange(0.0f, Mathf.Tau),
 			0.0f);
-		vegetation.Scale = Vector3.One * uniformScale;
+		float inverseTileScale = 1.0f / Mathf.Max(HexSize, 0.1f);
+		vegetation.Scale = new Vector3(
+			uniformScale * inverseTileScale,
+			uniformScale,
+			uniformScale * inverseTileScale);
 		vegetation.ProcessMode = ProcessModeEnum.Disabled;
 
 		decorativeTile.AddChild(vegetation);
@@ -953,7 +962,7 @@ public partial class BoardManager : Node3D
 			Name = $"StoneBorder_{edgeName}_{coord.Q}_{coord.R}",
 			Position = tilePosition + Vector3.Up * StoneBorderHeight,
 			Rotation = new Vector3(0.0f, rotationY, 0.0f),
-			Scale = new Vector3(1.0f, StoneBorderYScale, 1.0f)
+			Scale = new Vector3(HexSize, StoneBorderYScale, HexSize)
 		};
 
 		stoneModel.Position = modelOffset;

@@ -35,21 +35,137 @@ public partial class HexTile : Node3D
 	private PlantInstance _renderedPlant;
 	private int _renderedGrowthStage = -1;
 	private bool _renderedAsDead;
-	private const string GrassAtlasPath =
-		"res://assets/models/plants/grass/painterly_grass_atlas.png";
-	private static ArrayMesh _grassBillboardMesh;
-	private static Texture2D _grassAtlasTexture;
+	private const string AnimeGrassPiecePath =
+		"res://assets/models/plants/grass/anime_grass_piece.obj";
+	private static readonly StringName GrassBlockerGroup = "grass_blocker";
+	private static readonly StringName GrassBaseBlockerGroup =
+		"grass_base_blocker";
+	private static readonly StringName GrassTightBlockerGroup =
+		"grass_tight_blocker";
+	private const float GrassBlockerClearance = 0.30f;
+	private const float GrassBaseBlockerHeight = 0.45f;
+	private const float GrassTightBlockerClearanceScale = 0.45f;
+	private const int GrassPlacementCandidateMultiplier = 16;
+	private static Mesh _animeGrassPieceMesh;
+	private static bool _grassPieceLoadAttempted;
 	private float _grassBaseDensity = 1.0f;
 	private int _grassInstancesPerTile = 320;
 	private float _grassWindWaveSpeed = 0.035f;
-	private float _grassWindWaveStrength = 0.04f;
+	private float _grassWindWaveStrength = 0.075f;
 	private float _grassWindDetailSpeed = 0.07f;
-	private float _grassWindDetailStrength = 0.004f;
+	private float _grassWindDetailStrength = 0.012f;
 	private Vector3 _grassTileWorldCenter;
 	private float _grassEdgeDistance;
 	private float _grassOuterMargin;
 	private Vector2[] _grassBorderDirections = new Vector2[6];
 	private float[] _grassOuterEdges = new float[6];
+	private float _tileVisualScale = 1.0f;
+	private float _grassTileHeight;
+	private readonly List<GrassPlacementCandidate> _grassPlacementCandidates =
+		new();
+
+	private readonly struct GrassPlacementCandidate
+	{
+		public Transform3D Transform { get; }
+		public Vector2 TilePosition { get; }
+		public float BlockerClearance { get; }
+
+		public GrassPlacementCandidate(
+			Transform3D transform,
+			Vector2 tilePosition,
+			float blockerClearance)
+		{
+			Transform = transform;
+			TilePosition = tilePosition;
+			BlockerClearance = blockerClearance;
+		}
+	}
+
+	private readonly struct GrassBlockerTriangle
+	{
+		private readonly Vector2 _a;
+		private readonly Vector2 _b;
+		private readonly Vector2 _c;
+		private readonly float _minX;
+		private readonly float _maxX;
+		private readonly float _minY;
+		private readonly float _maxY;
+		private readonly float _clearanceScale;
+
+		public GrassBlockerTriangle(
+			Vector2 a,
+			Vector2 b,
+			Vector2 c,
+			float clearanceScale = 1.0f)
+		{
+			_a = a;
+			_b = b;
+			_c = c;
+			_minX = Mathf.Min(a.X, Mathf.Min(b.X, c.X));
+			_maxX = Mathf.Max(a.X, Mathf.Max(b.X, c.X));
+			_minY = Mathf.Min(a.Y, Mathf.Min(b.Y, c.Y));
+			_maxY = Mathf.Max(a.Y, Mathf.Max(b.Y, c.Y));
+			_clearanceScale = Mathf.Max(0.0f, clearanceScale);
+		}
+
+		public bool Blocks(Vector2 point, float clearance)
+		{
+			float scaledClearance = clearance * _clearanceScale;
+
+			if (point.X < _minX - scaledClearance ||
+				point.X > _maxX + scaledClearance ||
+				point.Y < _minY - scaledClearance ||
+				point.Y > _maxY + scaledClearance)
+			{
+				return false;
+			}
+
+			float area = Cross(_a, _b, _c);
+
+			if (!Mathf.IsZeroApprox(area))
+			{
+				float first = Cross(_a, _b, point);
+				float second = Cross(_b, _c, point);
+				float third = Cross(_c, _a, point);
+				bool hasNegative = first < 0.0f || second < 0.0f || third < 0.0f;
+				bool hasPositive = first > 0.0f || second > 0.0f || third > 0.0f;
+
+				if (!(hasNegative && hasPositive))
+					return true;
+			}
+
+			float clearanceSquared = scaledClearance * scaledClearance;
+			return DistanceSquaredToSegment(point, _a, _b) <= clearanceSquared ||
+				DistanceSquaredToSegment(point, _b, _c) <= clearanceSquared ||
+				DistanceSquaredToSegment(point, _c, _a) <= clearanceSquared;
+		}
+
+		private static float Cross(Vector2 first, Vector2 second, Vector2 third)
+		{
+			Vector2 firstEdge = second - first;
+			Vector2 secondEdge = third - first;
+			return firstEdge.X * secondEdge.Y - firstEdge.Y * secondEdge.X;
+		}
+
+		private static float DistanceSquaredToSegment(
+			Vector2 point,
+			Vector2 start,
+			Vector2 end)
+		{
+			Vector2 segment = end - start;
+			float lengthSquared = segment.LengthSquared();
+
+			if (Mathf.IsZeroApprox(lengthSquared))
+				return point.DistanceSquaredTo(start);
+
+			float position = Mathf.Clamp(
+				(point - start).Dot(segment) / lengthSquared,
+				0.0f,
+				1.0f);
+			Vector2 closestPoint = start + segment * position;
+			return point.DistanceSquaredTo(closestPoint);
+		}
+	}
 
 	public float StartingOakScale { get; private set; } = 0.25f;
 	public float DeadPlantScale { get; private set; } = 0.6f;
@@ -77,6 +193,11 @@ public partial class HexTile : Node3D
 		new Color(0.82f, 0.91f, 0.80f);
 	public Color ShadeTileTint { get; private set; } =
 		new Color(0.62f, 0.74f, 0.64f);
+
+	public void ConfigureTileVisualScale(float scale)
+	{
+		_tileVisualScale = Mathf.Max(0.1f, scale);
+	}
 
 	public void ConfigureStartingOakScale(float scale)
 	{
@@ -182,7 +303,6 @@ public partial class HexTile : Node3D
 
 		_plantAnchor = GetNodeOrNull<Node3D>("PlantAnchor");
 		_grassMultiMesh = FindNodeByNamePart(this, "MultiMeshInstance3D") as MultiMeshInstance3D;
-		SetupGrassCoverage();
 
 		if (_plantAnchor == null)
 		{
@@ -193,10 +313,55 @@ public partial class HexTile : Node3D
 		}
 
 		SetupPlacementIndicator();
+		ApplyTileVisualScale();
+		SetupGrassCoverage();
 		CollectVisibleTileGeometry(this);
 		SetupUniqueTileMaterial();
 		EnsureCollision();
 		UpdateVisualState();
+	}
+
+	private void ApplyTileVisualScale()
+	{
+		Node grassRoot = _grassMultiMesh;
+
+		while (grassRoot?.GetParent() != null &&
+			!ReferenceEquals(grassRoot.GetParent(), this))
+		{
+			grassRoot = grassRoot.GetParent();
+		}
+
+		foreach (Node child in GetChildren())
+		{
+			if (child is not Node3D visualRoot ||
+				ReferenceEquals(child, _plantAnchor) ||
+				ReferenceEquals(child, _placementIndicatorRoot) ||
+				ReferenceEquals(child, grassRoot) ||
+				child is CollisionObject3D)
+			{
+				continue;
+			}
+
+			Vector3 position = visualRoot.Position;
+			Vector3 scale = visualRoot.Scale;
+			visualRoot.Position = new Vector3(
+				position.X * _tileVisualScale,
+				position.Y,
+				position.Z * _tileVisualScale);
+			visualRoot.Scale = new Vector3(
+				scale.X * _tileVisualScale,
+				scale.Y,
+				scale.Z * _tileVisualScale);
+		}
+
+		if (_placementIndicatorRoot == null)
+			return;
+
+		Vector3 indicatorScale = _placementIndicatorRoot.Scale;
+		_placementIndicatorRoot.Scale = new Vector3(
+			indicatorScale.X * _tileVisualScale,
+			indicatorScale.Y,
+			indicatorScale.Z * _tileVisualScale);
 	}
 
 	public void SetRenderGroupVisibility(
@@ -566,7 +731,7 @@ public partial class HexTile : Node3D
 		}
 
 		CylinderShape3D shape = new CylinderShape3D();
-		shape.Radius = 1.05f;
+		shape.Radius = 1.05f * _tileVisualScale;
 		shape.Height = 0.55f;
 
 		collisionShape.Shape = shape;
@@ -835,56 +1000,19 @@ void fragment() {
 		if (_grassMultiMesh == null)
 			return;
 
-		float density = _grassBaseDensity;
-		float height = 0.78f;
+		Vector2 densityAndHeight = GetGrassDensityAndHeight(Data);
 		float dryAmount = GetGrassDryAmount(Data);
-		float seed = 0.0f;
-
-		if (Data.Plant != null)
-		{
-			float growth = Data.Plant.GrowthProgress;
-			seed = (int)Data.Plant.Definition.Type + 1.0f;
-
-			switch (Data.Plant.Definition.Type)
-			{
-				case PlantType.Oak:
-					density = Mathf.Lerp(0.72f, 0.42f, growth);
-					height = Mathf.Lerp(0.85f, 1.15f, growth);
-					break;
-				case PlantType.Birch:
-					density = Mathf.Lerp(0.78f, 0.52f, growth);
-					height = Mathf.Lerp(0.82f, 1.08f, growth);
-					break;
-				case PlantType.Moss:
-					density = Mathf.Lerp(0.92f, 0.78f, growth);
-					height = Mathf.Lerp(0.55f, 0.72f, growth);
-					break;
-				case PlantType.Flower:
-					density = Mathf.Lerp(0.86f, 0.68f, growth);
-					height = Mathf.Lerp(0.72f, 0.95f, growth);
-					break;
-				case PlantType.Mushroom:
-					density = Mathf.Lerp(0.88f, 0.74f, growth);
-					height = Mathf.Lerp(0.65f, 0.86f, growth);
-					break;
-			}
-		}
-		else if (Data.DeadPlant != null)
-		{
-			density = 1.0f;
-			height = 0.72f;
-			seed = (int)Data.DeadPlant.Definition.Type + 11.0f;
-		}
-		else if (Data.LightLevel != LightLevel.Shade)
-		{
-			height = Data.LightLevel == LightLevel.Sun ? 0.58f : 0.64f;
-		}
+		float seed = Data.Plant != null
+			? (int)Data.Plant.Definition.Type + 1.0f
+			: Data.DeadPlant != null
+				? (int)Data.DeadPlant.Definition.Type + 11.0f
+				: 0.0f;
 
 		BoardManager boardManager = FindBoardManager();
 
 		_grassMultiMesh.SetInstanceShaderParameter(
 			"grass_state",
-			new Vector4(density, height, dryAmount, seed));
+			new Vector4(densityAndHeight.X, densityAndHeight.Y, dryAmount, seed));
 		_grassMultiMesh.SetInstanceShaderParameter(
 			"grass_wind",
 			new Vector4(
@@ -927,6 +1055,61 @@ void fragment() {
 		_grassMultiMesh.SetInstanceShaderParameter(
 			"grass_neighbor_dry_45",
 			PackGrassNeighborDryAmounts(boardManager, 4, 5));
+		_grassMultiMesh.SetInstanceShaderParameter(
+			"grass_neighbor_state_01",
+			PackGrassNeighborStates(boardManager, 0, 1));
+		_grassMultiMesh.SetInstanceShaderParameter(
+			"grass_neighbor_state_23",
+			PackGrassNeighborStates(boardManager, 2, 3));
+		_grassMultiMesh.SetInstanceShaderParameter(
+			"grass_neighbor_state_45",
+			PackGrassNeighborStates(boardManager, 4, 5));
+	}
+
+	private Vector2 GetGrassDensityAndHeight(HexTileData tileData)
+	{
+		float density = _grassBaseDensity;
+		float height = 0.78f;
+
+		if (tileData.Plant != null)
+		{
+			float growth = tileData.Plant.GrowthProgress;
+
+			switch (tileData.Plant.Definition.Type)
+			{
+				case PlantType.Oak:
+					density = Mathf.Lerp(0.72f, 0.42f, growth);
+					height = Mathf.Lerp(0.85f, 1.15f, growth);
+					break;
+				case PlantType.Birch:
+					density = Mathf.Lerp(0.78f, 0.52f, growth);
+					height = Mathf.Lerp(0.82f, 1.08f, growth);
+					break;
+				case PlantType.Moss:
+					density = Mathf.Lerp(0.92f, 0.78f, growth);
+					height = Mathf.Lerp(0.55f, 0.72f, growth);
+					break;
+				case PlantType.Flower:
+					density = Mathf.Lerp(0.86f, 0.68f, growth);
+					height = Mathf.Lerp(0.72f, 0.95f, growth);
+					break;
+				case PlantType.Mushroom:
+					density = Mathf.Lerp(0.88f, 0.74f, growth);
+					height = Mathf.Lerp(0.65f, 0.86f, growth);
+					break;
+			}
+		}
+		else if (tileData.DeadPlant != null)
+		{
+			density = 1.0f;
+			height = 0.72f;
+		}
+		else if (tileData.LightLevel != LightLevel.Shade)
+		{
+			height = tileData.LightLevel == LightLevel.Sun ? 0.58f : 0.64f;
+		}
+
+		return new Vector2(density, height);
 	}
 
 	private static float GetGrassDryAmount(HexTileData tileData)
@@ -979,6 +1162,36 @@ void fragment() {
 			: new Vector2(GetGrassDryAmount(neighborData), 1.0f);
 	}
 
+	private Vector4 PackGrassNeighborStates(
+		BoardManager boardManager,
+		int firstDirection,
+		int secondDirection)
+	{
+		Vector2 firstNeighbor = GetGrassNeighborState(boardManager, firstDirection);
+		Vector2 secondNeighbor = GetGrassNeighborState(boardManager, secondDirection);
+
+		return new Vector4(
+			firstNeighbor.X,
+			firstNeighbor.Y,
+			secondNeighbor.X,
+			secondNeighbor.Y);
+	}
+
+	private Vector2 GetGrassNeighborState(
+		BoardManager boardManager,
+		int directionIndex)
+	{
+		if (boardManager == null)
+			return Vector2.Zero;
+
+		HexCoord neighborCoord = HexDirections.GetNeighbor(Coord, directionIndex);
+		HexTileData neighborData = boardManager.GetTileData(neighborCoord);
+
+		return neighborData == null
+			? Vector2.Zero
+			: GetGrassDensityAndHeight(neighborData);
+	}
+
 	private void SetupGrassCoverage()
 	{
 		if (_grassMultiMesh?.Multimesh == null)
@@ -995,42 +1208,39 @@ void fragment() {
 		for (int sourceIndex = 0; sourceIndex < sourceCount; sourceIndex++)
 			sourceTransforms[sourceIndex] = source.GetInstanceTransform(sourceIndex);
 
-		MultiMesh expanded = new MultiMesh();
-		expanded.TransformFormat = MultiMesh.TransformFormatEnum.Transform3D;
-		expanded.UseCustomData = true;
-		expanded.Mesh = GetGrassBillboardMesh();
-		expanded.InstanceCount = _grassInstancesPerTile;
-		expanded.VisibleInstanceCount = -1;
-		ApplyGrassAtlasTexture();
-
 		int tileSeed = unchecked(Coord.Q * 73856093 ^ Coord.R * 19349663);
 		Transform3D grassToTile = GlobalTransform.AffineInverse() *
 			_grassMultiMesh.GlobalTransform;
 		Transform3D tileToGrass = grassToTile.AffineInverse();
-		float tileHeight = 0.0f;
+		_grassTileHeight = 0.0f;
 
 		for (int sourceIndex = 0; sourceIndex < sourceCount; sourceIndex++)
-			tileHeight += (grassToTile * sourceTransforms[sourceIndex].Origin).Y;
+		{
+			_grassTileHeight +=
+				(grassToTile * sourceTransforms[sourceIndex].Origin).Y;
+		}
 
-		tileHeight /= sourceCount;
+		_grassTileHeight /= sourceCount;
 
 		float hexRadius = _grassEdgeDistance * 2.0f / Mathf.Sqrt(3.0f);
-		float sequenceOffsetX = GetGrassDistributionValue(tileSeed);
-		float sequenceOffsetZ = GetGrassDistributionValue(tileSeed + 1013);
+		_grassPlacementCandidates.Clear();
 		int candidateIndex = 0;
-		int targetIndex = 0;
+		int maximumCandidateCount =
+			_grassInstancesPerTile * GrassPlacementCandidateMultiplier;
 
-		while (targetIndex < _grassInstancesPerTile)
+		while (_grassPlacementCandidates.Count < _grassInstancesPerTile &&
+			candidateIndex < maximumCandidateCount)
 		{
-			float sequenceX = (
-				sequenceOffsetX + candidateIndex * 0.754877666f) % 1.0f;
-			float sequenceZ = (
-				sequenceOffsetZ + candidateIndex * 0.569840296f) % 1.0f;
-			float tileX = Mathf.Lerp(-hexRadius, hexRadius, sequenceX);
+			int candidateSeed = unchecked(
+				tileSeed ^ candidateIndex * 92837111);
+			float tileX = Mathf.Lerp(
+				-hexRadius,
+				hexRadius,
+				GetGrassDistributionValue(candidateSeed + 271));
 			float tileZ = Mathf.Lerp(
 				-_grassEdgeDistance,
 				_grassEdgeDistance,
-				sequenceZ);
+				GetGrassDistributionValue(candidateSeed + 1013));
 			float allowedX = hexRadius - Mathf.Abs(tileZ) / Mathf.Sqrt(3.0f);
 
 			candidateIndex++;
@@ -1038,90 +1248,166 @@ void fragment() {
 			if (Mathf.Abs(tileX) > allowedX)
 				continue;
 
+			int candidateOrdinal = _grassPlacementCandidates.Count;
 			int instanceSeed = unchecked(
-				tileSeed ^ targetIndex * 83492791);
-			int atlasVariant = (int)(unchecked((uint)instanceSeed) % 4u);
+				candidateSeed ^ candidateOrdinal * 83492791);
+			float scaleJitter = Mathf.Lerp(
+				0.62f,
+				1.0f,
+				GetGrassDistributionValue(instanceSeed + 761));
+
 			float rotation = Mathf.Tau *
 				GetGrassDistributionValue(instanceSeed + 421);
-			float widthJitter = Mathf.Lerp(
-				0.82f,
-				1.16f,
-				GetGrassDistributionValue(instanceSeed + 761));
 			float heightJitter = Mathf.Lerp(
-				0.84f,
-				1.14f,
+				0.92f,
+				1.08f,
 				GetGrassDistributionValue(instanceSeed + 1291));
-			float tuftWidth = 0.32f * widthJitter;
-			float tuftHeight = 0.30f * heightJitter;
+			float tuftWidth = 2.45f * scaleJitter;
+			float tuftHeight = 2.35f * scaleJitter * heightJitter;
 			Basis basis = Basis.Identity
 				.Rotated(Vector3.Up, rotation)
 				.Scaled(new Vector3(tuftWidth, tuftHeight, tuftWidth));
 			Transform3D transform = new Transform3D(
 				basis,
-				tileToGrass * new Vector3(tileX, tileHeight, tileZ));
-			expanded.SetInstanceTransform(targetIndex, transform);
-			expanded.SetInstanceCustomData(
-				targetIndex,
-				new Color(atlasVariant / 3.0f, 0.0f, 0.0f, 1.0f));
-			targetIndex++;
+				tileToGrass * new Vector3(tileX, _grassTileHeight, tileZ));
+			_grassPlacementCandidates.Add(new GrassPlacementCandidate(
+				transform,
+				new Vector2(tileX, tileZ),
+				GrassBlockerClearance * scaleJitter));
 		}
 
+		MultiMesh expanded = new MultiMesh();
+		expanded.TransformFormat = MultiMesh.TransformFormatEnum.Transform3D;
+		expanded.Mesh = GetAnimeGrassPieceMesh() ?? source.Mesh;
+		expanded.InstanceCount = _grassPlacementCandidates.Count;
+		expanded.VisibleInstanceCount = -1;
 		_grassMultiMesh.Multimesh = expanded;
+		RefreshGrassBlockers();
 	}
 
-	private static ArrayMesh GetGrassBillboardMesh()
+	private void RefreshGrassBlockers()
 	{
-		if (_grassBillboardMesh != null)
-			return _grassBillboardMesh;
+		MultiMesh grassMultiMesh = _grassMultiMesh?.Multimesh;
 
-		Vector3[] vertices =
-		{
-			new(-0.5f, 0.0f, 0.0f), new(0.5f, 0.0f, 0.0f),
-			new(0.5f, 1.0f, 0.0f), new(-0.5f, 1.0f, 0.0f),
-			new(0.0f, 0.0f, -0.5f), new(0.0f, 0.0f, 0.5f),
-			new(0.0f, 1.0f, 0.5f), new(0.0f, 1.0f, -0.5f)
-		};
-		Vector3[] normals =
-		{
-			Vector3.Back, Vector3.Back, Vector3.Back, Vector3.Back,
-			Vector3.Right, Vector3.Right, Vector3.Right, Vector3.Right
-		};
-		Vector2[] uv =
-		{
-			new(0.0f, 1.0f), new(1.0f, 1.0f),
-			new(1.0f, 0.0f), new(0.0f, 0.0f),
-			new(0.0f, 1.0f), new(1.0f, 1.0f),
-			new(1.0f, 0.0f), new(0.0f, 0.0f)
-		};
-		int[] indices =
-		{
-			0, 1, 2, 0, 2, 3,
-			4, 5, 6, 4, 6, 7
-		};
-
-		Godot.Collections.Array arrays = new();
-		arrays.Resize((int)Mesh.ArrayType.Max);
-		arrays[(int)Mesh.ArrayType.Vertex] = vertices;
-		arrays[(int)Mesh.ArrayType.Normal] = normals;
-		arrays[(int)Mesh.ArrayType.TexUV] = uv;
-		arrays[(int)Mesh.ArrayType.Index] = indices;
-
-		_grassBillboardMesh = new ArrayMesh();
-		_grassBillboardMesh.AddSurfaceFromArrays(
-			Mesh.PrimitiveType.Triangles,
-			arrays);
-		return _grassBillboardMesh;
-	}
-
-	private void ApplyGrassAtlasTexture()
-	{
-		if (_grassMultiMesh.MaterialOverride is not ShaderMaterial material)
+		if (grassMultiMesh == null)
 			return;
 
-		_grassAtlasTexture ??= GD.Load<Texture2D>(GrassAtlasPath);
+		List<GrassBlockerTriangle> blockerTriangles =
+			CollectGrassBlockerTriangles();
+		int visibleIndex = 0;
 
-		if (_grassAtlasTexture != null)
-			material.SetShaderParameter("grass_texture", _grassAtlasTexture);
+		foreach (GrassPlacementCandidate candidate in _grassPlacementCandidates)
+		{
+			if (IsGrassPositionBlocked(
+				candidate.TilePosition,
+				candidate.BlockerClearance,
+				blockerTriangles))
+			{
+				continue;
+			}
+
+			grassMultiMesh.SetInstanceTransform(
+				visibleIndex,
+				candidate.Transform);
+			visibleIndex++;
+		}
+
+		grassMultiMesh.VisibleInstanceCount = visibleIndex;
+	}
+
+	private List<GrassBlockerTriangle> CollectGrassBlockerTriangles()
+	{
+		List<GrassBlockerTriangle> triangles = new();
+		CollectGrassBlockerTriangles(this, false, false, false, triangles);
+		return triangles;
+	}
+
+	private void CollectGrassBlockerTriangles(
+		Node node,
+		bool isFullBlockerBranch,
+		bool isBaseBlockerBranch,
+		bool isTightBlockerBranch,
+		List<GrassBlockerTriangle> triangles)
+	{
+		bool isFullBlocker =
+			isFullBlockerBranch || node.IsInGroup(GrassBlockerGroup);
+		bool isBaseBlocker =
+			isBaseBlockerBranch || node.IsInGroup(GrassBaseBlockerGroup);
+		bool isTightBlocker =
+			isTightBlockerBranch || node.IsInGroup(GrassTightBlockerGroup);
+
+		if ((isFullBlocker || isBaseBlocker) &&
+			node is CollisionShape3D collisionShape &&
+			!collisionShape.Disabled &&
+			collisionShape.Shape is ConcavePolygonShape3D concaveShape)
+		{
+			Transform3D collisionToTile = GlobalTransform.AffineInverse() *
+				collisionShape.GlobalTransform;
+			Vector3[] faces = concaveShape.GetFaces();
+
+			for (int index = 0; index + 2 < faces.Length; index += 3)
+			{
+				Vector3 first = collisionToTile * faces[index];
+				Vector3 second = collisionToTile * faces[index + 1];
+				Vector3 third = collisionToTile * faces[index + 2];
+
+				if (isBaseBlocker && !isFullBlocker &&
+					Mathf.Min(first.Y, Mathf.Min(second.Y, third.Y)) >
+					_grassTileHeight + GrassBaseBlockerHeight)
+				{
+					continue;
+				}
+
+				triangles.Add(new GrassBlockerTriangle(
+					new Vector2(first.X, first.Z),
+					new Vector2(second.X, second.Z),
+					new Vector2(third.X, third.Z),
+					isTightBlocker
+						? GrassTightBlockerClearanceScale
+						: 1.0f));
+			}
+		}
+
+		foreach (Node child in node.GetChildren())
+		{
+			CollectGrassBlockerTriangles(
+				child,
+				isFullBlocker,
+				isBaseBlocker,
+				isTightBlocker,
+				triangles);
+		}
+	}
+
+	private static bool IsGrassPositionBlocked(
+		Vector2 position,
+		float clearance,
+		List<GrassBlockerTriangle> triangles)
+	{
+		foreach (GrassBlockerTriangle triangle in triangles)
+		{
+			if (triangle.Blocks(position, clearance))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static Mesh GetAnimeGrassPieceMesh()
+	{
+		if (!_grassPieceLoadAttempted)
+		{
+			_grassPieceLoadAttempted = true;
+			_animeGrassPieceMesh = GD.Load<Mesh>(AnimeGrassPiecePath);
+
+			if (_animeGrassPieceMesh == null)
+			{
+				GD.PushWarning(
+					$"Grasgeometrie konnte nicht geladen werden: {AnimeGrassPiecePath}");
+			}
+		}
+
+		return _animeGrassPieceMesh;
 	}
 
 	private static float GetGrassDistributionValue(int seed)
@@ -1197,7 +1483,11 @@ void fragment() {
 			Data.DeadPlant.Definition.Type != PlantType.Oak;
 		int growthStage = visualPlant?.VisualGrowthStage ?? -1;
 
-		if (_plantVisualRoot != null &&
+		bool visualPresenceMatches = visualPlant == null
+			? _plantVisualRoot == null
+			: _plantVisualRoot != null;
+
+		if (visualPresenceMatches &&
 			ReferenceEquals(_renderedPlant, visualPlant) &&
 			_renderedGrowthStage == growthStage &&
 			_renderedAsDead == renderAsDead)
@@ -1207,8 +1497,10 @@ void fragment() {
 
 		if (_plantVisualRoot != null)
 		{
-			_plantVisualRoot.QueueFree();
+			Node3D previousVisual = _plantVisualRoot;
 			_plantVisualRoot = null;
+			previousVisual.GetParent()?.RemoveChild(previousVisual);
+			previousVisual.QueueFree();
 		}
 
 		_renderedPlant = visualPlant;
@@ -1216,7 +1508,10 @@ void fragment() {
 		_renderedAsDead = renderAsDead;
 
 		if (visualPlant == null || _plantAnchor == null)
+		{
+			RefreshGrassBlockers();
 			return;
+		}
 
 		_plantVisualRoot = CreatePlantVisual(
 			visualPlant,
@@ -1229,6 +1524,7 @@ void fragment() {
 			ApplyDeadPlantStyle(_plantVisualRoot);
 
 		_plantAnchor.AddChild(_plantVisualRoot);
+		RefreshGrassBlockers();
 	}
 
 	private void ApplyDeadPlantStyle(Node3D visualRoot)

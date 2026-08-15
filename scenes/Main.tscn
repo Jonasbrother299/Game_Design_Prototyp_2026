@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
 [ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
-[ext_resource type="Texture2D" uid="uid://do4o77k1d2o8j" path="res://assets/textures/hdris/painterly_forest_panorama.png" id="5_ma7h6"]
+[ext_resource type="Texture2D" uid="uid://ccd27e47wv0yh" path="res://assets/textures/hdris/anime_sky_panorama.png" id="5_ma7h6"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
@@ -44,8 +44,9 @@ sky_material = SubResource("PanoramaSkyMaterial_e2s0e")
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 2
-background_color = Color(0.16, 0.19, 0.16, 1)
+background_color = Color(0.42, 0.65, 0.78, 1)
 sky = SubResource("Sky_gsxep")
+sky_rotation = Vector3(6.2831855, -3.4609878, 6.2831855)
 ambient_light_source = 3
 ambient_light_color = Color(0.918757, 0.82014173, 0.67005384, 1)
 ambient_light_energy = 0.0
@@ -60,10 +61,10 @@ glow_intensity = 1.14
 glow_strength = 0.54
 glow_bloom = 0.25
 fog_enabled = true
-fog_light_color = Color(0.12, 0.23, 0.19, 1)
+fog_light_color = Color(0.014987877, 0.047895856, 0.03264719, 1)
 fog_light_energy = 0.75
-fog_sun_scatter = 1.0
-fog_aerial_perspective = 0.2
+fog_sun_scatter = 0.03
+fog_aerial_perspective = 0.017
 fog_sky_affect = 0.35
 volumetric_fog_enabled = true
 volumetric_fog_density = 0.0024
@@ -117,7 +118,7 @@ shader_parameter/rain_ripple_size = 0.19
 shader_parameter/rain_ripple_speed = 1.64
 shader_parameter/rain_ripple_brightness = 0.31
 shader_parameter/water_center = Vector2(0, 0)
-shader_parameter/water_radius = 16.0
+shader_parameter/water_radius = 26.4
 shader_parameter/edge_fade = 4.0
 
 [sub_resource type="StyleBoxFlat" id="StyleDiscardNormal"]
@@ -194,12 +195,16 @@ corner_radius_bottom_left = 12
 transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 0, 0, 0)
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
-GrassOuterMargin = 0.31
+HexSize = 1.25
+GrassInstancesPerTile = 512
+GrassWindWaveSpeed = 0.11
+GrassWindWaveStrength = 0.065
+GrassWindDetailSpeed = 0.83
 StoneBorderYScale = 1.2000000000000002
 DecorativeGroundRows = 8
 OuterTreeChance = 0.42
 StartingOakScale = 0.65
-MushroomModelScale = 0.5
+MushroomModelScale = 0.65
 FlowerModelScale = 0.5
 BirchModelScale = 0.44
 
@@ -242,6 +247,7 @@ RainRippleDensity = 2.64
 ShowRainInEditor = false
 EditorRainIntensity = 1.44
 WaveHeight = 0.0
+WaterRadius = 26.4
 EdgeFade = 4.0
 
 [node name="CameraRig" type="Node3D" parent="." unique_id=484561498]
