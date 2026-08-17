@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://xk2ceq2n5g70"]
 
-[ext_resource type="PackedScene" uid="uid://dghs45tf2y1ty" path="res://scenes/board/tiles/HexTile1.tscn" id="1_ayfgr"]
+[ext_resource type="PackedScene" uid="uid://cnjipajjn7apw" path="res://scenes/board/tiles/HexTile1.tscn" id="1_ayfgr"]
 [ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile2.tscn" id="2_h5vyq"]
 [ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile3.tscn" id="3_bbgvc"]
 [ext_resource type="PackedScene" uid="uid://dr15dpset8y4s" path="res://scenes/board/plants/Oak.tscn" id="4_pcdc4"]
