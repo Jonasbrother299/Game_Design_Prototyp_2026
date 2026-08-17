@@ -231,7 +231,7 @@ light_energy = 2.433
 light_indirect_energy = 0.84
 light_volumetric_fog_energy = 1.08
 light_angular_distance = 4.1
-shadow_enabled = true
+shadow_enabled = false
 shadow_opacity = 0.7
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]

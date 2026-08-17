@@ -798,7 +798,6 @@ text = "Wasser"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(170, 44)
 layout_mode = 2
-button_pressed = true
 text = "Schatten"
 
 [node name="PlantingRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
