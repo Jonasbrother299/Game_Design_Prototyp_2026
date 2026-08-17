@@ -11,3 +11,5 @@ shader_parameter/WindNoise = ExtResource("3_am5r7")
 shader_parameter/LeaveTexture = ExtResource("2_uc4te")
 shader_parameter/foliage_colour1 = Color(0.63492006, 0.66, 0.15840001, 1)
 shader_parameter/foliage_colour2 = Color(0.51, 0.44744, 0.04079999, 1)
+shader_parameter/fade_start = 0.0
+shader_parameter/fade_end = 0.5
