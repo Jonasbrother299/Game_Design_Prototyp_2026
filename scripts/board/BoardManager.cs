@@ -15,6 +15,13 @@ public partial class BoardManager : Node3D
 		"res://assets/models/Hextilestones/Hextilestone_side2.glb";
 	private const string DefaultCornerStonePath =
 		"res://assets/models/Hextilestones/Hextilestone_corner.glb";
+	private static readonly string[] DefaultBorderRockScenePaths =
+	{
+		"res://scenes/board/tiles/rocks/rock_1.tscn",
+		"res://scenes/board/tiles/rocks/rock_2.tscn",
+		"res://scenes/board/tiles/rocks/rock_3.tscn",
+		"res://scenes/board/tiles/rocks/rock_4.tscn"
+	};
 	private static readonly string[] DefaultOuterTreeScenePaths =
 	{
 		"res://assets/models/stylized_nature/CommonTree_1.gltf",
@@ -78,6 +85,13 @@ public partial class BoardManager : Node3D
 	[Export] public PackedScene Side1StoneScene;
 	[Export] public PackedScene Side2StoneScene;
 	[Export] public PackedScene CornerStoneScene;
+	[Export] public Godot.Collections.Array<PackedScene> BorderRockScenes = new();
+
+	[Export(PropertyHint.Range, "0.1,1.0,0.01")]
+	public float BorderRockScale = 0.42f;
+
+	[Export(PropertyHint.Range, "0.0,0.5,0.01")]
+	public float BorderRockPositionJitter = 0.16f;
 
 	[Export(PropertyHint.Range, "-1.0,1.0,0.01")]
 	public float StoneBorderHeight = 0.13f;
@@ -225,6 +239,7 @@ public partial class BoardManager : Node3D
 	private readonly List<PackedScene> _activeHexTileVariants = new();
 	private readonly List<PackedScene> _activeOuterTreeScenes = new();
 	private readonly List<PackedScene> _activeOuterDetailScenes = new();
+	private readonly List<PackedScene> _activeBorderRockScenes = new();
 	private Vector3 _boardWorldCenter = Vector3.Zero;
 
 	public override void _Ready()
@@ -270,6 +285,10 @@ public partial class BoardManager : Node3D
 		Side1StoneScene ??= GD.Load<PackedScene>(DefaultSide1StonePath);
 		Side2StoneScene ??= GD.Load<PackedScene>(DefaultSide2StonePath);
 		CornerStoneScene ??= GD.Load<PackedScene>(DefaultCornerStonePath);
+		SetupSceneList(
+			BorderRockScenes,
+			DefaultBorderRockScenePaths,
+			_activeBorderRockScenes);
 	}
 
 	private void SetupOuterVegetationScenes()
@@ -580,6 +599,12 @@ public partial class BoardManager : Node3D
 		if (!ShowStoneBorder)
 			return;
 
+		if (_activeBorderRockScenes.Count > 0)
+		{
+			CreateVariantRockBorder();
+			return;
+		}
+
 		if (!balance.UseRectangularBoard)
 		{
 			CreateRoundStoneBorder();
@@ -664,6 +689,68 @@ public partial class BoardManager : Node3D
 					rotationY,
 					edgeName);
 			}
+		}
+	}
+
+	private void CreateVariantRockBorder()
+	{
+		foreach (KeyValuePair<HexCoord, HexTile> tileEntry in _tileViews)
+		{
+			HexCoord coord = tileEntry.Key;
+			HexTile tileView = tileEntry.Value;
+			Vector3 tilePosition = GetRawHexPosition(coord, HexSize);
+			Vector3 outwardDirection = Vector3.Zero;
+
+			for (int directionIndex = 0;
+				directionIndex < HexDirections.Directions.Length;
+				directionIndex++)
+			{
+				HexCoord neighborCoord = HexDirections.GetNeighbor(
+					coord,
+					directionIndex);
+
+				if (BoardData.GetTile(neighborCoord) != null)
+					continue;
+
+				Vector3 neighborPosition = GetRawHexPosition(
+					neighborCoord,
+					HexSize);
+				outwardDirection += (neighborPosition - tilePosition).Normalized();
+			}
+
+			if (outwardDirection.IsZeroApprox())
+				continue;
+
+			outwardDirection = outwardDirection.Normalized();
+			Vector3 tangentDirection = new Vector3(
+				-outwardDirection.Z,
+				0.0f,
+				outwardDirection.X);
+			uint hash = GetTileVisualHash(coord);
+			PackedScene rockScene = _activeBorderRockScenes[
+				(int)(hash % (uint)_activeBorderRockScenes.Count)];
+			float rotationY = Mathf.Tau *
+				((hash >> 8) & 0xFFFFu) / 65535.0f;
+			float tangentJitter = Mathf.Lerp(
+				-BorderRockPositionJitter,
+				BorderRockPositionJitter,
+				((hash >> 16) & 0xFFu) / 255.0f);
+			float scaleJitter = Mathf.Lerp(
+				0.86f,
+				1.14f,
+				((hash >> 24) & 0xFFu) / 255.0f);
+			Vector3 rockPosition = tileView.Position +
+				outwardDirection * StoneBorderOutwardOffset * HexSize +
+				tangentDirection * tangentJitter * HexSize;
+
+			CreateStoneBorderPiece(
+				rockScene,
+				rockPosition,
+				coord,
+				Vector3.Zero,
+				rotationY,
+				"Rock",
+				BorderRockScale * scaleJitter);
 		}
 	}
 
@@ -981,7 +1068,8 @@ public partial class BoardManager : Node3D
 		HexCoord coord,
 		Vector3 modelOffset,
 		float rotationY,
-		string edgeName)
+		string edgeName,
+		float uniformScale = 1.0f)
 	{
 		if (stoneScene == null)
 			return;
@@ -1000,7 +1088,10 @@ public partial class BoardManager : Node3D
 			Name = $"StoneBorder_{edgeName}_{coord.Q}_{coord.R}",
 			Position = tilePosition + Vector3.Up * StoneBorderHeight,
 			Rotation = new Vector3(0.0f, rotationY, 0.0f),
-			Scale = new Vector3(HexSize, StoneBorderYScale, HexSize)
+			Scale = new Vector3(
+				HexSize * uniformScale,
+				StoneBorderYScale * uniformScale,
+				HexSize * uniformScale)
 		};
 
 		stoneModel.Position = modelOffset;
