@@ -3,6 +3,9 @@
 .import/
 *.import
 
+# LUT import settings must be shared so Godot imports them as Texture3D.
+!assets/LUTs/*.png.import
+
 # C# / .NET build files
 bin/
 obj/

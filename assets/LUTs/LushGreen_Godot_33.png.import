@@ -1,0 +1,29 @@
+[remap]
+
+importer="3d_texture"
+type="CompressedTexture3D"
+uid="uid://b6dipoi2k6knf"
+path.s3tc="res://.godot/imported/LushGreen_Godot_33.png-31d0be3b66724b0db773f70b605dc8dc.s3tc.ctex3d"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+
+[deps]
+
+source_file="res://assets/LUTs/LushGreen_Godot_33.png"
+dest_files=["res://.godot/imported/LushGreen_Godot_33.png-31d0be3b66724b0db773f70b605dc8dc.s3tc.ctex3d"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
+compress/hdr_compression=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+slices/horizontal=33
+slices/vertical=1
