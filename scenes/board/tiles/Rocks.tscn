@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://h3x7qys77wt2"]
+
+[ext_resource type="PackedScene" uid="uid://bi5vgilqldu0g" path="res://assets/models/tiles/tile1.fbx" id="1_fvta4"]
+[ext_resource type="PackedScene" uid="uid://h8hy222wd3bo" path="res://scenes/board/tiles/rocks/rock_1.tscn" id="2_2ocn6"]
+[ext_resource type="PackedScene" uid="uid://c6m4sjrgvlg6e" path="res://scenes/board/tiles/rocks/rock_2.tscn" id="3_exs1v"]
+[ext_resource type="PackedScene" uid="uid://deg3dlw7wxbwh" path="res://scenes/board/tiles/rocks/rock_3.tscn" id="4_ym04c"]
+[ext_resource type="PackedScene" uid="uid://dnuyjvd5jts7" path="res://scenes/board/tiles/rocks/rock_4.tscn" id="5_taf8o"]
+
+[node name="Rocks" type="Node3D" unique_id=1185502413]
+
+[node name="tile1" parent="." unique_id=1405062571 instance=ExtResource("1_fvta4")]
+
+[node name="Rock1" parent="." unique_id=463086673 instance=ExtResource("2_2ocn6")]
+transform = Transform3D(0.30724558, 0, -0.1876171, 0, 0.36000004, 0, 0.1876171, 0, 0.30724558, -0.6177943, -0.09713721, 0.85022354)
+
+[node name="Rock2" parent="." unique_id=1753134615 instance=ExtResource("3_exs1v")]
+transform = Transform3D(0.31859264, 0, -0.1676268, 0, 0.36, 0, 0.1676268, 0, 0.31859264, -0.8426863, 0.057068735, 0.33412015)
+
+[node name="Rock3" parent="." unique_id=1256519760 instance=ExtResource("4_ym04c")]
+transform = Transform3D(0.31859264, 0, -0.1676268, 0, 0.36, 0, 0.1676268, 0, 0.31859264, -0.7328874, -0.0071421266, 0.5806645)
+
+[node name="Rock4" parent="." unique_id=800737786 instance=ExtResource("5_taf8o")]
+transform = Transform3D(0.31859264, 0, -0.1676268, 0, 0.36, 0, 0.1676268, 0, 0.31859264, -0.97802293, -0.09713721, 0.08934474)
