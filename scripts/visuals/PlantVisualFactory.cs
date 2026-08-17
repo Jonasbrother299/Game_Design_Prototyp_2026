@@ -20,10 +20,13 @@ public static class PlantVisualFactory
 					plant,
 					tile.MushroomModelScale,
 					tile.MushroomGrowthAnimationSpeed,
-					animateGrowth);
+					animateGrowth,
+					tile);
 
 			case PlantType.Moss:
-				return MossVisualBuilder.Create(plant);
+				return MossVisualBuilder.Create(
+					plant,
+					tile.Coord);
 
 			case PlantType.Flower:
 				return FlowerVisualBuilder.Create(

@@ -2,14 +2,22 @@
 
 [resource]
 code = "shader_type spatial;
-render_mode blend_mix, depth_draw_opaque, depth_test_default, cull_disabled, diffuse_lambert, specular_schlick_ggx, depth_prepass_alpha;
+render_mode blend_mix, depth_draw_opaque, depth_test_default, cull_disabled, diffuse_lambert, specular_schlick_ggx;
 
 uniform sampler2D WindNoise;
 uniform sampler2D LeaveTexture;
 uniform vec3 foliage_colour1 : source_color = vec3(0.13, 0.33, 0.25) ;
 uniform vec3 foliage_colour2 : source_color = vec3(0.13, 0.33, 0.25) ;
+instance uniform float birch_proximity_fade : hint_range(0.0, 1.0) = 0.0;
 
 varying vec3 instance_pos;
+
+float screen_dither_threshold(vec2 pixel_position) {
+	vec2 pixel = floor(pixel_position);
+	return fract(
+		52.9829189 *
+		fract(dot(pixel, vec2(0.06711056, 0.00583715))));
+}
 
 
 
@@ -81,6 +89,11 @@ void vertex() {
 }
 
 void fragment() {
+	float proximity_fade =
+		clamp(birch_proximity_fade, 0.0, 1.0);
+	if (screen_dither_threshold(FRAGCOORD.xy) < proximity_fade)
+		discard;
+
 // Texture2D:3
 
 	vec4 n_out3p0 = texture(LeaveTexture, UV);
@@ -106,6 +119,7 @@ void fragment() {
 // Output:0
 	ALBEDO = n_out7p0;
 	ALPHA = n_out3p4;
+	ALPHA_SCISSOR_THRESHOLD = 0.1;
 
 
 }

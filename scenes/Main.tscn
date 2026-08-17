@@ -3,7 +3,9 @@
 [ext_resource type="Script" uid="uid://4j32bb1fqg1e" path="res://scripts/board/BoardManager.cs" id="1_0bbpv"]
 [ext_resource type="Script" uid="uid://ogg5vx3brieg" path="res://scripts/game/TurnManager.cs" id="1_elqb8"]
 [ext_resource type="Script" uid="uid://bsyreut5m5s4y" path="res://scripts/game/GameManager.cs" id="3_rarhs"]
-[ext_resource type="Texture2D" uid="uid://ccd27e47wv0yh" path="res://assets/textures/hdris/anime_sky_panorama.png" id="5_ma7h6"]
+[ext_resource type="CompressedTexture3D" uid="uid://dy0msgm0rdey8" path="res://assets/LUTs/MagicHour_Godot_33.png" id="5_hq6as"]
+[ext_resource type="Texture2D" uid="uid://bgk3nk56irf5c" path="res://assets/textures/hdris/sky_124_2k/sky_124_2k.png" id="5_ma7h6"]
+[ext_resource type="Shader" uid="uid://upyoergu3tgr" path="res://shaders/panorama_sky_offset.gdshader" id="5_sky_shader"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="5_vcsgt"]
 [ext_resource type="PackedScene" uid="uid://btqhp0p7g08iy" path="res://scenes/UI/CardHand.tscn" id="6_c01mt"]
 [ext_resource type="PackedScene" uid="uid://bo7p70nrsgono" path="res://scenes/effects/RainLensLayer.tscn" id="7_jlsqs"]
@@ -36,21 +38,24 @@
 [ext_resource type="Texture2D" uid="uid://mjs4kopcsm1l" path="res://assets/wetter_Icons/Wind.png" id="37_wind_icon"]
 [ext_resource type="Texture2D" uid="uid://m4yufk3qc4gv" path="res://assets/wetter_Icons/Schädlinge.png" id="38_pests_icon"]
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_e2s0e"]
-panorama = ExtResource("5_ma7h6")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
+shader = ExtResource("5_sky_shader")
+shader_parameter/panorama = ExtResource("5_ma7h6")
+shader_parameter/vertical_offset = 0.0
+shader_parameter/brightness = 1.0
 
 [sub_resource type="Sky" id="Sky_gsxep"]
-sky_material = SubResource("PanoramaSkyMaterial_e2s0e")
+sky_material = SubResource("ShaderMaterial_sky")
 
 [sub_resource type="Environment" id="Environment_bjd11"]
 background_mode = 2
 background_color = Color(0.42, 0.65, 0.78, 1)
 sky = SubResource("Sky_gsxep")
-sky_rotation = Vector3(6.2831855, -3.4609878, 6.2831855)
+sky_custom_fov = 58.0
 ambient_light_source = 3
 ambient_light_color = Color(0.918757, 0.82014173, 0.67005384, 1)
 ambient_light_energy = 0.0
-reflected_light_source = 2
+reflected_light_source = 1
 tonemap_mode = 2
 tonemap_exposure = 0.95
 ssil_enabled = true
@@ -73,17 +78,18 @@ volumetric_fog_anisotropy = 0.9
 volumetric_fog_length = 23.37
 volumetric_fog_ambient_inject = 16.0
 adjustment_enabled = true
-adjustment_contrast = 1.05
-adjustment_saturation = 0.93
+adjustment_contrast = 0.9
+adjustment_saturation = 0.72
+adjustment_color_correction = ExtResource("5_hq6as")
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
 [sub_resource type="Compositor" id="Compositor_vcsgt"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_g6wdg"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kxyth"]
 render_priority = 0
 shader = ExtResource("8_gsxep")
-shader_parameter/surface_color = Color(0.14, 0.46, 0.54, 1)
+shader_parameter/surface_color = Color(0.13068378, 0.40523514, 0.36494586, 1)
 shader_parameter/line_color = Color(0.32, 0.72, 0.76, 1)
 shader_parameter/foam_color = Color(1, 1, 1, 1)
 shader_parameter/rain_ripple_color = Color(0.72, 0.92, 0.96, 1)
@@ -196,10 +202,14 @@ transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
 HexSize = 1.25
-GrassInstancesPerTile = 512
+GrassInstancesPerTile = 688
 GrassWindWaveSpeed = 0.11
 GrassWindWaveStrength = 0.065
 GrassWindDetailSpeed = 0.83
+GrassStoneMargin = 0.13
+GrassOakMargin = 0.11
+GrassBirchMargin = 0.17
+GrassMossMargin = 0.14
 StoneBorderYScale = 1.2000000000000002
 DecorativeGroundRows = 8
 OuterTreeChance = 0.42
@@ -233,7 +243,8 @@ script = ExtResource("17_drought_effect")
 
 [node name="StylizedWater" parent="." unique_id=1959249824 instance=ExtResource("30_stylized_water")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
-material_override = SubResource("ShaderMaterial_g6wdg")
+material_override = SubResource("ShaderMaterial_kxyth")
+SurfaceColor = Color(0.13068378, 0.40523514, 0.36494586, 1)
 SurfaceCellScale = 1.63
 PatternSpeed = 0.22
 RefractionStrength = 0.0
@@ -255,15 +266,16 @@ script = ExtResource("5_vcsgt")
 SmoothSpeed = 8.0
 FocusTargetPath = NodePath("../BoardManager/HexTile_0_0")
 FocusOffset = Vector3(0, -0.2, 0)
+MinPitchDegrees = 15.0
 MaxPitchDegrees = 75.0
 MinDistance = 14.0
 ZoomSmoothSpeed = 8.0
-StartPitchDegrees = 25.0
+StartPitchDegrees = 15.0
 StartDistance = 20.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=39283780]
 transform = Transform3D(1, 0, 0, 0, 0.5735764, 0.819152, 0, -0.819152, 0.5735764, 0, 18, 18)
-fov = 35.0
+fov = 46.0
 
 [node name="UI" type="Node3D" parent="." unique_id=576351862]
 

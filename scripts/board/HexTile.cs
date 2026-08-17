@@ -35,17 +35,20 @@ public partial class HexTile : Node3D
 	private PlantInstance _renderedPlant;
 	private int _renderedGrowthStage = -1;
 	private bool _renderedAsDead;
+	private int _renderedDeadBlockedRounds = -1;
+	private const float DeadPlantFirstRoundTintStrength = 0.42f;
+	private const float DeadPlantFinalRoundTintStrength = 0.78f;
 	private const string AnimeGrassPiecePath =
 		"res://assets/models/plants/grass/anime_grass_piece.obj";
 	private static readonly StringName GrassBlockerGroup = "grass_blocker";
 	private static readonly StringName GrassBaseBlockerGroup =
 		"grass_base_blocker";
-	private static readonly StringName GrassTightBlockerGroup =
-		"grass_tight_blocker";
-	private const float GrassBlockerClearance = 0.30f;
 	private const float GrassBaseBlockerHeight = 0.45f;
-	private const float GrassTightBlockerClearanceScale = 0.45f;
 	private const int GrassPlacementCandidateMultiplier = 16;
+	private const float GrassBlockerEdgeNoiseScale = 1.7f;
+	private const float GrassBlockerEdgeDetailScale = 4.8f;
+	private const float GrassBlockerEdgeMinimum = 0.55f;
+	private const float GrassBlockerEdgeMaximum = 1.20f;
 	private static Mesh _animeGrassPieceMesh;
 	private static bool _grassPieceLoadAttempted;
 	private float _grassBaseDensity = 1.0f;
@@ -57,6 +60,11 @@ public partial class HexTile : Node3D
 	private Vector3 _grassTileWorldCenter;
 	private float _grassEdgeDistance;
 	private float _grassOuterMargin;
+	private float _grassStoneMargin = 0.30f;
+	private float _grassOakMargin = 0.30f;
+	private float _grassBirchMargin = 0.30f;
+	private float _grassMushroomMargin = 0.14f;
+	private float _grassMossMargin = 0.30f;
 	private Vector2[] _grassBorderDirections = new Vector2[6];
 	private float[] _grassOuterEdges = new float[6];
 	private float _tileVisualScale = 1.0f;
@@ -68,16 +76,19 @@ public partial class HexTile : Node3D
 	{
 		public Transform3D Transform { get; }
 		public Vector2 TilePosition { get; }
-		public float BlockerClearance { get; }
+		public float ScaleJitter { get; }
+		public float BlockerEdgeVariation { get; }
 
 		public GrassPlacementCandidate(
 			Transform3D transform,
 			Vector2 tilePosition,
-			float blockerClearance)
+			float scaleJitter,
+			float blockerEdgeVariation)
 		{
 			Transform = transform;
 			TilePosition = tilePosition;
-			BlockerClearance = blockerClearance;
+			ScaleJitter = scaleJitter;
+			BlockerEdgeVariation = blockerEdgeVariation;
 		}
 	}
 
@@ -90,13 +101,13 @@ public partial class HexTile : Node3D
 		private readonly float _maxX;
 		private readonly float _minY;
 		private readonly float _maxY;
-		private readonly float _clearanceScale;
+		private readonly float _margin;
 
 		public GrassBlockerTriangle(
 			Vector2 a,
 			Vector2 b,
 			Vector2 c,
-			float clearanceScale = 1.0f)
+			float margin)
 		{
 			_a = a;
 			_b = b;
@@ -105,12 +116,22 @@ public partial class HexTile : Node3D
 			_maxX = Mathf.Max(a.X, Mathf.Max(b.X, c.X));
 			_minY = Mathf.Min(a.Y, Mathf.Min(b.Y, c.Y));
 			_maxY = Mathf.Max(a.Y, Mathf.Max(b.Y, c.Y));
-			_clearanceScale = Mathf.Max(0.0f, clearanceScale);
+			_margin = Mathf.Max(0.0f, margin);
 		}
 
-		public bool Blocks(Vector2 point, float clearance)
+		public bool Blocks(
+			Vector2 point,
+			float scaleJitter,
+			float edgeVariation)
 		{
-			float scaledClearance = clearance * _clearanceScale;
+			return BlocksWithClearance(
+				point,
+				_margin * scaleJitter * edgeVariation);
+		}
+
+		public bool BlocksWithClearance(Vector2 point, float clearance)
+		{
+			float scaledClearance = Mathf.Max(0.0f, clearance);
 
 			if (point.X < _minX - scaledClearance ||
 				point.X > _maxX + scaledClearance ||
@@ -188,6 +209,11 @@ public partial class HexTile : Node3D
 	public float BirchShadowSize { get; private set; } = 2.8f;
 	public Vector2 BirchShadowOffset { get; private set; } =
 		new Vector2(0.0f, 0.18f);
+	public bool TreeProximityFadeEnabled { get; private set; } = true;
+	public float TreeFadeStartDistance { get; private set; } = 3.0f;
+	public float TreeFadeFullDistance { get; private set; } = 0.6f;
+	public float TreeFadeMaximumTransparency { get; private set; } = 0.8f;
+	public float TreeFadeSpeed { get; private set; } = 1.2f;
 	public Color SunTileTint { get; private set; } = Colors.White;
 	public Color PartialShadeTileTint { get; private set; } =
 		new Color(0.82f, 0.91f, 0.80f);
@@ -249,6 +275,26 @@ public partial class HexTile : Node3D
 		BirchShadowOffset = birchShadowOffset;
 	}
 
+	public void ConfigureTreeProximityFade(
+		bool enabled,
+		float startDistance,
+		float fullDistance,
+		float maximumTransparency,
+		float fadeSpeed)
+	{
+		TreeProximityFadeEnabled = enabled;
+		TreeFadeStartDistance = Mathf.Max(startDistance, 0.01f);
+		TreeFadeFullDistance = Mathf.Clamp(
+			fullDistance,
+			0.0f,
+			TreeFadeStartDistance - 0.01f);
+		TreeFadeMaximumTransparency = Mathf.Clamp(
+			maximumTransparency,
+			0.0f,
+			0.8f);
+		TreeFadeSpeed = Mathf.Max(fadeSpeed, 0.01f);
+	}
+
 	public void ConfigureLightVisuals(
 		Color sunTileTint,
 		Color partialShadeTileTint,
@@ -269,11 +315,16 @@ public partial class HexTile : Node3D
 		Vector3 tileWorldCenter,
 		float edgeDistance,
 		float outerMargin,
+		float stoneMargin,
+		float oakMargin,
+		float birchMargin,
+		float mushroomMargin,
+		float mossMargin,
 		Vector2[] borderDirections,
 		float[] outerEdges)
 	{
 		_grassBaseDensity = Mathf.Clamp(baseDensity, 0.0f, 1.0f);
-		_grassInstancesPerTile = Mathf.Clamp(instancesPerTile, 64, 512);
+		_grassInstancesPerTile = Mathf.Clamp(instancesPerTile, 64, 4096);
 		_grassWindWaveSpeed = Mathf.Max(0.0f, windWaveSpeed);
 		_grassWindWaveStrength = Mathf.Max(0.0f, windWaveStrength);
 		_grassWindDetailSpeed = Mathf.Max(0.0f, windDetailSpeed);
@@ -281,6 +332,11 @@ public partial class HexTile : Node3D
 		_grassTileWorldCenter = tileWorldCenter;
 		_grassEdgeDistance = Mathf.Max(0.0f, edgeDistance);
 		_grassOuterMargin = Mathf.Clamp(outerMargin, 0.0f, _grassEdgeDistance);
+		_grassStoneMargin = Mathf.Max(0.0f, stoneMargin);
+		_grassOakMargin = Mathf.Max(0.0f, oakMargin);
+		_grassBirchMargin = Mathf.Max(0.0f, birchMargin);
+		_grassMushroomMargin = Mathf.Max(0.0f, mushroomMargin);
+		_grassMossMargin = Mathf.Max(0.0f, mossMargin);
 
 		if (borderDirections != null && borderDirections.Length == 6)
 			_grassBorderDirections = borderDirections;
@@ -1273,7 +1329,8 @@ void fragment() {
 			_grassPlacementCandidates.Add(new GrassPlacementCandidate(
 				transform,
 				new Vector2(tileX, tileZ),
-				GrassBlockerClearance * scaleJitter));
+				scaleJitter,
+				GetGrassBlockerEdgeVariation(new Vector2(tileX, tileZ))));
 		}
 
 		MultiMesh expanded = new MultiMesh();
@@ -1300,8 +1357,9 @@ void fragment() {
 		{
 			if (IsGrassPositionBlocked(
 				candidate.TilePosition,
-				candidate.BlockerClearance,
-				blockerTriangles))
+				candidate.ScaleJitter,
+				blockerTriangles,
+				candidate.BlockerEdgeVariation))
 			{
 				continue;
 			}
@@ -1317,8 +1375,21 @@ void fragment() {
 
 	private List<GrassBlockerTriangle> CollectGrassBlockerTriangles()
 	{
+		return CollectGrassBlockerTriangles(null, _grassStoneMargin);
+	}
+
+	private List<GrassBlockerTriangle> CollectGrassBlockerTriangles(
+		Node excludedBranch,
+		float blockerMargin)
+	{
 		List<GrassBlockerTriangle> triangles = new();
-		CollectGrassBlockerTriangles(this, false, false, false, triangles);
+		CollectGrassBlockerTriangles(
+			this,
+			false,
+			false,
+			blockerMargin,
+			excludedBranch,
+			triangles);
 		return triangles;
 	}
 
@@ -1326,15 +1397,20 @@ void fragment() {
 		Node node,
 		bool isFullBlockerBranch,
 		bool isBaseBlockerBranch,
-		bool isTightBlockerBranch,
+		float blockerMargin,
+		Node excludedBranch,
 		List<GrassBlockerTriangle> triangles)
 	{
+		if (node == excludedBranch)
+			return;
+
+		float branchMargin = node == _plantAnchor
+			? GetPlantGrassMargin()
+			: blockerMargin;
 		bool isFullBlocker =
 			isFullBlockerBranch || node.IsInGroup(GrassBlockerGroup);
 		bool isBaseBlocker =
 			isBaseBlockerBranch || node.IsInGroup(GrassBaseBlockerGroup);
-		bool isTightBlocker =
-			isTightBlockerBranch || node.IsInGroup(GrassTightBlockerGroup);
 
 		if ((isFullBlocker || isBaseBlocker) &&
 			node is CollisionShape3D collisionShape &&
@@ -1362,9 +1438,7 @@ void fragment() {
 					new Vector2(first.X, first.Z),
 					new Vector2(second.X, second.Z),
 					new Vector2(third.X, third.Z),
-					isTightBlocker
-						? GrassTightBlockerClearanceScale
-						: 1.0f));
+					branchMargin));
 			}
 		}
 
@@ -1374,23 +1448,145 @@ void fragment() {
 				child,
 				isFullBlocker,
 				isBaseBlocker,
-				isTightBlocker,
+				branchMargin,
+				excludedBranch,
 				triangles);
 		}
 	}
 
+	public bool TryFindStoneFreeClusterPosition(
+		IReadOnlyList<Vector2> candidates,
+		IReadOnlyList<Vector2> footprintCenters,
+		IReadOnlyList<float> footprintRadii,
+		out Vector2 position)
+	{
+		position = Vector2.Zero;
+
+		if (candidates == null || candidates.Count == 0 ||
+			footprintCenters == null || footprintRadii == null ||
+			footprintCenters.Count != footprintRadii.Count)
+		{
+			return false;
+		}
+
+		List<GrassBlockerTriangle> stoneTriangles =
+			CollectGrassBlockerTriangles(_plantAnchor, 0.0f);
+
+		foreach (Vector2 candidate in candidates)
+		{
+			bool isBlocked = false;
+
+			for (int footprintIndex = 0;
+				footprintIndex < footprintCenters.Count;
+				footprintIndex++)
+			{
+				Vector2 footprintPosition = candidate +
+					footprintCenters[footprintIndex];
+				float footprintRadius = footprintRadii[footprintIndex];
+
+				foreach (GrassBlockerTriangle triangle in stoneTriangles)
+				{
+					if (!triangle.BlocksWithClearance(
+						footprintPosition,
+						footprintRadius))
+					{
+						continue;
+					}
+
+					isBlocked = true;
+					break;
+				}
+
+				if (isBlocked)
+					break;
+			}
+
+			if (isBlocked)
+				continue;
+
+			position = candidate;
+			return true;
+		}
+
+		return false;
+	}
+
+	private float GetPlantGrassMargin()
+	{
+		PlantType plantType = Data?.Plant?.Definition?.Type ??
+			Data?.DeadPlant?.Definition?.Type ?? PlantType.None;
+
+		return plantType switch
+		{
+			PlantType.Oak => _grassOakMargin,
+			PlantType.Birch => _grassBirchMargin,
+			PlantType.Mushroom => _grassMushroomMargin,
+			PlantType.Moss => _grassMossMargin,
+			_ => _grassStoneMargin
+		};
+	}
+
 	private static bool IsGrassPositionBlocked(
 		Vector2 position,
-		float clearance,
-		List<GrassBlockerTriangle> triangles)
+		float scaleJitter,
+		List<GrassBlockerTriangle> triangles,
+		float edgeVariation)
 	{
 		foreach (GrassBlockerTriangle triangle in triangles)
 		{
-			if (triangle.Blocks(position, clearance))
+			if (triangle.Blocks(position, scaleJitter, edgeVariation))
 				return true;
 		}
 
 		return false;
+	}
+
+	private float GetGrassBlockerEdgeVariation(Vector2 tilePosition)
+	{
+		Vector3 worldPosition = GlobalTransform * new Vector3(
+			tilePosition.X,
+			0.0f,
+			tilePosition.Y);
+		Vector2 worldXZ = new Vector2(worldPosition.X, worldPosition.Z);
+		float broadNoise = SampleSmoothGrassNoise(
+			worldXZ * GrassBlockerEdgeNoiseScale,
+			15731);
+		float detailNoise = SampleSmoothGrassNoise(
+			worldXZ * GrassBlockerEdgeDetailScale,
+			48109);
+		float combinedNoise = broadNoise * 0.72f + detailNoise * 0.28f;
+
+		return Mathf.Lerp(
+			GrassBlockerEdgeMinimum,
+			GrassBlockerEdgeMaximum,
+			combinedNoise);
+	}
+
+	private static float SampleSmoothGrassNoise(Vector2 position, int salt)
+	{
+		int cellX = Mathf.FloorToInt(position.X);
+		int cellY = Mathf.FloorToInt(position.Y);
+		float blendX = position.X - cellX;
+		float blendY = position.Y - cellY;
+		blendX = blendX * blendX * (3.0f - 2.0f * blendX);
+		blendY = blendY * blendY * (3.0f - 2.0f * blendY);
+
+		float lowerLeft = GetGrassNoiseValue(cellX, cellY, salt);
+		float lowerRight = GetGrassNoiseValue(cellX + 1, cellY, salt);
+		float upperLeft = GetGrassNoiseValue(cellX, cellY + 1, salt);
+		float upperRight = GetGrassNoiseValue(cellX + 1, cellY + 1, salt);
+		float lower = Mathf.Lerp(lowerLeft, lowerRight, blendX);
+		float upper = Mathf.Lerp(upperLeft, upperRight, blendX);
+		return Mathf.Lerp(lower, upper, blendY);
+	}
+
+	private static float GetGrassNoiseValue(int cellX, int cellY, int salt)
+	{
+		int seed = unchecked(
+			cellX * 73856093 ^
+			cellY * 19349663 ^
+			salt * 83492791);
+		return GetGrassDistributionValue(seed);
 	}
 
 	private static Mesh GetAnimeGrassPieceMesh()
@@ -1481,6 +1677,7 @@ void fragment() {
 			Data.Plant == null &&
 			Data.DeadPlant != null &&
 			Data.DeadPlant.Definition.Type != PlantType.Oak;
+		int deadBlockedRounds = renderAsDead ? Data.BlockedRounds : -1;
 		int growthStage = visualPlant?.VisualGrowthStage ?? -1;
 
 		bool visualPresenceMatches = visualPlant == null
@@ -1490,7 +1687,8 @@ void fragment() {
 		if (visualPresenceMatches &&
 			ReferenceEquals(_renderedPlant, visualPlant) &&
 			_renderedGrowthStage == growthStage &&
-			_renderedAsDead == renderAsDead)
+			_renderedAsDead == renderAsDead &&
+			_renderedDeadBlockedRounds == deadBlockedRounds)
 		{
 			return;
 		}
@@ -1506,6 +1704,7 @@ void fragment() {
 		_renderedPlant = visualPlant;
 		_renderedGrowthStage = growthStage;
 		_renderedAsDead = renderAsDead;
+		_renderedDeadBlockedRounds = deadBlockedRounds;
 
 		if (visualPlant == null || _plantAnchor == null)
 		{
@@ -1521,13 +1720,29 @@ void fragment() {
 		_plantVisualRoot.Rotation = Vector3.Zero;
 
 		if (renderAsDead)
-			ApplyDeadPlantStyle(_plantVisualRoot);
+			ApplyDeadPlantStyle(_plantVisualRoot, deadBlockedRounds);
+
+		if (TreeProximityFadeEnabled &&
+			visualPlant.Definition.Type == PlantType.Birch)
+		{
+			TreeProximityFade3D proximityFade = new TreeProximityFade3D
+			{
+				Name = "TreeProximityFade",
+				FadeStartDistance = TreeFadeStartDistance,
+				FadeFullDistance = TreeFadeFullDistance,
+				MaximumTransparency = TreeFadeMaximumTransparency,
+				FadeSpeed = TreeFadeSpeed
+			};
+			_plantVisualRoot.AddChild(proximityFade);
+		}
 
 		_plantAnchor.AddChild(_plantVisualRoot);
 		RefreshGrassBlockers();
 	}
 
-	private void ApplyDeadPlantStyle(Node3D visualRoot)
+	private void ApplyDeadPlantStyle(
+		Node3D visualRoot,
+		int blockedRounds)
 	{
 		visualRoot.Scale *= DeadPlantScale;
 		visualRoot.Position += new Vector3(0.0f, -0.03f, 0.0f);
@@ -1538,21 +1753,114 @@ void fragment() {
 			owned: false);
 		productionAura?.Free();
 
-		StandardMaterial3D deadMaterial = new StandardMaterial3D();
-		deadMaterial.AlbedoColor = DeadPlantTint;
-		deadMaterial.Roughness = 1.0f;
-		deadMaterial.Metallic = 0.0f;
-
-		ApplyMaterialOverride(visualRoot, deadMaterial);
+		float tintStrength = blockedRounds > 1
+			? DeadPlantFirstRoundTintStrength
+			: DeadPlantFinalRoundTintStrength;
+		ApplyDeadPlantTint(visualRoot, tintStrength);
 	}
 
-	private static void ApplyMaterialOverride(Node node, Material material)
+	private void ApplyDeadPlantTint(Node node, float tintStrength)
 	{
 		if (node is GeometryInstance3D geometry)
-			geometry.MaterialOverride = material;
+		{
+			if (geometry.MaterialOverride != null)
+			{
+				geometry.MaterialOverride = CreateDeadPlantMaterial(
+					geometry.MaterialOverride,
+					tintStrength);
+			}
+			else if (node is MeshInstance3D meshInstance &&
+				meshInstance.Mesh != null)
+			{
+				for (int surfaceIndex = 0;
+					surfaceIndex < meshInstance.Mesh.GetSurfaceCount();
+					surfaceIndex++)
+				{
+					Material sourceMaterial =
+						meshInstance.GetSurfaceOverrideMaterial(surfaceIndex) ??
+						meshInstance.Mesh.SurfaceGetMaterial(surfaceIndex);
+					Material deadMaterial = CreateDeadPlantMaterial(
+						sourceMaterial,
+						tintStrength);
+
+					if (deadMaterial != null)
+					{
+						meshInstance.SetSurfaceOverrideMaterial(
+							surfaceIndex,
+							deadMaterial);
+					}
+				}
+			}
+		}
 
 		foreach (Node child in node.GetChildren())
-			ApplyMaterialOverride(child, material);
+			ApplyDeadPlantTint(child, tintStrength);
+	}
+
+	private Material CreateDeadPlantMaterial(
+		Material sourceMaterial,
+		float tintStrength)
+	{
+		if (sourceMaterial == null)
+			return null;
+
+		Material deadMaterial = sourceMaterial.Duplicate(true) as Material;
+		if (deadMaterial is BaseMaterial3D baseMaterial)
+		{
+			Color sourceColor = baseMaterial.AlbedoColor;
+			Color targetColor = new Color(
+				DeadPlantTint.R,
+				DeadPlantTint.G,
+				DeadPlantTint.B,
+				sourceColor.A);
+			baseMaterial.AlbedoColor = sourceColor.Lerp(
+				targetColor,
+				tintStrength);
+			baseMaterial.Roughness = Mathf.Lerp(
+				baseMaterial.Roughness,
+				1.0f,
+				tintStrength);
+			baseMaterial.Metallic = Mathf.Lerp(
+				baseMaterial.Metallic,
+				0.0f,
+				tintStrength);
+		}
+		else if (deadMaterial is ShaderMaterial shaderMaterial)
+		{
+			TintShaderColor(
+				shaderMaterial,
+				"foliage_colour1",
+				tintStrength);
+			TintShaderColor(
+				shaderMaterial,
+				"foliage_colour2",
+				tintStrength);
+		}
+
+		return deadMaterial;
+	}
+
+	private void TintShaderColor(
+		ShaderMaterial shaderMaterial,
+		string parameterName,
+		float tintStrength)
+	{
+		if (shaderMaterial.Shader == null ||
+			!shaderMaterial.Shader.Code.Contains(parameterName))
+		{
+			return;
+		}
+
+		Color sourceColor = (Color)shaderMaterial.GetShaderParameter(
+			parameterName);
+		Color targetColor = new Color(
+			DeadPlantTint.R,
+			DeadPlantTint.G,
+			DeadPlantTint.B,
+			sourceColor.A);
+		shaderMaterial.SetShaderParameter(
+			parameterName,
+			sourceColor.Lerp(targetColor, tintStrength));
 	}
 
 	private BoardManager FindBoardManager()

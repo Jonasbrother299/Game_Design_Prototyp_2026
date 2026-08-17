@@ -16,6 +16,7 @@ public partial class SettingsMenu : Control
 	private const string SettingsPath = "user://settings.cfg";
 	private const string DeveloperSection = "developer";
 	private const string DayNightCycleEnabledKey = "day_night_cycle_enabled";
+	private const string CameraStartPitchKey = "camera_start_pitch_degrees";
 	private const string MusicBusName = "Music";
 	private const string EffectsBusName = "Effects";
 	private const string PlantingBusName = "Planting";
@@ -70,6 +71,8 @@ public partial class SettingsMenu : Control
 	private HSlider _heavyRainAmbienceVolumeSlider;
 	private Label _heavyRainAmbienceVolumeValue;
 	private CheckButton _dayNightCycleToggle;
+	private HSlider _cameraPitchSlider;
+	private Label _cameraPitchValue;
 	private CheckButton _grassVisibilityToggle;
 	private CheckButton _tileModelsVisibilityToggle;
 	private CheckButton _plantsVisibilityToggle;
@@ -92,6 +95,8 @@ public partial class SettingsMenu : Control
 	private Label _boardOverviewDistanceValue;
 	private CheckButton _invertVerticalToggle;
 	private Button _backButton;
+	private CameraRigController _cameraRig;
+	private float _cameraStartPitchDegrees;
 
 	public override void _Ready()
 	{
@@ -131,6 +136,8 @@ public partial class SettingsMenu : Control
 		_heavyRainAmbienceVolumeSlider = GetNode<HSlider>("%HeavyRainAmbienceVolumeSlider");
 		_heavyRainAmbienceVolumeValue = GetNode<Label>("%HeavyRainAmbienceVolumeValue");
 		_dayNightCycleToggle = GetNode<CheckButton>("%DayNightCycleToggle");
+		_cameraPitchSlider = GetNode<HSlider>("%CameraPitchSlider");
+		_cameraPitchValue = GetNode<Label>("%CameraPitchValue");
 		_grassVisibilityToggle = GetNode<CheckButton>("%GrassVisibilityToggle");
 		_tileModelsVisibilityToggle = GetNode<CheckButton>("%TileModelsVisibilityToggle");
 		_plantsVisibilityToggle = GetNode<CheckButton>("%PlantsVisibilityToggle");
@@ -155,6 +162,7 @@ public partial class SettingsMenu : Control
 		_backButton = GetNode<Button>("%BackButton");
 
 		PopulateResolutionOptions();
+		UpdateCameraPitchAvailability();
 		LoadSettings();
 		SetSection(SettingsSection.Audio);
 
@@ -201,6 +209,7 @@ public partial class SettingsMenu : Control
 		_tileFocusDistanceSlider.ValueChanged += OnControlSettingChanged;
 		_boardOverviewDistanceSlider.ValueChanged += OnControlSettingChanged;
 		_invertVerticalToggle.Toggled += OnInvertVerticalToggled;
+		_cameraPitchSlider.ValueChanged += OnCameraPitchChanged;
 		_grassVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
 		_tileModelsVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
 		_plantsVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
@@ -211,6 +220,7 @@ public partial class SettingsMenu : Control
 		_backButton.Pressed += Close;
 
 		UpdateRenderDiagnosticsAvailability();
+		UpdateCameraPitchAvailability();
 	}
 
 	public override void _Process(double delta)
@@ -236,6 +246,7 @@ public partial class SettingsMenu : Control
 	{
 		SetSection(SettingsSection.Audio);
 		UpdateRenderDiagnosticsAvailability();
+		UpdateCameraPitchAvailability();
 		Show();
 		_audioTabButton.GrabFocus();
 	}
@@ -286,6 +297,8 @@ public partial class SettingsMenu : Control
 		float boardOverviewDistance = 0.875f;
 		bool invertVertical = false;
 		bool dayNightCycleEnabled = true;
+		float cameraStartPitch = _cameraRig?.StartPitchDegrees ??
+			(float)_cameraPitchSlider.Value;
 
 		ConfigFile config = new ConfigFile();
 		if (config.Load(SettingsPath) == Error.Ok)
@@ -366,6 +379,26 @@ public partial class SettingsMenu : Control
 					DayNightCycleEnabledKey,
 					dayNightCycleEnabled)
 				.AsBool();
+			cameraStartPitch = config
+				.GetValue(
+					DeveloperSection,
+					CameraStartPitchKey,
+					cameraStartPitch)
+				.AsSingle();
+		}
+
+		float minimumPitch = _cameraRig?.MinimumPitchDegrees ??
+			(float)_cameraPitchSlider.MinValue;
+		float maximumPitch = _cameraRig?.MaximumPitchDegrees ??
+			(float)_cameraPitchSlider.MaxValue;
+		_cameraStartPitchDegrees = Mathf.Clamp(
+			cameraStartPitch,
+			minimumPitch,
+			maximumPitch);
+		if (_cameraRig != null && IsInstanceValid(_cameraRig))
+		{
+			_cameraRig.StartPitchDegrees = _cameraStartPitchDegrees;
+			_cameraRig.SetPitchDegrees(_cameraStartPitchDegrees);
 		}
 
 		ApplyBusVolume("Master", masterVolume);
@@ -488,6 +521,10 @@ public partial class SettingsMenu : Control
 			DeveloperSection,
 			DayNightCycleEnabledKey,
 			_dayNightCycleToggle.ButtonPressed);
+		config.SetValue(
+			DeveloperSection,
+			CameraStartPitchKey,
+			_cameraStartPitchDegrees);
 
 		Error error = config.Save(SettingsPath);
 		if (error != Error.Ok)
@@ -598,6 +635,44 @@ public partial class SettingsMenu : Control
 		_outerRingVisibilityToggle.Disabled = !hasBoard;
 		_waterVisibilityToggle.Disabled = !hasBoard;
 		_shadowsToggle.Disabled = !hasBoard;
+	}
+
+	private void OnCameraPitchChanged(double value)
+	{
+		_cameraStartPitchDegrees = (float)value;
+		_cameraPitchValue.Text = $"{Mathf.RoundToInt(_cameraStartPitchDegrees)}°";
+
+		if (_cameraRig == null || !IsInstanceValid(_cameraRig))
+		{
+			UpdateCameraPitchAvailability();
+			return;
+		}
+
+		_cameraRig.StartPitchDegrees = _cameraStartPitchDegrees;
+		_cameraRig.SetPitchDegrees(_cameraStartPitchDegrees);
+	}
+
+	private void UpdateCameraPitchAvailability()
+	{
+		Node currentScene = GetTree().CurrentScene;
+		_cameraRig = currentScene?.GetNodeOrNull<CameraRigController>("CameraRig");
+		bool hasCameraRig = _cameraRig != null && IsInstanceValid(_cameraRig);
+		_cameraPitchSlider.Editable = hasCameraRig;
+
+		if (!hasCameraRig)
+		{
+			_cameraPitchValue.Text = "Nur im Spiel";
+			return;
+		}
+
+		_cameraPitchSlider.MinValue = _cameraRig.MinimumPitchDegrees;
+		_cameraPitchSlider.MaxValue = _cameraRig.MaximumPitchDegrees;
+		float pitch = Mathf.Clamp(
+			_cameraRig.CurrentPitchDegrees,
+			_cameraRig.MinimumPitchDegrees,
+			_cameraRig.MaximumPitchDegrees);
+		_cameraPitchSlider.SetValueNoSignal(pitch);
+		_cameraPitchValue.Text = $"{Mathf.RoundToInt(pitch)}°";
 	}
 
 	private void ApplyRenderDiagnostics()
