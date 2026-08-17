@@ -10,7 +10,6 @@
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
 [ext_resource type="Texture2D" uid="uid://dic4gqjj76o6b" path="res://assets/models/plants/birch/textures/leafsingle.png" id="8_5afiq"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_xt30k"]
-[ext_resource type="PackedScene" uid="uid://b8oynmrgq0n47" path="res://assets/models/StartingOak/Leaves.fbx" id="10_lto7e"]
 [ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="12_5afiq"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lto7e"]
@@ -133,14 +132,7 @@ local_coords = true
 process_material = SubResource("ShaderMaterial_umc02")
 draw_pass_1 = SubResource("PlaneMesh_5afiq")
 
-[node name="Leaves" parent="." index="3" unique_id=1896835900 instance=ExtResource("10_lto7e")]
+[node name="Leaves2" parent="." index="3" unique_id=466508957 instance=ExtResource("12_5afiq")]
 visible = false
 
-[node name="LeafMesh" parent="Leaves" index="0" unique_id=1314048655]
-visible = false
-
-[node name="Leaves2" parent="." index="4" unique_id=466508957 instance=ExtResource("12_5afiq")]
-visible = false
-
-[editable path="Leaves"]
 [editable path="Leaves2"]
