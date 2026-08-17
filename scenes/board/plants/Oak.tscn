@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://co2j3k8mbytiy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
 [ext_resource type="Texture2D" uid="uid://bqotbqkr8h83r" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_fuj60"]
-[ext_resource type="PackedScene" uid="uid://b8oynmrgq0n47" path="res://assets/models/StartingOak/Leaves.fbx" id="9_enswe"]
+[ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/StartingOak/LeafParticle.tres" id="9_fuj60"]
 [ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="10_fuj60"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_517jn"]
@@ -92,19 +92,6 @@ shader_parameter/wind_speed_max = 50.0
 shader_parameter/wind_change = Vector2(0.123, 0.456)
 shader_parameter/vortex_force = Vector2(0, 0)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_5nhl6"]
-size = Vector2(0.5, 0.5)
-subdivide_width = 2
-subdivide_depth = 2
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fuj60"]
-render_priority = 0
-shader = ExtResource("2_1fak0")
-shader_parameter/foliage_colour1 = Color(0.13, 0.33, 0.25, 1)
-shader_parameter/foliage_colour2 = Color(0.13, 0.33, 0.25, 1)
-shader_parameter/fade_start = 0.0
-shader_parameter/fade_end = 0.5
-
 [node name="starting_oak_v2" unique_id=628264869 instance=ExtResource("1_h6i2v")]
 
 [node name="Leaves" parent="." index="0" unique_id=2020096902]
@@ -135,19 +122,9 @@ speed_scale = 0.8
 visibility_aabb = AABB(-4, -4, -4, 8.83, 9.23, 12.185)
 local_coords = true
 process_material = SubResource("ShaderMaterial_g364p")
-draw_pass_1 = SubResource("PlaneMesh_5nhl6")
+draw_pass_1 = ExtResource("9_fuj60")
 
-[node name="Leaves2" parent="." index="3" unique_id=1896835900 instance=ExtResource("9_enswe")]
-
-[node name="LeafMesh" parent="Leaves2" index="0" unique_id=1314048655]
+[node name="Leaves3" parent="." index="3" unique_id=539586921 instance=ExtResource("10_fuj60")]
 visible = false
 
-[node name="Leaves3" parent="." index="4" unique_id=539586921 instance=ExtResource("10_fuj60")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.341033, 0, 0)
-visible = false
-
-[node name="Leaves" parent="Leaves3" index="0" unique_id=348064374]
-surface_material_override/0 = SubResource("ShaderMaterial_fuj60")
-
-[editable path="Leaves2"]
 [editable path="Leaves3"]

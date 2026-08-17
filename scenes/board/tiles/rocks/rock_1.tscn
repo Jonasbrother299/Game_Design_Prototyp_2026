@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://h8hy222wd3bo"]
+
+[ext_resource type="PackedScene" uid="uid://ceaqsg1hw7l4o" path="res://assets/models/tiles/Rocks/Rock1.fbx" id="1_plnnq"]
+[ext_resource type="Material" uid="uid://ccp8pwg0ydibs" path="res://scenes/board/tiles/rocks/rockmaterial.tres" id="2_k8rhc"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_k8rhc"]
+points = PackedVector3Array(0.55625427, 0.87264705, -1.0287277, 0.55625427, 0.8917415, -1.0039662, 1.2424874, 0.6660234, 0.0064680576, 0.61073637, 0.17157388, -0.9935622, 0.61073637, -1.1616306, -0.9935622, -0.5997362, -1.1616306, -0.9935622, -0.5997362, 0.81938314, -0.9935622, -0.5997362, 0.8382766, -0.96859264, -1.2155057, 0.8382766, 0.0064680576, -0.5997362, 0.8382766, 0.9817368, 0.52380705, 0.82099104, -0.0068490505, 1.226506, 0.684917, 0.0064680576, 0.61073637, -0.49512887, 1.0064982, 1.2424874, -1.1616306, 0.0064680576, 0.5424521, 0.70441353, 1.0720433, 0.5424521, 0.68551993, 1.0970129, -1.231245, -1.1616306, 0.0064680576, -1.231245, 0.81938314, 0.0064680576, -0.5997362, 0.81938314, 1.0064982, 0.61073637, -1.1616306, 1.0064982, -0.5997362, -1.1616306, 1.0064982)
+
+[node name="Rock1" unique_id=463086673 instance=ExtResource("1_plnnq")]
+
+[node name="Rock1" parent="." index="0" unique_id=1323713727]
+surface_material_override/0 = ExtResource("2_k8rhc")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Rock1" index="0" unique_id=1377029340]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Rock1/StaticBody3D" index="0" unique_id=291962754]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 0, 0)
+shape = SubResource("ConvexPolygonShape3D_k8rhc")

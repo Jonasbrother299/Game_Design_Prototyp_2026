@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://ccp8pwg0ydibs"]
+
+[ext_resource type="Texture2D" uid="uid://cuqy8eunpks30" path="res://assets/models/tiles/Rocks/textures/Rocks_Rock.001_AlbedoTransparency.png" id="1_nmaol"]
+[ext_resource type="Texture2D" uid="uid://ot7rhxyc0rdv" path="res://assets/models/tiles/Rocks/textures/Rocks_Rock.001_Normal.png" id="2_eeluv"]
+[ext_resource type="Texture2D" uid="uid://ck8w6voibek41" path="res://assets/models/tiles/Rocks/textures/Rocks_Rock.001_Roughness.png" id="3_rwokg"]
+
+[resource]
+albedo_texture = ExtResource("1_nmaol")
+roughness_texture = ExtResource("3_rwokg")
+roughness_texture_channel = 4
+normal_enabled = true
+normal_scale = 2.94
+normal_texture = ExtResource("2_eeluv")
