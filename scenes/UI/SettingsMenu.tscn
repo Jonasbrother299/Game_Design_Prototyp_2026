@@ -686,6 +686,47 @@ custom_minimum_size = Vector2(128, 52)
 layout_mode = 2
 button_pressed = true
 
+[node name="CameraPitchRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 25
+text = "Kamerawinkel"
+
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 20
+text = "Ändert den Blickwinkel sofort und speichert ihn als Startwert."
+
+[node name="CameraPitchSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 15.0
+max_value = 75.0
+step = 1.0
+value = 15.0
+
+[node name="CameraPitchValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 24
+text = "15°"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="RenderDiagnosticsTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)

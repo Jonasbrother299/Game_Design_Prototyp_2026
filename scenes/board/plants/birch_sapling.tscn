@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://g7lbunpdhlll"]
+
+[ext_resource type="PackedScene" uid="uid://w4qr0pa04ne0" path="res://assets/models/plants/birch/BirchSapling.fbx" id="1_kyxsj"]
+[ext_resource type="Texture2D" uid="uid://cbpc6bq5aq0uy" path="res://assets/models/plants/birch/textures/BirchSapling_DefaultMaterial_AlbedoTransparency.png" id="2_u70gb"]
+[ext_resource type="Texture2D" uid="uid://bodyhwbg0fui3" path="res://assets/models/plants/birch/textures/BirchSapling_DefaultMaterial_Normal.png" id="3_dxhr8"]
+[ext_resource type="Texture2D" uid="uid://dtw6u5gj2xntn" path="res://assets/models/plants/birch/textures/BirchSapling_DefaultMaterial_Roughness.png" id="4_runh2"]
+[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="5_dxhr8"]
+[ext_resource type="Material" uid="uid://cwulbgkycarrl" path="res://assets/models/plants/birch/birchleaves.tres" id="6_runh2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jh7d2"]
+albedo_texture = ExtResource("2_u70gb")
+roughness_texture = ExtResource("4_runh2")
+normal_enabled = true
+normal_texture = ExtResource("3_dxhr8")
+
+[node name="BirchSapling" unique_id=591243892 instance=ExtResource("1_kyxsj")]
+
+[node name="BirchSapling_001" parent="." index="0" unique_id=1995234905]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
+surface_material_override/0 = SubResource("StandardMaterial3D_jh7d2")
+
+[node name="Leaves3" parent="." index="1" unique_id=74704729 instance=ExtResource("5_dxhr8")]
+transform = Transform3D(-0.94903564, 0, -0.3151688, 0, 1, 0, 0.3151688, 0, -0.94903564, -0.21943164, 0.8163681, 0)
+
+[node name="Leaves" parent="Leaves3" index="0" unique_id=348064374]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, -0.6954011, 1.2138293, 0.13653307)
+material_override = ExtResource("6_runh2")
+
+[node name="Leaves2" parent="." index="2" unique_id=1893085849 instance=ExtResource("5_dxhr8")]
+
+[node name="Leaves" parent="Leaves2" index="0" unique_id=348064374]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, -0.74214494, 1.7670648, 0)
+material_override = ExtResource("6_runh2")
+
+[editable path="Leaves3"]
+[editable path="Leaves2"]

@@ -4,32 +4,33 @@ render_mode specular_disabled;
 uniform sampler2D grass_texture : source_color, filter_linear_mipmap_anisotropic;
 uniform sampler2D wind_noise : repeat_enable, filter_linear_mipmap;
 
-uniform vec4 grass_shadow_color : source_color = vec4(0.025, 0.105, 0.025, 1.0);
-uniform vec4 grass_base_color : source_color = vec4(0.075, 0.235, 0.050, 1.0);
-uniform vec4 grass_light_color : source_color = vec4(0.300, 0.410, 0.105, 1.0);
-uniform vec4 grass_cool_color : source_color = vec4(0.045, 0.175, 0.125, 1.0);
-uniform vec4 grass_warm_color : source_color = vec4(0.220, 0.285, 0.070, 1.0);
-uniform vec4 grass_wind_light_color : source_color = vec4(0.440, 0.535, 0.155, 1.0);
-uniform vec4 grass_dry_shadow_color : source_color = vec4(0.160, 0.110, 0.045, 1.0);
-uniform vec4 grass_dry_color : source_color = vec4(0.285, 0.200, 0.070, 1.0);
-uniform vec4 grass_dry_light_color : source_color = vec4(0.360, 0.290, 0.115, 1.0);
-uniform vec4 grass_dry_green_color : source_color = vec4(0.100, 0.170, 0.065, 1.0);
+uniform vec4 grass_shadow_color : source_color = vec4(0.028, 0.075, 0.032, 1.0);
+uniform vec4 grass_base_color : source_color = vec4(0.095, 0.205, 0.070, 1.0);
+uniform vec4 grass_light_color : source_color = vec4(0.275, 0.360, 0.125, 1.0);
+uniform vec4 grass_cool_color : source_color = vec4(0.045, 0.145, 0.105, 1.0);
+uniform vec4 grass_warm_color : source_color = vec4(0.205, 0.255, 0.085, 1.0);
+uniform vec4 grass_wind_light_color : source_color = vec4(0.380, 0.460, 0.180, 1.0);
+uniform vec4 grass_dry_shadow_color : source_color = vec4(0.135, 0.090, 0.045, 1.0);
+uniform vec4 grass_dry_color : source_color = vec4(0.260, 0.180, 0.075, 1.0);
+uniform vec4 grass_dry_light_color : source_color = vec4(0.385, 0.310, 0.145, 1.0);
+uniform vec4 grass_dry_green_color : source_color = vec4(0.105, 0.155, 0.070, 1.0);
 
 uniform float patch_scale : hint_range(0.01, 1.0) = 0.085;
 uniform float height_patch_scale : hint_range(0.01, 1.0) = 0.18;
 uniform float height_patch_min : hint_range(0.1, 1.0) = 0.52;
 uniform float toon_threshold : hint_range(-1.0, 1.0) = 0.28;
-uniform float toon_softness : hint_range(0.001, 0.5) = 0.08;
-uniform float toon_shadow_strength : hint_range(0.0, 1.0) = 0.58;
+uniform float toon_softness : hint_range(0.001, 0.5) = 0.24;
+uniform float toon_shadow_strength : hint_range(0.0, 1.0) = 0.68;
 
 uniform vec2 wind_direction = vec2(0.894, 0.447);
 uniform float wind_wave_scale : hint_range(0.01, 1.0) = 0.07;
 uniform float wind_detail_scale : hint_range(0.01, 2.0) = 0.24;
-uniform float wind_gust_strength : hint_range(0.0, 1.0) = 0.12;
-uniform float wind_gust_threshold : hint_range(0.1, 0.9) = 0.72;
-uniform float wind_gust_softness : hint_range(0.01, 0.5) = 0.10;
-uniform float wind_gust_speed_multiplier : hint_range(0.5, 4.0, 0.5) = 2.0;
-uniform float tile_color_blend_width : hint_range(0.05, 1.0) = 0.72;
+uniform float wind_gust_strength : hint_range(0.0, 1.0) = 0.06;
+uniform float wind_gust_threshold : hint_range(0.1, 0.9) = 0.70;
+uniform float wind_gust_softness : hint_range(0.01, 0.5) = 0.08;
+uniform float wind_gust_speed_multiplier : hint_range(0.5, 4.0, 0.5) = 0.5;
+uniform float wind_gust_patch_scale : hint_range(0.1, 2.0, 0.05) = 0.48;
+uniform float tile_color_blend_width : hint_range(0.05, 1.0) = 0.95;
 
 instance uniform vec4 grass_state = vec4(1.0, 0.92, 0.0, 0.0);
 instance uniform vec4 grass_wind = vec4(0.035, 0.075, 0.07, 0.012);
@@ -52,7 +53,6 @@ varying float wind_shadow;
 varying vec3 grass_world_position;
 varying flat float blade_dry_amount;
 varying flat vec2 grass_root_world_position;
-varying flat vec2 grass_gust_shape;
 
 vec2 safe_normalize(vec2 value, vec2 fallback) {
 	float value_length = length(value);
@@ -127,10 +127,6 @@ void vertex() {
 		smoothstep(0.30, 0.72, height_patch_noise)
 	);
 	grass_root_world_position = instance_world_position.xz;
-	grass_gust_shape = vec2(
-		painted_normal_x * 0.5 + 0.5,
-		height_patch_noise
-	);
 
 	vec2 border_position = instance_world_position.xz - grass_border.xy;
 	float border_edge = max(grass_border.z - grass_border.w, 0.0);
@@ -296,8 +292,8 @@ void fragment() {
 		wind_noise,
 		grass_world_position.xz * patch_scale * 0.47 + vec2(0.67, 0.19)
 	).r;
-	float cool_patch = 1.0 - smoothstep(0.34, 0.62, large_patch);
-	float warm_patch = smoothstep(0.46, 0.68, secondary_patch);
+	float cool_patch = 1.0 - smoothstep(0.22, 0.78, large_patch);
+	float warm_patch = smoothstep(0.25, 0.82, secondary_patch);
 	vec2 gust_direction = safe_normalize(
 		wind_direction,
 		vec2(1.0, 0.0)
@@ -310,54 +306,43 @@ void fragment() {
 		gust_direction + gust_cross_direction * 0.78,
 		gust_direction
 	);
+	vec2 gust_secondary_cross_direction = vec2(
+		-gust_secondary_direction.y,
+		gust_secondary_direction.x
+	);
 	float gust_time =
 		TIME * grass_wind.x * wind_gust_speed_multiplier;
-	float gust_secondary_time = gust_time * (11.0 / 9.0);
-	float gust_sequence_time = gust_time * 0.73;
-	float gust_sequence_index = floor(gust_sequence_time);
-	float gust_sequence_blend = smoothstep(
-		0.0,
-		1.0,
-		fract(gust_sequence_time)
+	float gust_secondary_time = gust_time * (2.0 / 7.0);
+	vec2 gust_primary_space = vec2(
+		dot(grass_root_world_position, gust_direction) * 0.72,
+		dot(grass_root_world_position, gust_cross_direction) * 1.45
 	);
-	float gust_activity = mix(
-		hash_position(vec2(gust_sequence_index, 31.73)),
-		hash_position(vec2(gust_sequence_index + 1.0, 31.73)),
-		gust_sequence_blend
+	vec2 gust_secondary_space = vec2(
+		dot(grass_root_world_position, gust_secondary_direction) * 1.73,
+		dot(grass_root_world_position, gust_secondary_cross_direction) * 1.19
 	);
-	gust_activity = smoothstep(0.12, 0.88, gust_activity);
-	float gust_primary_phase = TAU * (
-		dot(grass_root_world_position, gust_direction) * wind_wave_scale +
-		gust_time
-	) + (grass_gust_shape.x - 0.5) * 4.2;
-	float gust_secondary_phase = TAU * (
-		dot(grass_root_world_position, gust_secondary_direction) *
-			wind_wave_scale * 0.68 +
-		gust_secondary_time
-	) + (grass_gust_shape.y - 0.5) * 3.2;
-	float gust_primary = sin(gust_primary_phase) * 0.5 + 0.5;
-	float gust_secondary = sin(gust_secondary_phase) * 0.5 + 0.5;
-	float gust_field = sqrt(max(gust_primary * gust_secondary, 0.0));
-	float gust_threshold = mix(
-		wind_gust_threshold + 0.08,
-		wind_gust_threshold - 0.02,
-		gust_activity
+	float gust_primary = texture(
+		wind_noise,
+		gust_primary_space * wind_gust_patch_scale - vec2(gust_time, 0.0)
+	).r;
+	float gust_secondary = texture(
+		wind_noise,
+		gust_secondary_space * wind_gust_patch_scale -
+			vec2(gust_secondary_time, 0.0) + vec2(0.37, 0.61)
+	).r;
+	float gust_primary_mask = smoothstep(
+		wind_gust_threshold - wind_gust_softness,
+		wind_gust_threshold + wind_gust_softness,
+		gust_primary
 	);
-	float wind_gust = smoothstep(
-		gust_threshold - wind_gust_softness,
-		gust_threshold + wind_gust_softness,
-		gust_field
+	float gust_secondary_threshold = wind_gust_threshold - 0.08;
+	float gust_secondary_mask = smoothstep(
+		gust_secondary_threshold - wind_gust_softness,
+		gust_secondary_threshold + wind_gust_softness,
+		gust_secondary
 	);
-	wind_gust *= mix(
-		0.18,
-		1.0,
-		gust_activity
-	);
-	wind_gust *= mix(
-		0.72,
-		1.0,
-		smoothstep(0.24, 0.78, grass_gust_shape.y)
-	);
+	float wind_gust = gust_primary_mask * gust_secondary_mask;
+	wind_gust *= mix(0.58, 1.0, secondary_patch);
 
 	vec3 grass_color = mix(
 		grass_shadow_color.rgb,
@@ -382,11 +367,11 @@ void fragment() {
 	vec3 varied_dry_color = mix(
 		grass_dry_shadow_color.rgb,
 		grass_dry_color.rgb,
-		smoothstep(0.05, 0.90, dry_patch));
+		smoothstep(0.0, 1.0, dry_patch));
 	varied_dry_color = mix(
 		varied_dry_color,
 		grass_dry_light_color.rgb,
-		smoothstep(0.30, 0.92, dry_light_patch) * 0.34);
+		smoothstep(0.18, 0.98, dry_light_patch) * 0.30);
 	varied_dry_color = mix(
 		varied_dry_color,
 		grass_dry_green_color.rgb,
@@ -394,13 +379,11 @@ void fragment() {
 	varied_dry_color = mix(
 		varied_dry_color,
 		grass_dry_green_color.rgb,
-		smoothstep(0.48, 0.90, green_patch) * 0.14);
+		smoothstep(0.25, 0.95, green_patch) * 0.16);
 	float dry_mix_amount =
-		smoothstep(0.05, 0.72, blade_dry_amount) * 0.88;
-	float unplanted_green_patch =
-		(1.0 - step(0.5, grass_state.w)) *
-		smoothstep(0.55, 0.86, green_patch);
-	dry_mix_amount *= 1.0 - unplanted_green_patch * 0.30;
+		smoothstep(0.0, 1.0, blade_dry_amount) * 0.88;
+	float natural_green_patch = smoothstep(0.48, 0.92, green_patch);
+	dry_mix_amount *= 1.0 - natural_green_patch * 0.24;
 	grass_color = mix(grass_color, varied_dry_color, dry_mix_amount);
 	float wind_light_amount =
 		wind_gust * wind_gust_strength * mix(0.72, 1.0, blade_tip);

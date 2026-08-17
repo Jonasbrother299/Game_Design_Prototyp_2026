@@ -77,6 +77,8 @@ public partial class CameraRigController : Node3D
 	public float MaxTopDownDistanceBonus = 1.5f;
 
 	[ExportGroup("Collision")]
+	[Export(PropertyHint.Layers3DPhysics)]
+	public uint CameraCollisionMask = 0u;
 	[Export(PropertyHint.Range, "0.05,3.0,0.05")]
 	public float CollisionSafetyDistance = 0.65f;
 	[Export(PropertyHint.Range, "0.0,5.0,0.1")]
@@ -93,6 +95,9 @@ public partial class CameraRigController : Node3D
 
 	public bool HasTileFocus => _focusedTile != null && IsInstanceValid(_focusedTile);
 	public bool InteractionEnabled => _interactionEnabled;
+	public float CurrentPitchDegrees => Mathf.RadToDeg(_currentPitch);
+	public float MinimumPitchDegrees => Mathf.Min(MinPitchDegrees, MaxPitchDegrees);
+	public float MaximumPitchDegrees => Mathf.Max(MinPitchDegrees, MaxPitchDegrees);
 
 	private bool _interactionEnabled = true;
 	private bool _isYawButtonPressed;
@@ -202,6 +207,27 @@ public partial class CameraRigController : Node3D
 		}
 
 		UpdateCameraPosition(deltaSeconds);
+	}
+
+	public void SetPitchDegrees(float pitchDegrees)
+	{
+		if (Camera == null)
+			return;
+
+		float pitch = Mathf.DegToRad(Mathf.Clamp(
+			pitchDegrees,
+			MinimumPitchDegrees,
+			MaximumPitchDegrees));
+
+		_isFocusTransitionActive = false;
+		_targetPitch = pitch;
+		_currentPitch = pitch;
+		_generalPitch = pitch;
+
+		float maximumDistance = GetMaximumDistanceForPitch(pitch);
+		_targetDistance = Mathf.Min(_targetDistance, maximumDistance);
+		_currentDistance = Mathf.Min(_currentDistance, maximumDistance);
+		UpdateCameraPosition(0.0f);
 	}
 
 	public override void _UnhandledInput(InputEvent inputEvent)
@@ -823,6 +849,9 @@ public partial class CameraRigController : Node3D
 		Vector3 rayEnd,
 		float desiredDistance)
 	{
+		if (CameraCollisionMask == 0u)
+			return desiredDistance;
+
 		World3D world = GetViewport()?.World3D;
 
 		if (world == null)
@@ -838,6 +867,7 @@ public partial class CameraRigController : Node3D
 			PhysicsRayQueryParameters3D.Create(collisionRayOrigin, rayEnd);
 		query.CollideWithBodies = true;
 		query.CollideWithAreas = false;
+		query.CollisionMask = CameraCollisionMask;
 		query.Exclude = _collisionExclusions;
 
 		Godot.Collections.Dictionary result =

@@ -19,7 +19,9 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	{
 		Normal,
 		HeatDay,
-		Drought
+		Drought,
+		Rain,
+		HeavyRain
 	}
 
 	[ExportGroup("Connections")]
@@ -61,6 +63,40 @@ public partial class DroughtWorldEffect : WorldEnvironment
 
 	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
 	public float HeatSaturation = 0.92f;
+
+	[ExportGroup("Rain Look")]
+	[Export] public Color RainBackgroundColor =
+		new Color(0.11f, 0.16f, 0.20f);
+	[Export] public Color RainAmbientColor =
+		new Color(0.50f, 0.57f, 0.62f);
+	[Export] public Color RainLightColor =
+		new Color(0.78f, 0.86f, 0.92f);
+
+	[Export(PropertyHint.Range, "0.5,1.2,0.01")]
+	public float RainBrightness = 0.94f;
+
+	[Export(PropertyHint.Range, "0.5,1.5,0.01")]
+	public float RainContrast = 1.02f;
+
+	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
+	public float RainSaturation = 0.92f;
+
+	[ExportGroup("Heavy Rain Look")]
+	[Export] public Color HeavyRainBackgroundColor =
+		new Color(0.075f, 0.11f, 0.16f);
+	[Export] public Color HeavyRainAmbientColor =
+		new Color(0.38f, 0.46f, 0.53f);
+	[Export] public Color HeavyRainLightColor =
+		new Color(0.64f, 0.74f, 0.82f);
+
+	[Export(PropertyHint.Range, "0.5,1.2,0.01")]
+	public float HeavyRainBrightness = 0.89f;
+
+	[Export(PropertyHint.Range, "0.5,1.5,0.01")]
+	public float HeavyRainContrast = 1.04f;
+
+	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
+	public float HeavyRainSaturation = 0.84f;
 
 	[ExportGroup("Transition")]
 	[Export(PropertyHint.Range, "0.0,3.0,0.05")]
@@ -290,6 +326,24 @@ public partial class DroughtWorldEffect : WorldEnvironment
 			targetContrast = HeatContrast;
 			targetSaturation = HeatSaturation;
 		}
+		else if (look == WorldLook.Rain)
+		{
+			targetBackground = RainBackgroundColor;
+			targetAmbient = RainAmbientColor;
+			targetLight = RainLightColor;
+			targetBrightness = RainBrightness;
+			targetContrast = RainContrast;
+			targetSaturation = RainSaturation;
+		}
+		else if (look == WorldLook.HeavyRain)
+		{
+			targetBackground = HeavyRainBackgroundColor;
+			targetAmbient = HeavyRainAmbientColor;
+			targetLight = HeavyRainLightColor;
+			targetBrightness = HeavyRainBrightness;
+			targetContrast = HeavyRainContrast;
+			targetSaturation = HeavyRainSaturation;
+		}
 
 		Environment.AdjustmentEnabled =
 			look != WorldLook.Normal || _baseAdjustmentEnabled;
@@ -447,6 +501,8 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	{
 		return eventType switch
 		{
+			GameEventType.Rain => WorldLook.Rain,
+			GameEventType.HeavyRain => WorldLook.HeavyRain,
 			GameEventType.Drought => WorldLook.Drought,
 			GameEventType.HeatDay => WorldLook.HeatDay,
 			_ => WorldLook.Normal
@@ -491,4 +547,5 @@ public partial class DroughtWorldEffect : WorldEnvironment
 
 		return look;
 	}
+
 }

@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://xk2ceq2n5g70"]
 
-[ext_resource type="PackedScene" uid="uid://dghs45tf2y1ty" path="res://scenes/board/tiles/HexTile1.tscn" id="1_ayfgr"]
+[ext_resource type="PackedScene" uid="uid://cnjipajjn7apw" path="res://scenes/board/tiles/HexTile1.tscn" id="1_ayfgr"]
 [ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile2.tscn" id="2_h5vyq"]
 [ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile3.tscn" id="3_bbgvc"]
 [ext_resource type="PackedScene" uid="uid://dr15dpset8y4s" path="res://scenes/board/plants/Oak.tscn" id="4_pcdc4"]
@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="15_2fqcq"]
 [ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://shaders/grass.tres" id="16_8ri4g"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="17_8ri4g"]
+[ext_resource type="PackedScene" uid="uid://g7lbunpdhlll" path="res://scenes/board/plants/birch_sapling.tscn" id="18_ikctr"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_ikctr"]
 panorama = ExtResource("5_8ri4g")
@@ -355,5 +356,8 @@ mesh = SubResource("ArrayMesh_ikctr")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.07083845, 0)
 material_override = SubResource("ShaderMaterial_cbfbo")
 multimesh = SubResource("MultiMesh_ikctr")
+
+[node name="BirchSapling" parent="." unique_id=591243892 instance=ExtResource("18_ikctr")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4058695, 0, 2.827375)
 
 [editable path="MeshInstance3D/grass"]

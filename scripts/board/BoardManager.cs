@@ -43,7 +43,7 @@ public partial class BoardManager : Node3D
 	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
 	public float GrassBaseDensity = 1.0f;
 
-	[Export(PropertyHint.Range, "64,512,16")]
+	[Export(PropertyHint.Range, "64,4096,16")]
 	public int GrassInstancesPerTile = 320;
 
 	[Export(PropertyHint.Range, "0.0,1.0,0.005")]
@@ -60,6 +60,18 @@ public partial class BoardManager : Node3D
 
 	[Export(PropertyHint.Range, "0.0,0.8,0.01")]
 	public float GrassOuterMargin = 0.16f;
+
+	[ExportSubgroup("Model Margins")]
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassStoneMargin = 0.30f;
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassOakMargin = 0.30f;
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassBirchMargin = 0.30f;
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassMushroomMargin = 0.14f;
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassMossMargin = 0.30f;
 
 	[ExportGroup("Stone Border")]
 	[Export] public bool ShowStoneBorder = true;
@@ -184,6 +196,21 @@ public partial class BoardManager : Node3D
 
 	[Export] public Vector2 BirchShadowOffset =
 		new Vector2(0.0f, 0.18f);
+
+	[ExportGroup("Tree Camera Fade")]
+	[Export] public bool EnableTreeProximityFade = true;
+
+	[Export(PropertyHint.Range, "0.5,8.0,0.1")]
+	public float TreeFadeStartDistance = 3.0f;
+
+	[Export(PropertyHint.Range, "0.0,4.0,0.1")]
+	public float TreeFadeFullDistance = 0.6f;
+
+	[Export(PropertyHint.Range, "0.0,0.8,0.01")]
+	public float TreeFadeMaximumTransparency = 0.8f;
+
+	[Export(PropertyHint.Range, "0.1,10.0,0.1")]
+	public float TreeFadeSpeed = 1.2f;
 
 	[ExportGroup("Light Level Visuals")]
 	[Export] public Color SunTileTint = Colors.White;
@@ -475,6 +502,12 @@ public partial class BoardManager : Node3D
 			StartingOakShadowOffset,
 			BirchShadowSize,
 			BirchShadowOffset);
+		tileView.ConfigureTreeProximityFade(
+			EnableTreeProximityFade,
+			TreeFadeStartDistance,
+			TreeFadeFullDistance,
+			TreeFadeMaximumTransparency,
+			TreeFadeSpeed);
 		tileView.ConfigureLightVisuals(
 			SunTileTint,
 			PartialShadeTileTint,
@@ -489,6 +522,11 @@ public partial class BoardManager : Node3D
 			ToGlobal(tilePosition),
 			HexSize * Mathf.Sqrt(3.0f) * 0.5f,
 			GrassOuterMargin,
+			GrassStoneMargin,
+			GrassOakMargin,
+			GrassBirchMargin,
+			GrassMushroomMargin,
+			GrassMossMargin,
 			GetGrassBorderDirections(tileData.Coord),
 			GetGrassOuterEdges(tileData.Coord));
 		AddChild(tileView);

@@ -1,23 +1,25 @@
 [gd_scene format=4 uid="uid://dr15dpset8y4s"]
 
-[ext_resource type="PackedScene" uid="uid://c5tqlhs18x8wh" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
+[ext_resource type="PackedScene" uid="uid://0rxs3d327h6p" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
 [ext_resource type="Shader" uid="uid://s86vd8ar5cut" path="res://shaders/leaves/leaves.tres" id="2_1fak0"]
 [ext_resource type="Texture2D" uid="uid://b5e3ckjtf8ep8" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_AlbedoTransparency.png" id="3_4ko5o"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="3_517jn"]
 [ext_resource type="Texture2D" uid="uid://cma6m8qnpttwr" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_Normal.png" id="4_517jn"]
-[ext_resource type="Texture2D" uid="uid://cimhpa33cbnvy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
-[ext_resource type="Texture2D" uid="uid://drf63y0mhai0k" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
+[ext_resource type="Texture2D" uid="uid://co2j3k8mbytiy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
+[ext_resource type="Texture2D" uid="uid://bqotbqkr8h83r" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_fuj60"]
-[ext_resource type="PackedScene" uid="uid://ca62oga4pshat" path="res://assets/models/StartingOak/Leaves.fbx" id="9_enswe"]
-[ext_resource type="PackedScene" uid="uid://nltltbcqjf7c" path="res://assets/models/StartingOak/Leaves2.fbx" id="10_fuj60"]
+[ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/StartingOak/LeafParticle.tres" id="9_fuj60"]
+[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="10_fuj60"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_517jn"]
 render_priority = 0
 shader = ExtResource("2_1fak0")
 shader_parameter/WindNoise = ExtResource("3_517jn")
 shader_parameter/LeaveTexture = ExtResource("7_bhvy4")
-shader_parameter/foliage_colour1 = Color(0.2695571, 0.44776213, 0.19734156, 1)
-shader_parameter/foliage_colour2 = Color(0.29980114, 0.3487179, 0.08895885, 1)
+shader_parameter/foliage_colour1 = Color(0.37178847, 0.5898325, 0.26079813, 1)
+shader_parameter/foliage_colour2 = Color(0.21527556, 0.38839725, 0.14014688, 1)
+shader_parameter/fade_start = 0.0
+shader_parameter/fade_end = 0.5
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_botgp"]
 
@@ -90,24 +92,19 @@ shader_parameter/wind_speed_max = 50.0
 shader_parameter/wind_change = Vector2(0.123, 0.456)
 shader_parameter/vortex_force = Vector2(0, 0)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_5nhl6"]
-size = Vector2(0.5, 0.5)
-subdivide_width = 2
-subdivide_depth = 2
-
 [node name="starting_oak_v2" unique_id=628264869 instance=ExtResource("1_h6i2v")]
 
-[node name="Leaves" parent="." index="0" unique_id=245684582]
+[node name="Leaves" parent="." index="0" unique_id=2020096902]
 transform = Transform3D(0.928, 0, 0, 0, -4.0564167e-08, 0.928, 0, -0.928, -4.0564167e-08, 7.2037454, 7.455844, -1.5973866)
 transparency = 1.0
 cast_shadow = 0
 
 [node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Leaves" index="0" unique_id=1174586395]
-transform = Transform3D(0.5387305, 0, 0, 0, -2.3548665e-08, -0.5387305, 0, 0.5387305, -2.3548665e-08, 3.0556905, 9.282625, 6.2026424)
+transform = Transform3D(0.5387305, 0, 0, 0, -2.3548669e-08, -0.5387305, 0, 0.5387305, -2.3548669e-08, 1.6081161, 9.690495, 5.0793705)
 material_override = SubResource("ShaderMaterial_517jn")
 multimesh = SubResource("MultiMesh_iwnxv")
 
-[node name="Plane_001" parent="." index="1" unique_id=346863250]
+[node name="Plane_001" parent="." index="1" unique_id=1164958298]
 transform = Transform3D(0.5, 0, 0, 0, -2.1855694e-08, 0.5, 0, -0.5, -2.1855694e-08, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_by30i")
 
@@ -125,15 +122,9 @@ speed_scale = 0.8
 visibility_aabb = AABB(-4, -4, -4, 8.83, 9.23, 12.185)
 local_coords = true
 process_material = SubResource("ShaderMaterial_g364p")
-draw_pass_1 = SubResource("PlaneMesh_5nhl6")
+draw_pass_1 = ExtResource("9_fuj60")
 
-[node name="Leaves2" parent="." index="3" unique_id=1896835900 instance=ExtResource("9_enswe")]
-
-[node name="LeafMesh" parent="Leaves2" index="0" unique_id=1715098023]
+[node name="Leaves3" parent="." index="3" unique_id=539586921 instance=ExtResource("10_fuj60")]
 visible = false
 
-[node name="Leaves3" parent="." index="4" unique_id=539586921 instance=ExtResource("10_fuj60")]
-visible = false
-
-[editable path="Leaves2"]
 [editable path="Leaves3"]

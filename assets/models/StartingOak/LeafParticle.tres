@@ -1,0 +1,44 @@
+[gd_resource type="ArrayMesh" format=4 uid="uid://c1a1xghsw27ku"]
+
+[ext_resource type="Texture2D" uid="uid://uwt7dummjtjk" path="res://assets/models/StartingOak/LeafParticle.fbm/leafsingle.png" id="1_uye5k"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ecxti"]
+resource_name = "Material.002"
+transparency = 4
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_uye5k")
+emission_enabled = true
+emission = Color(1, 1, 1, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_77xkj"]
+_surfaces = [{
+"aabb": AABB(-0.2499897, -0.0767583, -0.2499897, 0.4999794, 0.19105284, 0.4999794),
+"format": 34359742465,
+"index_count": 24,
+"index_data": PackedByteArray("AAABAAIAAgADAAAAAAADAAQABAAFAAAABgADAAIABAADAAYAAgAHAAYABgAIAAQA"),
+"name": "Material.002",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 9,
+"vertex_data": PackedByteArray("AAAAAAAAAABN/X++Tf1/PkET6j1N/X++Tf1/Ppchp7wAAAAAAAAAADczYr0AAAAATf1/vgAAAAAAAAAATf1/vkxyBbxN/X++AAAAAPP757xN/X8+Tf1/PnUznb1N/X8+Tf1/vjhTUT1N/X8+")
+}]
+blend_shape_mode = 0
+
+[resource]
+resource_name = "Plane_001"
+_surfaces = [{
+"aabb": AABB(-0.2499897, -0.0767583, -0.2499897, 0.4999794, 0.19105284, 0.4999794),
+"attribute_data": PackedByteArray("AAAAPwAAAAAAAIA/AAAAAAAAgD8AAAA/AAAAPwAAAD8AAAAAAAAAPwAAAAAAAAAAAAAAPwAAgD8AAIA/AACAPwAAAAAAAIA/"),
+"format": 34359742487,
+"index_count": 24,
+"index_data": PackedByteArray("AAABAAIAAgADAAAAAAADAAQABAAFAAAABgADAAIABAADAAYAAgAHAAYABgAIAAQA"),
+"material": SubResource("StandardMaterial3D_ecxti"),
+"name": "Material.002",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 9,
+"vertex_data": PackedByteArray("AAAAAAAAAABN/X++Tf1/PkET6j1N/X++Tf1/Ppchp7wAAAAAAAAAADczYr0AAAAATf1/vgAAAAAAAAAATf1/vkxyBbxN/X++AAAAAPP757xN/X8+Tf1/PnUznb1N/X8+Tf1/vjhTUT1N/X8+iXYG4H702MU/aUXMUOIN0XVz894P8XzHQYN/8lT8Ob5kltTsVewqtiSKtes39eu58JQx8Ibvw7c1g9j1XftIvjGmz+fm5Buy")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_77xkj")

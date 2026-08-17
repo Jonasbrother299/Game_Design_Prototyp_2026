@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cwulbgkycarrl"]
+
+[ext_resource type="Shader" uid="uid://s86vd8ar5cut" path="res://shaders/leaves/leaves.tres" id="1_5lxr1"]
+[ext_resource type="Texture2D" uid="uid://bgebukrgtcn1a" path="res://assets/models/plants/birch/textures/leaves.png" id="2_uc4te"]
+[ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="3_am5r7"]
+
+[resource]
+render_priority = 1
+shader = ExtResource("1_5lxr1")
+shader_parameter/WindNoise = ExtResource("3_am5r7")
+shader_parameter/LeaveTexture = ExtResource("2_uc4te")
+shader_parameter/foliage_colour1 = Color(0.63492006, 0.66, 0.15840001, 1)
+shader_parameter/foliage_colour2 = Color(0.51, 0.44744, 0.04079999, 1)
+shader_parameter/fade_start = 0.0
+shader_parameter/fade_end = 0.5
