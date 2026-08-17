@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
 [ext_resource type="Texture2D" uid="uid://dic4gqjj76o6b" path="res://assets/models/plants/birch/textures/leafsingle.png" id="8_5afiq"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_xt30k"]
-[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="12_5afiq"]
+[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/plants/StartingOak/Leaves2.fbx" id="12_5afiq"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lto7e"]
 render_priority = -1
