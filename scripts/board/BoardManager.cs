@@ -90,17 +90,20 @@ public partial class BoardManager : Node3D
 	[Export(PropertyHint.Range, "0.1,1.0,0.01")]
 	public float BorderRockScale = 0.42f;
 
+	[Export(PropertyHint.Range, "1,6,1")]
+	public int BorderRocksPerEdge = 4;
+
 	[Export(PropertyHint.Range, "0.0,0.5,0.01")]
-	public float BorderRockPositionJitter = 0.16f;
+	public float BorderRockPositionJitter = 0.0f;
 
 	[Export(PropertyHint.Range, "-1.0,1.0,0.01")]
-	public float StoneBorderHeight = 0.13f;
+	public float StoneBorderHeight = -0.15f;
 
 	[Export(PropertyHint.Range, "0.1,2.0,0.01")]
 	public float StoneBorderYScale = 1.0f;
 
 	[Export(PropertyHint.Range, "-0.5,0.5,0.01")]
-	public float StoneBorderOutwardOffset = 0.12f;
+	public float StoneBorderOutwardOffset = 0.0f;
 
 	[Export] public Vector3 Side1StoneModelOffset =
 		new Vector3(-13.20f, 0.0f, -4.17f);
@@ -699,7 +702,6 @@ public partial class BoardManager : Node3D
 			HexCoord coord = tileEntry.Key;
 			HexTile tileView = tileEntry.Value;
 			Vector3 tilePosition = GetRawHexPosition(coord, HexSize);
-			Vector3 outwardDirection = Vector3.Zero;
 
 			for (int directionIndex = 0;
 				directionIndex < HexDirections.Directions.Length;
@@ -715,42 +717,52 @@ public partial class BoardManager : Node3D
 				Vector3 neighborPosition = GetRawHexPosition(
 					neighborCoord,
 					HexSize);
-				outwardDirection += (neighborPosition - tilePosition).Normalized();
+				Vector3 centerToNeighbor = neighborPosition - tilePosition;
+				Vector3 outwardDirection = centerToNeighbor.Normalized();
+				Vector3 tangentDirection = new Vector3(
+					-outwardDirection.Z,
+					0.0f,
+					outwardDirection.X);
+				uint edgeHash = GetTileVisualHash(coord) ^
+					((uint)(directionIndex + 1) * 0x9E3779B9u);
+				float rotationY = -Mathf.Atan2(
+					tangentDirection.Z,
+					tangentDirection.X);
+				int rocksPerEdge = System.Math.Max(BorderRocksPerEdge, 1);
+				float rockSpacing = HexSize / rocksPerEdge;
+
+				for (int rockIndex = 0; rockIndex < rocksPerEdge; rockIndex++)
+				{
+					uint hash = edgeHash ^
+						((uint)(rockIndex + 1) * 0x85EBCA6Bu);
+					PackedScene rockScene = _activeBorderRockScenes[
+						(int)((edgeHash + (uint)rockIndex) %
+						(uint)_activeBorderRockScenes.Count)];
+					float centeredIndex = rockIndex - (rocksPerEdge - 1) * 0.5f;
+					float tangentJitter = Mathf.Lerp(
+						-BorderRockPositionJitter,
+						BorderRockPositionJitter,
+						((hash >> 16) & 0xFFu) / 255.0f) * rockSpacing;
+					float scaleJitter = Mathf.Lerp(
+						1.0f,
+						1.08f,
+						((hash >> 24) & 0xFFu) / 255.0f);
+					Vector3 rockPosition = tileView.Position +
+						centerToNeighbor * 0.5f +
+						outwardDirection * StoneBorderOutwardOffset * HexSize +
+						tangentDirection *
+						(centeredIndex * rockSpacing + tangentJitter);
+
+					CreateStoneBorderPiece(
+						rockScene,
+						rockPosition,
+						coord,
+						Vector3.Zero,
+						rotationY,
+						$"Rock{directionIndex}_{rockIndex}",
+						BorderRockScale * scaleJitter);
+				}
 			}
-
-			if (outwardDirection.IsZeroApprox())
-				continue;
-
-			outwardDirection = outwardDirection.Normalized();
-			Vector3 tangentDirection = new Vector3(
-				-outwardDirection.Z,
-				0.0f,
-				outwardDirection.X);
-			uint hash = GetTileVisualHash(coord);
-			PackedScene rockScene = _activeBorderRockScenes[
-				(int)(hash % (uint)_activeBorderRockScenes.Count)];
-			float rotationY = Mathf.Tau *
-				((hash >> 8) & 0xFFFFu) / 65535.0f;
-			float tangentJitter = Mathf.Lerp(
-				-BorderRockPositionJitter,
-				BorderRockPositionJitter,
-				((hash >> 16) & 0xFFu) / 255.0f);
-			float scaleJitter = Mathf.Lerp(
-				0.86f,
-				1.14f,
-				((hash >> 24) & 0xFFu) / 255.0f);
-			Vector3 rockPosition = tileView.Position +
-				outwardDirection * StoneBorderOutwardOffset * HexSize +
-				tangentDirection * tangentJitter * HexSize;
-
-			CreateStoneBorderPiece(
-				rockScene,
-				rockPosition,
-				coord,
-				Vector3.Zero,
-				rotationY,
-				"Rock",
-				BorderRockScale * scaleJitter);
 		}
 	}
 
