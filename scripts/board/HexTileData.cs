@@ -52,6 +52,13 @@ public class HexTileData
 			DeadPlant = null;
 	}
 
+	public void RemovePlant()
+	{
+		Plant = null;
+		DeadPlant = null;
+		BlockedRounds = 0;
+	}
+
 	public bool TickBlockedRound()
 	{
 		if (BlockedRounds <= 0)

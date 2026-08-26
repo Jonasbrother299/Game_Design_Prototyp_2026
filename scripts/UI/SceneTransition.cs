@@ -3,6 +3,11 @@ using System.Threading.Tasks;
 
 public partial class SceneTransition : CanvasLayer
 {
+	private const string DefaultCursorPath =
+		"res://assets/ui/cursors/forest_pointer.svg";
+	private const string InteractionCursorPath =
+		"res://assets/ui/cursors/forest_pointer_interact.svg";
+
 	public static SceneTransition Instance { get; private set; }
 	public event System.Action<string, string> SceneChangeFailed;
 
@@ -21,6 +26,28 @@ public partial class SceneTransition : CanvasLayer
 	{
 		ProcessMode = ProcessModeEnum.Always;
 		_cover = GetNode<ColorRect>("%Cover");
+		ApplyCursorTheme();
+	}
+
+	private static void ApplyCursorTheme()
+	{
+		Texture2D defaultCursor = GD.Load<Texture2D>(DefaultCursorPath);
+		Texture2D interactionCursor = GD.Load<Texture2D>(InteractionCursorPath);
+
+		if (defaultCursor == null || interactionCursor == null)
+		{
+			GD.PushWarning("Mauszeiger-Assets konnten nicht geladen werden.");
+			return;
+		}
+
+		Input.SetCustomMouseCursor(
+			defaultCursor,
+			Input.CursorShape.Arrow,
+			new Vector2(3.0f, 2.0f));
+		Input.SetCustomMouseCursor(
+			interactionCursor,
+			Input.CursorShape.PointingHand,
+			new Vector2(4.0f, 3.0f));
 	}
 
 	public override void _ExitTree()

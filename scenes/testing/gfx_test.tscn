@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://bmet6vm8ygo6i" path="res://scenes/board/tiles/HexTile2.tscn" id="2_h5vyq"]
 [ext_resource type="PackedScene" uid="uid://c6pr6g3kfetj6" path="res://scenes/board/tiles/HexTile3.tscn" id="3_bbgvc"]
 [ext_resource type="PackedScene" uid="uid://dr15dpset8y4s" path="res://scenes/board/plants/Oak.tscn" id="4_pcdc4"]
-[ext_resource type="Texture2D" uid="uid://c3a0b0t1btfp1" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_8ri4g"]
+[ext_resource type="Texture2D" uid="uid://copskr3bl72mu" path="res://assets/textures/hdris/mossy_forest_1k.hdr" id="5_8ri4g"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="6_8h71w"]
 [ext_resource type="Script" uid="uid://ch4djy4tvq64m" path="res://scripts/camera/CameraRigController.cs" id="7_mq23u"]
 [ext_resource type="PackedScene" uid="uid://dbeuslydoe41t" path="res://scenes/board/plants/Moss.tscn" id="8_drhma"]
@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://4pn5fhp2cchj" path="res://assets/models/tiles/textures/ground/plane_divided_DefaultMaterial_AlbedoTransparency.png" id="12_rka0a"]
 [ext_resource type="Texture2D" uid="uid://bslqw5e2h0l2k" path="res://assets/models/tiles/textures/ground/plane_divided_DefaultMaterial_Normal.png" id="13_m2jn5"]
 [ext_resource type="Texture2D" uid="uid://cwogxgmys5ur6" path="res://assets/models/tiles/textures/ground/plane_divided_DefaultMaterial_Roughness.png" id="14_2fqcq"]
-[ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="15_2fqcq"]
+[ext_resource type="PackedScene" uid="uid://dmfripbc5xbaq" path="res://assets/models/plants/grass/grass.fbx" id="15_2fqcq"]
 [ext_resource type="Shader" uid="uid://csnm1i1k0eshk" path="res://shaders/grass.tres" id="16_8ri4g"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="17_8ri4g"]
 [ext_resource type="PackedScene" uid="uid://g7lbunpdhlll" path="res://scenes/board/plants/birch_sapling.tscn" id="18_ikctr"]
@@ -347,7 +347,7 @@ mesh = SubResource("PlaneMesh_ikctr")
 [node name="grass" parent="MeshInstance3D" unique_id=140818270 instance=ExtResource("15_2fqcq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1933471, 0.17313486, 0.16988575)
 
-[node name="Plane_001" parent="MeshInstance3D/grass" index="0" unique_id=759644433]
+[node name="Plane_001" parent="MeshInstance3D/grass" index="0" unique_id=1160011182]
 transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0)
 visible = false
 mesh = SubResource("ArrayMesh_ikctr")

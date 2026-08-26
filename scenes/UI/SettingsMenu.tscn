@@ -89,7 +89,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SettingsPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1500, 900)
+custom_minimum_size = Vector2(1560, 960)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PanelStyle")
 
@@ -157,14 +157,16 @@ toggle_mode = true
 theme_override_font_sizes/font_size = 24
 text = "ENTWICKLER"
 
-[node name="AudioPage" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
+[node name="AudioPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("SectionStyle")
+horizontal_scroll_mode = 0
 
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent"]
@@ -299,15 +301,17 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 52)
 layout_mode = 2
 
-[node name="DisplayPage" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
+[node name="DisplayPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("SectionStyle")
+horizontal_scroll_mode = 0
 
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent"]
@@ -320,7 +324,7 @@ text = "Anzeige"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
 theme_override_font_sizes/font_size = 24
-text = "Lege Fenstermodus, Auflösung und Bildsynchronisation fest."
+text = "Lege Fenstermodus, Auflösung, 3D-Skalierung und Bildsynchronisation fest."
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent"]
 layout_mode = 2
@@ -382,6 +386,47 @@ custom_minimum_size = Vector2(500, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 
+[node name="RenderScaleRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow"]
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 27
+text = "3D-Render-Skalierung"
+
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 22
+text = "Senkt nur die interne 3D-Auflösung; die Oberfläche bleibt scharf."
+
+[node name="RenderScaleSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 50.0
+max_value = 100.0
+step = 5.0
+value = 100.0
+
+[node name="RenderScaleValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
+theme_override_font_sizes/font_size = 24
+text = "100 %"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="VsyncRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
@@ -407,15 +452,17 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 52)
 layout_mode = 2
 
-[node name="ControlsPage" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
+[node name="ControlsPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("SectionStyle")
+horizontal_scroll_mode = 0
 
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent"]
@@ -787,12 +834,89 @@ layout_mode = 2
 button_pressed = true
 text = "Außenring"
 
+[node name="OuterGrassVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190, 44)
+layout_mode = 2
+button_pressed = true
+text = "Außengras"
+
+[node name="OuterCommonTreeVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190, 44)
+layout_mode = 2
+button_pressed = true
+text = "Laubbaum"
+
+[node name="OuterPine1VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Kiefer 1"
+
+[node name="OuterPine2VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Kiefer 2"
+
+[node name="OuterPine3VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Kiefer 3"
+
+[node name="OuterBushVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Busch"
+
+[node name="OuterFloweringBushVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 44)
+layout_mode = 2
+button_pressed = true
+text = "Blütenbusch"
+
+[node name="OuterFlowersVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Blumen"
+
+[node name="OuterMushroomsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Pilze"
+
+[node name="OuterOtherVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 44)
+layout_mode = 2
+button_pressed = true
+text = "Sonstiges außen"
+
 [node name="WaterVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(170, 44)
 layout_mode = 2
 button_pressed = true
 text = "Wasser"
+
+[node name="FishVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(170, 44)
+layout_mode = 2
+button_pressed = true
+text = "Fische"
 
 [node name="ShadowsToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
@@ -996,7 +1120,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.32, 0.2, 1)
 theme_override_font_sizes/font_size = 22
-text = "Einstellungen werden gespeichert; die Renderdiagnose gilt nur für die laufende Partie."
+text = "Die Fischanzeige wird gespeichert; die übrige Renderdiagnose gilt nur für die laufende Partie."
 horizontal_alignment = 1
 
 [node name="BackButton" type="Button" parent="CenterContainer/SettingsPanel/Content"]

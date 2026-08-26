@@ -58,7 +58,13 @@ public class PlantInstance
 
 	public int GetWaterConsumption()
 	{
-		if (Definition.Type == PlantType.Moss && WasCreatedBySpread && !IsMature)
+		bool isSpreadTree =
+			Definition.Type == PlantType.Oak ||
+			Definition.Type == PlantType.Birch;
+		bool isGrowingSpreadMoss =
+			Definition.Type == PlantType.Moss && !IsMature;
+
+		if (WasCreatedBySpread && (isSpreadTree || isGrowingSpreadMoss))
 		{
 			return 0;
 		}

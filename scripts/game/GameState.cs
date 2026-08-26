@@ -14,6 +14,8 @@ public class GameState
 
 	public List<CardData> HandCards { get; private set; } = new();
 	public List<CardData> DrawPile { get; private set; } = new();
+	public Dictionary<PlantType, int> CardDrawMissedRounds { get; private set; } =
+		new();
 	public List<ActiveGameEvent> ActiveEvents { get; private set; } = new();
 
 	public int CardsPlayedTotal { get; set; }

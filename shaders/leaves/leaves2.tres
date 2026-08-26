@@ -4,7 +4,7 @@
 code = "shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, depth_test_default, cull_disabled, diffuse_lambert, specular_schlick_ggx;
 
-uniform sampler2D WindNoise;
+uniform sampler2D WindNoise : repeat_enable, filter_linear;
 uniform sampler2D LeaveTexture;
 uniform float UVScaleX : hint_range(0, 10.0);
 uniform float UVScaleY : hint_range(0, 10.0);

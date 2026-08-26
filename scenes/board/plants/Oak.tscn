@@ -1,15 +1,16 @@
 [gd_scene format=4 uid="uid://dr15dpset8y4s"]
 
-[ext_resource type="PackedScene" uid="uid://0rxs3d327h6p" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
+[ext_resource type="PackedScene" uid="uid://c5tqlhs18x8wh" path="res://assets/models/StartingOak/starting_oak_v2.fbx" id="1_h6i2v"]
 [ext_resource type="Shader" uid="uid://s86vd8ar5cut" path="res://shaders/leaves/leaves.tres" id="2_1fak0"]
 [ext_resource type="Texture2D" uid="uid://b5e3ckjtf8ep8" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_AlbedoTransparency.png" id="3_4ko5o"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="3_517jn"]
 [ext_resource type="Texture2D" uid="uid://cma6m8qnpttwr" path="res://assets/models/StartingOak/textures/starting_oak_v2_Material.001_Normal.png" id="4_517jn"]
-[ext_resource type="Texture2D" uid="uid://co2j3k8mbytiy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
-[ext_resource type="Texture2D" uid="uid://bqotbqkr8h83r" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
+[ext_resource type="Texture2D" uid="uid://cimhpa33cbnvy" path="res://assets/models/StartingOak/textures/leaf3.png" id="7_bhvy4"]
+[ext_resource type="Texture2D" uid="uid://drf63y0mhai0k" path="res://assets/models/StartingOak/textures/leaf2.png" id="7_enswe"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_fuj60"]
 [ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/StartingOak/LeafParticle.tres" id="9_fuj60"]
-[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="10_fuj60"]
+[ext_resource type="PackedScene" uid="uid://nltltbcqjf7c" path="res://assets/models/StartingOak/Leaves2.fbx" id="10_fuj60"]
+[ext_resource type="Script" path="res://scripts/effects/FallingLeavesController.cs" id="11_falling_leaves"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_517jn"]
 render_priority = 0
@@ -70,6 +71,7 @@ data = PackedVector3Array(-2.3982, 0.6505, 10.4825, -1.3346, 1.1019, 10.281099, 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iwnxv"]
 transparency = 1
 cull_mode = 2
+vertex_color_use_as_albedo = true
 albedo_color = Color(0.1728, 0.48, 0.27520004, 1)
 albedo_texture = ExtResource("7_enswe")
 
@@ -91,6 +93,9 @@ shader_parameter/wind_speed_min = -10.0
 shader_parameter/wind_speed_max = 50.0
 shader_parameter/wind_change = Vector2(0.123, 0.456)
 shader_parameter/vortex_force = Vector2(0, 0)
+shader_parameter/contact_offset = 0.02
+shader_parameter/ground_fade_duration = 4.0
+shader_parameter/minimum_world_fall_speed = 0.22
 
 [node name="starting_oak_v2" unique_id=628264869 instance=ExtResource("1_h6i2v")]
 
@@ -116,13 +121,14 @@ shape = SubResource("ConcavePolygonShape3D_fuj60")
 [node name="FallingLeaves" type="GPUParticles3D" parent="." index="2" unique_id=202086722]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.2973337, 6.098075, 0)
 material_override = SubResource("StandardMaterial3D_iwnxv")
-amount = 10
-lifetime = 10.0
+amount = 18
+lifetime = 18.0
 speed_scale = 0.8
 visibility_aabb = AABB(-4, -4, -4, 8.83, 9.23, 12.185)
 local_coords = true
 process_material = SubResource("ShaderMaterial_g364p")
 draw_pass_1 = ExtResource("9_fuj60")
+script = ExtResource("11_falling_leaves")
 
 [node name="Leaves3" parent="." index="3" unique_id=539586921 instance=ExtResource("10_fuj60")]
 visible = false

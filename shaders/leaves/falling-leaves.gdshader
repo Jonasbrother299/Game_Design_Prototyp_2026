@@ -36,6 +36,21 @@ uniform vec2 wind_change = vec2(0.123, 0.456); // how wind changes with time
 uniform vec2 vortex_force = vec2(1.0, 10.0); // x = inward force, y = tangent force
 #endif
 
+group_uniforms Landing;
+uniform bool landing_enabled = false;
+uniform bool water_bounds_enabled = false;
+uniform mat4 particle_to_world = mat4(1.0);
+uniform mat4 world_to_particle = mat4(1.0);
+uniform mat4 world_to_board = mat4(1.0);
+uniform float board_hex_size = 1.25;
+uniform vec2 water_hex_bounds = vec2(4.9, 8.1);
+uniform float water_height = -0.13;
+uniform float inner_ground_height = 0.0;
+uniform float outer_ground_height = -0.04;
+uniform float contact_offset : hint_range(0.0, 0.2, 0.005) = 0.02;
+uniform float ground_fade_duration : hint_range(0.1, 12.0, 0.1) = 4.0;
+uniform float minimum_world_fall_speed : hint_range(0.0, 1.0, 0.01) = 0.22;
+
 // function taken from default particle process shader
 uint hash(uint x) {
 	x = ((x >> uint(16)) ^ x) * uint(73244475);
@@ -90,6 +105,44 @@ mat3 rot_z_matrix(float angle) {
 		vec3(sz,  cz, 0.0),
 		vec3(0.0, 0.0, 1.0)
 	);
+}
+
+float get_hex_distance(vec2 board_position) {
+	float safe_hex_size = max(board_hex_size, 0.001);
+	float q = board_position.x / (1.5 * safe_hex_size);
+	float r = board_position.y / (sqrt(3.0) * safe_hex_size) - q * 0.5;
+	return max(max(abs(q), abs(r)), abs(-q - r));
+}
+
+float get_board_distance(vec3 world_position) {
+	vec3 board_position =
+		(world_to_board * vec4(world_position, 1.0)).xyz;
+	return get_hex_distance(board_position.xz);
+}
+
+bool is_over_water(vec3 world_position) {
+	if (!water_bounds_enabled) {
+		return false;
+	}
+
+	float board_distance = get_board_distance(world_position);
+	return board_distance > water_hex_bounds.x &&
+		board_distance < water_hex_bounds.y;
+}
+
+float get_ground_height(vec3 world_position) {
+	if (!water_bounds_enabled) {
+		return inner_ground_height;
+	}
+
+	return get_board_distance(world_position) <= water_hex_bounds.x
+		? inner_ground_height
+		: outer_ground_height;
+}
+
+vec3 get_ground_position(vec3 world_position, float ground_height) {
+	world_position.y = ground_height + contact_offset;
+	return (world_to_particle * vec4(world_position, 1.0)).xyz;
 }
 
 void start() {
@@ -162,6 +215,7 @@ void start() {
 	
 		// apply emitter (node) transform 	
 		TRANSFORM = EMISSION_TRANSFORM * TRANSFORM; 
+		USERDATA3 = vec4(0.0);
 	}	
 
 	// reset color
@@ -181,54 +235,98 @@ void process() {
 	
 	// compute particle normalized time (value from 0 to 1)
 	float particle_normalized_time = clamp(USERDATA1.x / LIFETIME, 0.0, 1.0);
-			
-	// compute current wind speed
-	float current_wind_speed_var = ((sin(TIME * wind_change.x) * sin(TIME * wind_change.y)) + 1.0) * 0.5; // 0 to 1 value (0 = min speed, 1 = max speed)
-	float current_wind_speed = mix(wind_speed_min, wind_speed_max, current_wind_speed_var);
-	
-	// compute current forward speed
-	float current_forward_speed_var = (sin(TIME + (USERDATA1.y * 10.0)) + 1.0) * 0.5;
-	float current_forward_speed = mix(forward_speed_min, forward_speed_max, current_forward_speed_var);
-	
-	// compute vortex speed for this particle
+
+	if (landing_enabled && USERDATA3.x > 0.5) {
+		USERDATA3.y += DELTA;
+		VELOCITY = vec3(0.0);
+		float fade_duration = max(ground_fade_duration, 0.001);
+		COLOR.a = color.a *
+			(1.0 - smoothstep(0.0, fade_duration, USERDATA3.y));
+
+		if (USERDATA3.y >= fade_duration) {
+			ACTIVE = false;
+		}
+	} else {
+
+		// compute current wind speed
+		float current_wind_speed_var = ((sin(TIME * wind_change.x) * sin(TIME * wind_change.y)) + 1.0) * 0.5; // 0 to 1 value (0 = min speed, 1 = max speed)
+		float current_wind_speed = mix(wind_speed_min, wind_speed_max, current_wind_speed_var);
+
+		// compute current forward speed
+		float current_forward_speed_var = (sin(TIME + (USERDATA1.y * 10.0)) + 1.0) * 0.5;
+		float current_forward_speed = mix(forward_speed_min, forward_speed_max, current_forward_speed_var);
+
+		// compute vortex speed for this particle
 #if USE_VORTEX
-	vec3 vortex_dist = TRANSFORM[3].xyz; 
-	vortex_dist.y = 0.0; // distance to the vortex (system Y axis)
-	vec3 vortex_radial = normalize(vortex_dist);
-	vec3 vortex_tangent = cross(vec3(0.0, 1.0, 0.0), vortex_radial);
+		vec3 vortex_dist = TRANSFORM[3].xyz;
+		vortex_dist.y = 0.0; // distance to the vortex (system Y axis)
+		vec3 vortex_radial = normalize(vortex_dist);
+		vec3 vortex_tangent = cross(vec3(0.0, 1.0, 0.0), vortex_radial);
 #endif
-			
-	// change velocity
-	VELOCITY = grav * DELTA;
-	VELOCITY += normalize(-TRANSFORM[2].xyz) * DELTA * current_forward_speed;	
-	VELOCITY += normalize(wind_direction.xyz) * DELTA * current_wind_speed;
+
+		// change velocity
+		VELOCITY = grav * DELTA;
+		VELOCITY += normalize(-TRANSFORM[2].xyz) * DELTA * current_forward_speed;
+		VELOCITY += normalize(wind_direction.xyz) * DELTA * current_wind_speed;
 #if USE_VORTEX	
-    VELOCITY -= vortex_radial * vortex_force.x * DELTA;	
-    VELOCITY += vortex_tangent * vortex_force.y * DELTA;	
+		VELOCITY -= vortex_radial * vortex_force.x * DELTA;
+		VELOCITY += vortex_tangent * vortex_force.y * DELTA;
 #endif
-	VELOCITY *= 1.0 - vel_damping * DELTA;
+		VELOCITY *= 1.0 - vel_damping * DELTA;
 
-	// rotation X
-	// (faster forward = less rotation on X axis)
-	float current_rotation_x_var = 1.0 - clamp(current_forward_speed_var, 0.0, 1.0);
-	mat3 rot_x = rot_x_matrix(USERDATA1.z * USERDATA1.w * DELTA * current_rotation_x_var);
-	
-	// rotation Y
-	// (faster forward = less rotation on Y axis)
-	float current_rotation_y_var = 1.0 - clamp(current_forward_speed_var, 0.0, 1.0);
-	mat3 rot_y = rot_y_matrix(USERDATA2.x * USERDATA2.y * DELTA * current_rotation_y_var);
+		if (landing_enabled && minimum_world_fall_speed > 0.0) {
+			vec3 world_velocity =
+				(particle_to_world * vec4(VELOCITY, 0.0)).xyz;
+			world_velocity.y = min(world_velocity.y, -minimum_world_fall_speed);
+			VELOCITY =
+				(world_to_particle * vec4(world_velocity, 0.0)).xyz;
+		}
 
-	// rotation Z
-	// (faster forward = more rotation on Z axis)
-	float current_rotation_z_var = clamp(current_forward_speed_var, 0.0, 1.0);
-	mat3 rot_z = rot_z_matrix(USERDATA2.z * USERDATA2.w * DELTA * current_rotation_z_var);
+		// rotation X
+		// (faster forward = less rotation on X axis)
+		float current_rotation_x_var = 1.0 - clamp(current_forward_speed_var, 0.0, 1.0);
+		mat3 rot_x = rot_x_matrix(USERDATA1.z * USERDATA1.w * DELTA * current_rotation_x_var);
 		
-	// apply rotations
-	mat3 rot = rot_y * rot_x * rot_z;
-	TRANSFORM[0].xyz = rot * TRANSFORM[0].xyz;
-	TRANSFORM[1].xyz = rot * TRANSFORM[1].xyz;
-	TRANSFORM[2].xyz = rot * TRANSFORM[2].xyz;	
-	
-	// adjust alpha	
-	COLOR.a = 1.0 - smoothstep(fade_from, 1.0, particle_normalized_time);	
+		// rotation Y
+		// (faster forward = less rotation on Y axis)
+		float current_rotation_y_var = 1.0 - clamp(current_forward_speed_var, 0.0, 1.0);
+		mat3 rot_y = rot_y_matrix(USERDATA2.x * USERDATA2.y * DELTA * current_rotation_y_var);
+
+		// rotation Z
+		// (faster forward = more rotation on Z axis)
+		float current_rotation_z_var = clamp(current_forward_speed_var, 0.0, 1.0);
+		mat3 rot_z = rot_z_matrix(USERDATA2.z * USERDATA2.w * DELTA * current_rotation_z_var);
+
+		// apply rotations
+		mat3 rot = rot_y * rot_x * rot_z;
+		TRANSFORM[0].xyz = rot * TRANSFORM[0].xyz;
+		TRANSFORM[1].xyz = rot * TRANSFORM[1].xyz;
+		TRANSFORM[2].xyz = rot * TRANSFORM[2].xyz;
+
+		// adjust alpha
+		COLOR.a = color.a *
+			(1.0 - smoothstep(fade_from, 1.0, particle_normalized_time));
+
+		if (landing_enabled) {
+			vec3 world_position =
+				(particle_to_world * vec4(TRANSFORM[3].xyz, 1.0)).xyz;
+
+			if (is_over_water(world_position)) {
+				if (world_position.y <= water_height + contact_offset) {
+					COLOR.a = 0.0;
+					ACTIVE = false;
+				}
+			} else {
+				float ground_height = get_ground_height(world_position);
+				if (world_position.y <= ground_height + contact_offset) {
+					TRANSFORM[3].xyz =
+						get_ground_position(world_position, ground_height);
+					VELOCITY = vec3(0.0);
+					USERDATA3.x = 1.0;
+					USERDATA3.y = 0.0;
+					COLOR.a = color.a;
+				}
+			}
+		}
+	}
 }

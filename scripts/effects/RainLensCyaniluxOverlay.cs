@@ -1,5 +1,6 @@
 using Godot;
 
+[Tool]
 public partial class RainLensCyaniluxOverlay : ColorRect
 {
 	[ExportGroup("Activation")]
@@ -232,7 +233,9 @@ public partial class RainLensCyaniluxOverlay : ColorRect
 			return;
 		}
 
-		_currentIntensity = StartActive ? DefaultIntensity : 0.0f;
+		_currentIntensity = !Engine.IsEditorHint() && StartActive
+			? DefaultIntensity
+			: 0.0f;
 		_targetIntensity = _currentIntensity;
 		ApplyShaderSettings();
 		UpdateDisplayedIntensity();
@@ -243,7 +246,10 @@ public partial class RainLensCyaniluxOverlay : ColorRect
 		if (_shaderMaterial == null)
 			return;
 
-		_currentIntensity = Mathf.MoveToward(_currentIntensity, _targetIntensity, FadeSpeed * (float)delta);
+		_currentIntensity = Mathf.MoveToward(
+			_currentIntensity,
+			_targetIntensity,
+			FadeSpeed * (float)delta);
 		UpdateDisplayedIntensity();
 	}
 
@@ -293,8 +299,13 @@ public partial class RainLensCyaniluxOverlay : ColorRect
 
 	private void UpdateDisplayedIntensity()
 	{
-		float displayedIntensity = PreviewEffect ? PreviewIntensity : _currentIntensity;
+		bool showEditorPreview = Engine.IsEditorHint() && PreviewEffect;
+		float displayedIntensity = showEditorPreview
+			? PreviewIntensity
+			: _currentIntensity;
 		_shaderMaterial.SetShaderParameter("intensity", displayedIntensity);
-		Visible = PreviewEffect || displayedIntensity > 0.001f || _targetIntensity > 0.001f;
+		Visible = showEditorPreview ||
+			displayedIntensity > 0.001f ||
+			_targetIntensity > 0.001f;
 	}
 }

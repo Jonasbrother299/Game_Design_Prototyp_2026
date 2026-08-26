@@ -4,7 +4,7 @@
 code = "shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, depth_test_default, cull_disabled, diffuse_lambert, specular_schlick_ggx, depth_prepass_alpha;
 
-uniform sampler2D WindNoise;
+uniform sampler2D WindNoise : repeat_enable, filter_linear;
 uniform sampler2D LeaveTexture;
 uniform vec3 foliage_colour1 : source_color = vec3(0.13, 0.33, 0.25) ;
 uniform vec3 foliage_colour2 : source_color = vec3(0.13, 0.33, 0.25) ;

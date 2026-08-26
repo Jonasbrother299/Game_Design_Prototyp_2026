@@ -1,40 +1,28 @@
 using Godot;
-using System.Collections.Generic;
 
 public partial class EventDisplayUI : PanelContainer
 {
-	private Label _titleLabel;
-	private Label _descriptionLabel;
-	private Label _resultLabel;
+	private TextureRect _card;
 
 	public override void _Ready()
 	{
-		_titleLabel = GetNodeOrNull<Label>("Margin/VBox/Title");
-		_descriptionLabel = GetNodeOrNull<Label>("Margin/VBox/Description");
-		_resultLabel = GetNodeOrNull<Label>("Margin/VBox/Result");
+		_card = GetNodeOrNull<TextureRect>("Card");
 		Visible = false;
 	}
 
 	public void ShowActivated(EventDefinition definition)
 	{
 		if (definition == null)
+		{
+			Visible = false;
 			return;
+		}
 
-		SetText(
-			definition.DisplayName,
-			definition.Description,
-			$"Aktiv ab der nächsten Runde · Dauer: {definition.DurationRounds}");
+		ShowEventCard(definition.Type);
 	}
 
 	public void ShowWaterResult(WaterPhaseResult result)
 	{
-		if (result == null || result.EventWaterModifier == 0 || _resultLabel == null)
-			return;
-
-		string sign = result.EventWaterModifier > 0 ? "+" : "";
-		_resultLabel.Text =
-			$"Wettereinfluss: {sign}{result.EventWaterModifier} Wasser";
-		Visible = true;
 	}
 
 	public void ShowPhaseResult(EventPhaseResult result)
@@ -44,28 +32,7 @@ public partial class EventDisplayUI : PanelContainer
 
 		if (result.ActivatedEvent.HasValue)
 		{
-			EventDefinition activated = EventDatabase.Get(result.ActivatedEvent.Value);
-			ShowActivated(activated);
-
-			if (result.PlantDeaths.Count > 0 && _resultLabel != null)
-			{
-				_resultLabel.Text =
-					$"{FormatPlantDeaths(result.PlantDeaths)} · " +
-					$"Danach: {activated.DisplayName}";
-			}
-
-			return;
-		}
-
-		if (result.PlantDeaths.Count > 0)
-		{
-			GameEventType cause = result.PlantDeaths[0].Cause;
-			EventDefinition definition = EventDatabase.Get(cause);
-
-			SetText(
-				definition?.DisplayName ?? "Ereignis",
-				definition?.Description ?? "",
-				FormatPlantDeaths(result.PlantDeaths));
+			ShowEventCard(result.ActivatedEvent.Value);
 			return;
 		}
 
@@ -75,41 +42,35 @@ public partial class EventDisplayUI : PanelContainer
 			return;
 		}
 
-		if (result.FinishedEvents.Count > 0)
-		{
-			EventDefinition finished = EventDatabase.Get(result.FinishedEvents[0]);
-			SetText(
-				finished?.DisplayName ?? "Ereignis",
-				"",
-				"Ereignis beendet");
-			return;
-		}
-
 		Visible = false;
 	}
 
-	private void SetText(string title, string description, string result)
+	private void ShowEventCard(GameEventType eventType)
 	{
-		if (_titleLabel != null)
-			_titleLabel.Text = title;
+		string cardPath = eventType switch
+		{
+			GameEventType.Rain =>
+				"res://assets/wetter_Icons/Regen-Beschreibung.svg",
+			GameEventType.Drought =>
+				"res://assets/wetter_Icons/Dürre-Beschreibung.svg",
+			GameEventType.HeatDay =>
+				"res://assets/wetter_Icons/Hitzetag-Beschreibung.svg",
+			GameEventType.Pests =>
+				"res://assets/wetter_Icons/Schädlinge-Beschreibung.svg",
+			GameEventType.Wind =>
+				"res://assets/wetter_Icons/Wind-Beschreibung.svg",
+			GameEventType.HeavyRain =>
+				"res://assets/wetter_Icons/Unwetter-Beschreibung.svg",
+			_ => null
+		};
 
-		if (_descriptionLabel != null)
-			_descriptionLabel.Text = description;
+		if (_card == null || cardPath == null)
+		{
+			Visible = false;
+			return;
+		}
 
-		if (_resultLabel != null)
-			_resultLabel.Text = result;
-
-		Visible = true;
-	}
-
-	private static string FormatPlantDeaths(
-		IReadOnlyList<PlantDeathResult> deaths)
-	{
-		int blockedRounds = deaths[0].BlockedRounds;
-		string roundText = blockedRounds == 1 ? "Runde" : "Runden";
-
-		return deaths.Count == 1
-			? $"1 Pflanze ist gestorben. Das Feld bleibt {blockedRounds} {roundText} blockiert."
-			: $"{deaths.Count} Pflanzen sind gestorben. Die Felder bleiben {blockedRounds} {roundText} blockiert.";
+		_card.Texture = GD.Load<Texture2D>(cardPath);
+		Visible = _card.Texture != null;
 	}
 }

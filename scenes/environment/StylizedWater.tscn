@@ -34,7 +34,7 @@ shader_parameter/contact_strength = 0.92
 shader_parameter/shore_ripple_strength = 0.46
 shader_parameter/shore_ripple_reach = 36.0
 shader_parameter/shore_ripple_speed = 0.18
-shader_parameter/surface_alpha = 0.76
+shader_parameter/surface_alpha = 0.64
 shader_parameter/rain_intensity = 1.0
 shader_parameter/rain_ripple_density = 1.35
 shader_parameter/rain_ripple_size = 0.19
@@ -75,7 +75,7 @@ shader_parameter/contact_strength = 0.92
 shader_parameter/shore_ripple_strength = 0.46
 shader_parameter/shore_ripple_reach = 36.0
 shader_parameter/shore_ripple_speed = 0.18
-shader_parameter/surface_alpha = 0.76
+shader_parameter/surface_alpha = 0.64
 shader_parameter/rain_intensity = 0.0
 shader_parameter/rain_ripple_density = 1.35
 shader_parameter/rain_ripple_size = 0.19
@@ -94,7 +94,7 @@ subdivide_depth = 64
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fjhdg"]
 render_priority = 0
 shader = ExtResource("3_caustic_shader")
-shader_parameter/underlay_color = Color(0.16, 0.5, 0.57, 1)
+shader_parameter/underlay_color = Color(0.32, 0.25, 0.14, 1)
 shader_parameter/caustic_color = Color(0.32, 0.72, 0.76, 1)
 shader_parameter/cell_scale = 1.55
 shader_parameter/animation_speed = 0.07
@@ -109,11 +109,15 @@ shader_parameter/line_distortion_scale = 1.4
 shader_parameter/pattern_offset = Vector2(0.48, -0.34)
 shader_parameter/water_center = Vector2(0, 0)
 shader_parameter/underlay_radius = 19.0
+shader_parameter/basin_center_depth = 0.32
+shader_parameter/basin_edge_depth = 0.08
+shader_parameter/ground_variation = 0.08
+shader_parameter/ground_variation_scale = 0.28
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_caustic_underlay"]
 render_priority = 0
 shader = ExtResource("3_caustic_shader")
-shader_parameter/underlay_color = Color(0.16, 0.5, 0.57, 1)
+shader_parameter/underlay_color = Color(0.32, 0.25, 0.14, 1)
 shader_parameter/caustic_color = Color(0.32, 0.72, 0.76, 1)
 shader_parameter/cell_scale = 1.55
 shader_parameter/animation_speed = 0.07
@@ -128,10 +132,16 @@ shader_parameter/line_distortion_scale = 1.4
 shader_parameter/pattern_offset = Vector2(0.48, -0.34)
 shader_parameter/water_center = Vector2(0, 0)
 shader_parameter/underlay_radius = 19.0
+shader_parameter/basin_center_depth = 0.32
+shader_parameter/basin_edge_depth = 0.08
+shader_parameter/ground_variation = 0.08
+shader_parameter/ground_variation_scale = 0.28
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_caustic_underlay"]
 material = SubResource("ShaderMaterial_caustic_underlay")
 size = Vector2(56, 56)
+subdivide_width = 64
+subdivide_depth = 64
 
 [node name="StylizedWater" type="MeshInstance3D" unique_id=725957702]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18, 0)
@@ -140,10 +150,15 @@ cast_shadow = 0
 extra_cull_margin = 0.1
 mesh = SubResource("PlaneMesh_water")
 script = ExtResource("2_water_controller")
+UnderlayColor = Color(0.32, 0.25, 0.14, 1)
 LineBulgeStrength = 0.0
+UnderwaterGroundDepth = -0.65
+UnderwaterBasinCenterDepth = 0.32
+UnderwaterBasinEdgeDepth = 0.08
+UnderwaterGroundVariation = 0.08
 
 [node name="CausticUnderlay" type="MeshInstance3D" parent="." unique_id=2054699215]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.35, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.65, 0)
 material_override = SubResource("ShaderMaterial_fjhdg")
 cast_shadow = 0
 mesh = SubResource("PlaneMesh_caustic_underlay")

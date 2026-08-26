@@ -10,7 +10,8 @@
 [ext_resource type="Texture2D" uid="uid://clvbh3sevveue" path="res://assets/models/plants/birch/textures/Birch_Material_Normal.png" id="6_umc02"]
 [ext_resource type="Texture2D" uid="uid://dic4gqjj76o6b" path="res://assets/models/plants/birch/textures/leafsingle.png" id="8_5afiq"]
 [ext_resource type="Shader" uid="uid://csy1eur1wc55k" path="res://shaders/leaves/falling-leaves.gdshader" id="8_xt30k"]
-[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/StartingOak/Leaves2.fbx" id="12_5afiq"]
+[ext_resource type="PackedScene" uid="uid://nltltbcqjf7c" path="res://assets/models/StartingOak/Leaves2.fbx" id="12_5afiq"]
+[ext_resource type="Script" path="res://scripts/effects/FallingLeavesController.cs" id="13_falling_leaves"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lto7e"]
 render_priority = -1
@@ -81,6 +82,7 @@ data = PackedVector3Array(0.115899995, 0.1593, -2.7489, 0.0497, 0.13509999, -3.0
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xx3eb"]
 transparency = 1
 cull_mode = 2
+vertex_color_use_as_albedo = true
 albedo_color = Color(0.7019608, 0.7529412, 0.2627451, 1)
 albedo_texture = ExtResource("8_5afiq")
 
@@ -102,6 +104,9 @@ shader_parameter/wind_speed_min = -10.0
 shader_parameter/wind_speed_max = 50.0
 shader_parameter/wind_change = Vector2(0.123, 0.456)
 shader_parameter/vortex_force = Vector2(0, 0)
+shader_parameter/contact_offset = 0.02
+shader_parameter/ground_fade_duration = 4.0
+shader_parameter/minimum_world_fall_speed = 0.22
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_5afiq"]
 size = Vector2(0.5, 0.5)
@@ -132,13 +137,14 @@ shape = SubResource("ConcavePolygonShape3D_5afiq")
 [node name="FallingLeaves" type="GPUParticles3D" parent="." index="2" unique_id=585236829]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 3.2973337, 6.098075, 0)
 material_override = SubResource("StandardMaterial3D_xx3eb")
-amount = 10
-lifetime = 10.0
+amount = 18
+lifetime = 18.0
 speed_scale = 0.8
 visibility_aabb = AABB(-4, -4, -4, 8.83, 9.23, 12.185)
 local_coords = true
 process_material = SubResource("ShaderMaterial_umc02")
 draw_pass_1 = SubResource("PlaneMesh_5afiq")
+script = ExtResource("13_falling_leaves")
 
 [node name="Leaves2" parent="." index="3" unique_id=466508957 instance=ExtResource("12_5afiq")]
 visible = false

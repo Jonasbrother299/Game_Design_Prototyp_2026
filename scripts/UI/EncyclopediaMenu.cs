@@ -7,7 +7,6 @@ public partial class EncyclopediaMenu : Control
 {
 	private enum EntryFilter
 	{
-		All,
 		Plants,
 		Events
 	}
@@ -20,7 +19,6 @@ public partial class EncyclopediaMenu : Control
 	[Signal]
 	public delegate void ClosedEventHandler();
 
-	private Button _allButton;
 	private Button _plantsButton;
 	private Button _eventsButton;
 	private Label _entryCountLabel;
@@ -28,17 +26,17 @@ public partial class EncyclopediaMenu : Control
 	private Button _entryCardTemplate;
 	private Button _lockedCardTemplate;
 	private RichTextLabel _detailsText;
+	private TextureRect _descriptionCard;
 	private Button _backButton;
 	private Button _firstCardButton;
 	private Button _selectedCardButton;
 
 	private readonly List<PlantDefinition> _plants = new();
 	private readonly List<EventDefinition> _events = new();
-	private EntryFilter _activeFilter = EntryFilter.All;
+	private EntryFilter _activeFilter = EntryFilter.Plants;
 
 	public override void _Ready()
 	{
-		_allButton = GetNode<Button>("%AllButton");
 		_plantsButton = GetNode<Button>("%PlantsButton");
 		_eventsButton = GetNode<Button>("%EventsButton");
 		_entryCountLabel = GetNode<Label>("%EntryCountLabel");
@@ -46,9 +44,9 @@ public partial class EncyclopediaMenu : Control
 		_entryCardTemplate = GetNode<Button>("%EntryCardTemplate");
 		_lockedCardTemplate = GetNode<Button>("%LockedCardTemplate");
 		_detailsText = GetNode<RichTextLabel>("%DetailsText");
+		_descriptionCard = GetNode<TextureRect>("%DescriptionCard");
 		_backButton = GetNode<Button>("%BackButton");
 
-		_allButton.Pressed += ShowAll;
 		_plantsButton.Pressed += ShowPlants;
 		_eventsButton.Pressed += ShowEvents;
 		_backButton.Pressed += Close;
@@ -70,7 +68,7 @@ public partial class EncyclopediaMenu : Control
 	{
 		Show();
 		ResetDetailView();
-		(_firstCardButton ?? _allButton).GrabFocus();
+		(_firstCardButton ?? _plantsButton).GrabFocus();
 	}
 
 	public void Close()
@@ -88,11 +86,6 @@ public partial class EncyclopediaMenu : Control
 		_events.Clear();
 		_events.AddRange(EventDatabase.GetAll());
 		_events.Sort((left, right) => left.Type.CompareTo(right.Type));
-	}
-
-	private void ShowAll()
-	{
-		SetFilter(EntryFilter.All);
 	}
 
 	private void ShowPlants()
@@ -113,7 +106,6 @@ public partial class EncyclopediaMenu : Control
 
 	private void RefreshCards()
 	{
-		_allButton.ButtonPressed = _activeFilter == EntryFilter.All;
 		_plantsButton.ButtonPressed = _activeFilter == EntryFilter.Plants;
 		_eventsButton.ButtonPressed = _activeFilter == EntryFilter.Events;
 
@@ -126,20 +118,18 @@ public partial class EncyclopediaMenu : Control
 		_firstCardButton = null;
 		_selectedCardButton = null;
 
-		if (_activeFilter != EntryFilter.Events)
+		if (_activeFilter == EntryFilter.Plants)
 		{
 			foreach (PlantDefinition plant in _plants)
 				AddPlantCard(plant);
-		}
 
-		if (_activeFilter != EntryFilter.Plants)
+			AddLockedCards();
+		}
+		else
 		{
 			foreach (EventDefinition gameEvent in _events)
 				AddEventCard(gameEvent);
 		}
-
-		if (_activeFilter == EntryFilter.All)
-			AddLockedCards();
 
 		UpdateEntryCount();
 		ResetDetailView();
@@ -161,10 +151,59 @@ public partial class EncyclopediaMenu : Control
 		Button card = CreateEntryCard(
 			gameEvent.DisplayName,
 			"EREIGNIS",
-			null,
+			GetEventIcon(gameEvent.Type),
 			"!");
+		ConfigureEventCard(card);
 		card.TooltipText = $"Details zu {gameEvent.DisplayName} anzeigen";
 		card.Pressed += () => SelectCard(card, gameEvent);
+	}
+
+	private static Texture2D GetEventIcon(GameEventType eventType)
+	{
+		string iconPath = eventType switch
+		{
+			GameEventType.Rain => "res://assets/wetter_Icons/Regen-Vektor.svg",
+			GameEventType.HeavyRain => "res://assets/wetter_Icons/Unwetter-Vektor.svg",
+			GameEventType.Drought => "res://assets/wetter_Icons/Dürre-Vektor.svg",
+			GameEventType.HeatDay => "res://assets/wetter_Icons/Hitzetag-Vektor.svg",
+			GameEventType.Wind => "res://assets/wetter_Icons/Wind-Vektor.svg",
+			GameEventType.Pests => "res://assets/wetter_Icons/Schädlinge-Vektor.svg",
+			_ => "res://assets/wetter_Icons/Sonne 1.svg"
+		};
+
+		return GD.Load<Texture2D>(iconPath);
+	}
+
+	private static Texture2D GetEventDescriptionCard(GameEventType eventType)
+	{
+		string cardPath = eventType switch
+		{
+			GameEventType.Rain => "res://assets/wetter_Icons/Regen-Beschreibung.svg",
+			GameEventType.Drought => "res://assets/wetter_Icons/Dürre-Beschreibung.svg",
+			GameEventType.HeatDay => "res://assets/wetter_Icons/Hitzetag-Beschreibung.svg",
+			GameEventType.Pests => "res://assets/wetter_Icons/Schädlinge-Beschreibung.svg",
+			_ => null
+		};
+
+		return cardPath == null ? null : GD.Load<Texture2D>(cardPath);
+	}
+
+	private static void ConfigureEventCard(Button card)
+	{
+		StyleBoxEmpty emptyStyle = new StyleBoxEmpty();
+		card.CustomMinimumSize = new Vector2(370.0f, 410.0f);
+		card.AddThemeStyleboxOverride("normal", emptyStyle);
+		card.AddThemeStyleboxOverride("hover", emptyStyle);
+		card.AddThemeStyleboxOverride("pressed", emptyStyle);
+		card.AddThemeStyleboxOverride("hover_pressed", emptyStyle);
+		card.AddThemeStyleboxOverride("focus", emptyStyle);
+
+		card.GetNode<Label>("CardContent/Category").Visible = false;
+		PanelContainer artFrame = card.GetNode<PanelContainer>("CardContent/ArtFrame");
+		artFrame.CustomMinimumSize = new Vector2(0.0f, 320.0f);
+		artFrame.AddThemeStyleboxOverride("panel", emptyStyle);
+		card.GetNode<TextureRect>("CardContent/ArtFrame/CardImage").TextureFilter =
+			CanvasItem.TextureFilterEnum.Linear;
 	}
 
 	private Button CreateEntryCard(
@@ -230,10 +269,9 @@ public partial class EncyclopediaMenu : Control
 
 	private static void SetCardSelectedState(Button card, bool selected)
 	{
-		card.GetNode<Control>("SelectionDecor").Visible = selected;
-
 		Label title = card.GetNode<Label>("CardContent/Title");
 		Label category = card.GetNode<Label>("CardContent/Category");
+		card.GetNode<Control>("SelectionDecor").Visible = selected && category.Visible;
 		title.AddThemeColorOverride(
 			"font_color",
 			selected ? SelectedTextColor : DefaultTitleColor);
@@ -244,13 +282,9 @@ public partial class EncyclopediaMenu : Control
 
 	private void UpdateEntryCount()
 	{
-		_entryCountLabel.Text = _activeFilter switch
-		{
-			EntryFilter.Plants => $"{_plants.Count} Pflanzen",
-			EntryFilter.Events => $"{_events.Count} Ereignisse",
-			_ => $"{_plants.Count + _events.Count} bekannt · " +
-				$"{LockedCardCount} noch nicht entdeckt"
-		};
+		_entryCountLabel.Text = _activeFilter == EntryFilter.Plants
+			? $"{_plants.Count} Pflanzen · {LockedCardCount} noch nicht entdeckt"
+			: $"{_events.Count} Ereignisse";
 	}
 
 	private void ResetDetailView()
@@ -262,6 +296,9 @@ public partial class EncyclopediaMenu : Control
 		}
 
 		_selectedCardButton = null;
+		_descriptionCard.Visible = false;
+		_descriptionCard.Texture = null;
+		_detailsText.Visible = true;
 		_detailsText.Text =
 			"[font_size=38][color=#5f2d1d][b]Noch keine Karte ausgewählt[/b]" +
 			"[/color][/font_size]\n\n" +
@@ -271,6 +308,10 @@ public partial class EncyclopediaMenu : Control
 
 	private void ShowPlant(PlantDefinition plant)
 	{
+		_descriptionCard.Visible = false;
+		_descriptionCard.Texture = null;
+		_detailsText.Visible = true;
+
 		StringBuilder text = new StringBuilder();
 		text.AppendLine(FormatTitle(plant.DisplayName));
 		text.AppendLine(plant.Type == PlantType.Oak
@@ -344,6 +385,14 @@ public partial class EncyclopediaMenu : Control
 
 	private void ShowEvent(EventDefinition gameEvent)
 	{
+		Texture2D descriptionTexture = GetEventDescriptionCard(gameEvent.Type);
+		_descriptionCard.Texture = descriptionTexture;
+		_descriptionCard.Visible = descriptionTexture != null;
+		_detailsText.Visible = descriptionTexture == null;
+
+		if (descriptionTexture != null)
+			return;
+
 		StringBuilder text = new StringBuilder();
 		text.AppendLine(FormatTitle(gameEvent.DisplayName));
 		text.AppendLine("[color=#77752f]WETTEREREIGNIS[/color]");

@@ -37,6 +37,12 @@ public partial class CameraRigController : Node3D
 	public float FocusDuration = 0.55f;
 	[Export(PropertyHint.Range, "0.0,4.0,0.1")]
 	public float FocusHeightOffset = 1.0f;
+	[Export(PropertyHint.Range, "0.0,0.6,0.01")]
+	public float InspectionFocusHorizontalOffsetRatio = 0.30f;
+	[Export(PropertyHint.Range, "8.0,30.0,0.5")]
+	public float InspectionTreeMinimumFocusDistance = 16.0f;
+	[Export(PropertyHint.Range, "8.0,30.0,0.5")]
+	public float InspectionTreeMaximumFocusDistance = 22.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
 	public float FocusMinDistance = 8.0f;
 	[Export(PropertyHint.Range, "2.0,30.0,0.5")]
@@ -132,6 +138,13 @@ public partial class CameraRigController : Node3D
 	private float _generalYaw;
 	private float _generalPitch;
 	private float _generalDistance;
+	private bool _hasInspectionReturnView;
+	private Vector3 _inspectionReturnPivot;
+	private float _inspectionReturnYaw;
+	private float _inspectionReturnPitch;
+	private float _inspectionReturnDistance;
+	private HexTile _inspectionReturnFocusedTile;
+	private bool _inspectionReturnBoardOverviewActive;
 
 	private bool _isFocusTransitionActive;
 	private float _focusTransitionElapsed;
@@ -268,10 +281,78 @@ public partial class CameraRigController : Node3D
 
 	public bool FocusTile(HexTile tile)
 	{
+		return FocusTileInternal(tile, true);
+	}
+
+	public bool BeginInspectionFocus(HexTile tile)
+	{
+		if (_hasInspectionReturnView ||
+			tile == null ||
+			!IsInstanceValid(tile) ||
+			!_interactionEnabled)
+		{
+			return false;
+		}
+
+		_inspectionReturnPivot = _targetPivot;
+		_inspectionReturnYaw = _targetYaw;
+		_inspectionReturnPitch = _targetPitch;
+		_inspectionReturnDistance = _targetDistance;
+		_inspectionReturnFocusedTile = HasTileFocus ? _focusedTile : null;
+		_inspectionReturnBoardOverviewActive = _isBoardOverviewActive;
+
+		float? treeFocusDistance = GetInspectionTreeFocusDistance(tile);
+		float inspectionFocusYaw = GetInspectionFocusYaw(tile);
+		if (!FocusTileInternal(
+			tile,
+			false,
+			InspectionFocusHorizontalOffsetRatio,
+			treeFocusDistance,
+			inspectionFocusYaw))
+		{
+			_inspectionReturnFocusedTile = null;
+			return false;
+		}
+
+		_hasInspectionReturnView = true;
+		return true;
+	}
+
+	public bool EndInspectionFocus()
+	{
+		if (!_hasInspectionReturnView)
+			return false;
+
+		_focusedTile = _inspectionReturnFocusedTile != null &&
+			IsInstanceValid(_inspectionReturnFocusedTile)
+			? _inspectionReturnFocusedTile
+			: null;
+		_isBoardOverviewActive = _inspectionReturnBoardOverviewActive;
+		ResetPointerDragState();
+
+		BeginFocusTransition(
+			_inspectionReturnPivot,
+			_inspectionReturnYaw,
+			_inspectionReturnPitch,
+			_inspectionReturnDistance);
+		RefreshCollisionExclusions(_focusedTile ?? _focusTarget);
+
+		_hasInspectionReturnView = false;
+		_inspectionReturnFocusedTile = null;
+		return true;
+	}
+
+	private bool FocusTileInternal(
+		HexTile tile,
+		bool showOverviewForMainTree,
+		float horizontalOffsetRatio = 0.0f,
+		float? focusDistanceOverride = null,
+		float? focusYawOverride = null)
+	{
 		if (!_interactionEnabled || tile == null || !IsInstanceValid(tile))
 			return false;
 
-		if (tile == _mainTreeTile)
+		if (showOverviewForMainTree && tile == _mainTreeTile)
 			return ShowBoardOverview();
 
 		if (!HasTileFocus)
@@ -287,18 +368,90 @@ public partial class CameraRigController : Node3D
 
 		float minPitch = Mathf.DegToRad(GetMinimumPitchDegrees());
 		float maxPitch = Mathf.DegToRad(GetMaximumPitchDegrees());
+		float requestedFocusDistance =
+			focusDistanceOverride ?? GetConfiguredFocusDistance();
+		float maximumFocusDistance = focusDistanceOverride.HasValue
+			? Mathf.Max(MinDistance, MaxDistance)
+			: GetMaximumDistanceForPitch(_targetPitch);
 		float focusDistance = Mathf.Clamp(
-			GetConfiguredFocusDistance(),
+			requestedFocusDistance,
 			GetMinimumDistance(),
-			GetMaximumDistanceForPitch(_targetPitch));
+			maximumFocusDistance);
+
+		float focusYaw = ClampYaw(focusYawOverride ?? _targetYaw);
+		Vector3 screenRight = new Vector3(
+			Mathf.Cos(focusYaw),
+			0.0f,
+			-Mathf.Sin(focusYaw));
+		Vector3 focusPivot =
+			tile.GlobalPosition +
+			Vector3.Up * FocusHeightOffset +
+			screenRight * focusDistance *
+			Mathf.Max(horizontalOffsetRatio, 0.0f);
 
 		BeginFocusTransition(
-			tile.GlobalPosition + Vector3.Up * FocusHeightOffset,
-			ClampYaw(_targetYaw),
+			focusPivot,
+			focusYaw,
 			Mathf.Clamp(_targetPitch, minPitch, maxPitch),
 			focusDistance);
 		RefreshCollisionExclusions(tile);
 		return true;
+	}
+
+	private float GetInspectionFocusYaw(HexTile tile)
+	{
+		if (_mainTreeTile == null ||
+			!IsInstanceValid(_mainTreeTile) ||
+			ReferenceEquals(tile, _mainTreeTile))
+		{
+			return _targetYaw;
+		}
+
+		Vector3 cameraOffsetDirection =
+			tile.GlobalPosition - _mainTreeTile.GlobalPosition;
+		cameraOffsetDirection.Y = 0.0f;
+
+		if (cameraOffsetDirection.LengthSquared() <= 0.0001f)
+			return _targetYaw;
+
+		return Mathf.Atan2(
+			cameraOffsetDirection.X,
+			cameraOffsetDirection.Z);
+	}
+
+	private float? GetInspectionTreeFocusDistance(HexTile tile)
+	{
+		PlantInstance plant = tile.Data?.Plant;
+		PlantType plantType = plant?.Definition?.Type ?? PlantType.None;
+		bool isTree = plantType == PlantType.Oak ||
+			plantType == PlantType.Birch;
+
+		if (!isTree)
+			return null;
+
+		int stageCount = Mathf.Max(plant.Definition.GrowthStageCount, 2);
+		int growthStage = Mathf.Clamp(
+			plant.VisualGrowthStage,
+			1,
+			stageCount);
+		float stageProgress = (growthStage - 1) / (float)(stageCount - 1);
+		float configuredMinimum = Mathf.Min(
+			InspectionTreeMinimumFocusDistance,
+			InspectionTreeMaximumFocusDistance);
+		float configuredMaximum = Mathf.Max(
+			InspectionTreeMinimumFocusDistance,
+			InspectionTreeMaximumFocusDistance);
+		float minimumDistance = Mathf.Max(
+			GetConfiguredFocusDistance(),
+			configuredMinimum);
+		float maximumDistance = Mathf.Max(
+			minimumDistance,
+			configuredMaximum);
+
+		return Mathf.Lerp(
+			minimumDistance,
+			maximumDistance,
+			stageProgress);
 	}
 
 	public bool ShowBoardOverview()

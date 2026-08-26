@@ -25,6 +25,8 @@ public partial class GameManager : Node
 	private GameHub _gameHub;
 	private BaseButton _endTurnButton;
 	private BaseButton _discardHandButton;
+	private BaseButton _shovelButton;
+	private TextureRect _shovelCursor;
 	private HexTile _currentPreviewTile;
 	private TutorialManager _tutorialManager;
 	private readonly GlobalStatisticsManager _statisticsManager = new();
@@ -32,7 +34,9 @@ public partial class GameManager : Node
 	private readonly HashSet<int> _recordedMassPlantDeathRounds = new();
 	private string _lastDebugMessage = "";
 	private bool _isCardDragActive;
+	private bool _isShovelDragActive;
 	private bool _isDayNightPresentationLocked;
+	private bool _isPlantInspectionLocked;
 	private bool _isTileClickCandidate;
 	private Vector2 _tileClickPressPosition;
 	private bool _hasRecordedCompletedGame;
@@ -44,6 +48,9 @@ public partial class GameManager : Node
 
 	public override void _Process(double delta)
 	{
+		if (_isShovelDragActive)
+			UpdateShovelDrag(GetViewport().GetMousePosition());
+
 		if (_turnManager?.State == null ||
 			_turnManager.State.IsGameOver)
 		{
@@ -55,28 +62,47 @@ public partial class GameManager : Node
 
 	private void SetupGame()
 	{
+		ulong totalStartedUsec = LoadProfiler.BeginPhase(
+			"GameManager.SetupGame gesamt");
+		ulong phaseStartedUsec = LoadProfiler.BeginPhase(
+			"Spielsysteme finden");
 		_boardManager = GetNodeOrNull<BoardManager>("../BoardManager");
 		_turnManager = GetNodeOrNull<TurnManager>("../TurnManager");
+		LoadProfiler.EndPhase("Spielsysteme finden", phaseStartedUsec);
 
 		if (_boardManager == null)
 		{
+			LoadProfiler.EndPhase(
+				"GameManager.SetupGame gesamt",
+				totalStartedUsec);
 			GD.PrintErr("BoardManager not found. Make sure the node is named BoardManager.");
 			return;
 		}
 
 		if (_turnManager == null)
 		{
+			LoadProfiler.EndPhase(
+				"GameManager.SetupGame gesamt",
+				totalStartedUsec);
 			GD.PrintErr("TurnManager not found. Make sure the node is named TurnManager.");
 			return;
 		}
 
+		phaseStartedUsec = LoadProfiler.BeginPhase(
+			"Rundenmanager und UI verbinden");
 		_turnManager.Setup(_boardManager);
 		ConnectGameHub();
 		ConnectRoundResolution();
 		ConnectCardHand();
 		ConnectEndTurnButton();
 		ConnectDiscardHandButton();
+		ConnectShovelTool();
+		LoadProfiler.EndPhase(
+			"Rundenmanager und UI verbinden",
+			phaseStartedUsec);
 
+		phaseStartedUsec = LoadProfiler.BeginPhase(
+			"Neuen Spielstand vorbereiten");
 		_recordedMassPlantDeathRounds.Clear();
 		_hasRecordedCompletedGame = false;
 		bool shouldStartTutorial = ShouldStartTutorial();
@@ -86,13 +112,33 @@ public partial class GameManager : Node
 			_turnManager.Config.EventsUnlocked = true;
 			_turnManager.Config.ForceRainAsFirstEvent = false;
 		}
+		LoadProfiler.EndPhase(
+			"Neuen Spielstand vorbereiten",
+			phaseStartedUsec);
+
+		phaseStartedUsec = LoadProfiler.BeginPhase("Spiel starten");
 		_turnManager.StartGame();
+		LoadProfiler.EndPhase("Spiel starten", phaseStartedUsec);
+
+		phaseStartedUsec = LoadProfiler.BeginPhase("Startbaum platzieren");
 		PlaceStarterOak();
+		LoadProfiler.EndPhase("Startbaum platzieren", phaseStartedUsec);
+
+		phaseStartedUsec = LoadProfiler.BeginPhase(
+			"Kamera und Spielanzeigen aktualisieren");
 		ConfigureCameraRig();
 		RefreshGameInterfaces();
+		LoadProfiler.EndPhase(
+			"Kamera und Spielanzeigen aktualisieren",
+			phaseStartedUsec);
 
+		phaseStartedUsec = LoadProfiler.BeginPhase("Tutorial starten");
 		if (shouldStartTutorial)
 			StartTutorial();
+		LoadProfiler.EndPhase("Tutorial starten", phaseStartedUsec);
+		LoadProfiler.EndPhase(
+			"GameManager.SetupGame gesamt",
+			totalStartedUsec);
 	}
 
 	public static void SkipTutorialOnNextStart()
@@ -170,9 +216,51 @@ public partial class GameManager : Node
 		GD.Print("GameManager connected to CardHandUI.");
 	}
 
+	public override void _Input(InputEvent inputEvent)
+	{
+		if (_isPlantInspectionLocked)
+			return;
+
+		if (!_isShovelDragActive)
+			return;
+
+		if (inputEvent is InputEventMouseMotion mouseMotion)
+		{
+			UpdateShovelDrag(mouseMotion.Position);
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+
+		if (inputEvent is InputEventMouseButton mouseButton)
+		{
+			if (mouseButton.ButtonIndex == MouseButton.Left && !mouseButton.Pressed)
+			{
+				FinishShovelDrag(mouseButton.Position);
+				return;
+			}
+
+			if (mouseButton.ButtonIndex == MouseButton.Right && mouseButton.Pressed)
+			{
+				CancelShovelDrag();
+				GetViewport().SetInputAsHandled();
+			}
+
+			return;
+		}
+
+		if (inputEvent is InputEventKey keyEvent &&
+			keyEvent.Keycode == Key.Escape &&
+			keyEvent.Pressed &&
+			!keyEvent.Echo)
+		{
+			CancelShovelDrag();
+			GetViewport().SetInputAsHandled();
+		}
+	}
+
 	public override void _UnhandledInput(InputEvent inputEvent)
 	{
-		if (_isDayNightPresentationLocked)
+		if (IsGameplayInputLocked || _isShovelDragActive)
 			return;
 
 		if (inputEvent is InputEventMouseMotion mouseMotion)
@@ -254,16 +342,36 @@ public partial class GameManager : Node
 			return;
 
 		_isDayNightPresentationLocked = isLocked;
+		ApplyGameplayInputLock();
+	}
+
+	public void SetPlantInspectionInputLocked(bool isLocked)
+	{
+		if (_isPlantInspectionLocked == isLocked)
+			return;
+
+		_isPlantInspectionLocked = isLocked;
+		ApplyGameplayInputLock();
+	}
+
+	private bool IsGameplayInputLocked =>
+		_isDayNightPresentationLocked || _isPlantInspectionLocked;
+
+	private void ApplyGameplayInputLock()
+	{
+		bool isLocked = IsGameplayInputLocked;
 		_cardHand?.SetInteractionEnabled(!isLocked);
 		_cameraRig?.SetInteractionEnabled(!isLocked);
 
 		if (isLocked)
 		{
 			_isTileClickCandidate = false;
+			CancelShovelDrag();
 			ClearCurrentPreview();
 		}
 
 		UpdateDiscardHandButtonState();
+		UpdateShovelButtonState();
 	}
 
 	private void ConfigureCameraRig()
@@ -290,6 +398,7 @@ public partial class GameManager : Node
 		ConnectCardHand();
 		_cardHand?.SetCards(_turnManager?.State?.HandCards);
 		UpdateDiscardHandButtonState();
+		UpdateShovelButtonState();
 
 		Node currentScene = GetTree().CurrentScene;
 		ConnectGameHub();
@@ -335,6 +444,9 @@ public partial class GameManager : Node
 
 	private void OnGameEnded(GameState state)
 	{
+		CancelShovelDrag();
+		UpdateShovelButtonState();
+
 		if (state == null || _hasRecordedCompletedGame)
 			return;
 
@@ -370,9 +482,11 @@ public partial class GameManager : Node
 
 	private bool CanFocusTileFromMouse()
 	{
-		if (_cameraRig == null ||
+		if (IsGameplayInputLocked ||
+			_cameraRig == null ||
 			!_cameraRig.InteractionEnabled ||
 			_isCardDragActive ||
+			_isShovelDragActive ||
 			_currentPreviewTile != null ||
 			GetTree().Paused)
 		{
@@ -457,6 +571,11 @@ private T FindNodeByName<T>(Node root, string nodeName) where T : Node
 		{
 			_discardHandButton.Pressed -= OnDiscardHandButtonPressed;
 		}
+
+		if (_shovelButton != null)
+		{
+			_shovelButton.ButtonDown -= OnShovelButtonDown;
+		}
 	}
 private void ConnectEndTurnButton()
 {
@@ -507,9 +626,132 @@ private void ConnectDiscardHandButton()
 	UpdateDiscardHandButtonState();
 }
 
+private void ConnectShovelTool()
+{
+	BaseButton shovelButton = FindNodeByName<BaseButton>(
+		GetTree().CurrentScene,
+		"ShovelButton");
+	TextureRect shovelCursor = FindNodeByName<TextureRect>(
+		GetTree().CurrentScene,
+		"ShovelCursor");
+
+	if (shovelButton == null || shovelCursor == null)
+	{
+		GD.PrintErr(
+			"Schaufelwerkzeug nicht gefunden. Erwartet werden ShovelButton und ShovelCursor.");
+		return;
+	}
+
+	if (_shovelButton != shovelButton)
+	{
+		if (_shovelButton != null)
+			_shovelButton.ButtonDown -= OnShovelButtonDown;
+
+		_shovelButton = shovelButton;
+		_shovelButton.ButtonDown += OnShovelButtonDown;
+	}
+
+	_shovelCursor = shovelCursor;
+	_shovelCursor.Visible = false;
+	UpdateShovelButtonState();
+}
+
+private void OnShovelButtonDown()
+{
+	if (IsGameplayInputLocked ||
+		_isCardDragActive ||
+		GetTree().Paused ||
+		_turnManager?.State == null ||
+		_turnManager.State.IsGameOver)
+	{
+		return;
+	}
+
+	_isShovelDragActive = true;
+	_isTileClickCandidate = false;
+	ClearCurrentPreview();
+	_shovelCursor.Visible = true;
+	UpdateShovelDrag(GetViewport().GetMousePosition());
+}
+
+private void UpdateShovelDrag(Vector2 mousePosition)
+{
+	if (!_isShovelDragActive || _shovelCursor == null)
+		return;
+
+	_shovelCursor.GlobalPosition = mousePosition - (_shovelCursor.Size * 0.5f);
+	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
+
+	if (hoveredTile != _currentPreviewTile)
+	{
+		ClearCurrentPreview();
+		_currentPreviewTile = hoveredTile;
+	}
+
+	if (_currentPreviewTile != null)
+	{
+		bool canRemove = _turnManager?.CanRemoveYoungPlant(
+			_currentPreviewTile.Data) == true;
+		_currentPreviewTile.SetPlacementPreview(canRemove);
+	}
+}
+
+private void FinishShovelDrag(Vector2 mousePosition)
+{
+	if (!_isShovelDragActive)
+		return;
+
+	if (_shovelButton != null &&
+		_shovelButton.GetGlobalRect().HasPoint(mousePosition))
+	{
+		CancelShovelDrag();
+		return;
+	}
+
+	HexTile releasedTile = GetHexTileUnderMouse(mousePosition);
+	string errorMessage = "";
+	bool wasRemoved =
+		releasedTile != null &&
+		_turnManager != null &&
+		_turnManager.TryRemoveYoungPlant(releasedTile.Data, out errorMessage);
+
+	if (wasRemoved)
+	{
+		RefreshGameInterfaces();
+	}
+	else if (!string.IsNullOrEmpty(errorMessage))
+	{
+		GD.Print($"Schaufel: {errorMessage}");
+	}
+
+	CancelShovelDrag();
+}
+
+private void CancelShovelDrag()
+{
+	_isShovelDragActive = false;
+	ClearCurrentPreview();
+
+	if (_shovelCursor != null)
+		_shovelCursor.Visible = false;
+
+	_tutorialManager?.RefreshTutorialHighlights();
+}
+
+private void UpdateShovelButtonState()
+{
+	if (_shovelButton == null)
+		return;
+
+	_shovelButton.Disabled =
+		IsGameplayInputLocked ||
+		_turnManager?.State == null ||
+		_turnManager.State.IsGameOver;
+}
+
 private void OnEndTurnButtonPressed()
 {
-	if (_isDayNightPresentationLocked)
+	if (IsGameplayInputLocked)
 		return;
 
 	if (_turnManager == null)
@@ -534,7 +776,7 @@ private void OnEndTurnButtonPressed()
 
 private void OnDiscardHandButtonPressed()
 {
-	if (_isDayNightPresentationLocked)
+	if (IsGameplayInputLocked)
 		return;
 
 	if (_turnManager == null || !_turnManager.DiscardHand())
@@ -551,13 +793,19 @@ private void UpdateDiscardHandButtonState()
 		return;
 
 	_discardHandButton.Disabled =
-		_isDayNightPresentationLocked ||
+		IsGameplayInputLocked ||
 		_turnManager == null ||
 		!_turnManager.CanDiscardHand;
 }
 
 private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 {
+	if (IsGameplayInputLocked)
+		return;
+
+	if (_isShovelDragActive)
+		CancelShovelDrag();
+
 	_isCardDragActive = true;
 	_isTileClickCandidate = false;
 	HexTile hoveredTile = GetHexTileUnderMouse(mousePosition);
