@@ -2,8 +2,13 @@ using System.Collections.Generic;
 
 public sealed class EventPhase
 {
+	private bool _hasActivatedEvent;
+
 	public EventPhaseResult Resolve(TurnPhaseContext context, int round)
 	{
+		if (context.State.ActiveEvents.Count > 0)
+			_hasActivatedEvent = true;
+
 		List<PlantDeathResult> plantDeaths = ApplyEventDeathRisks(context);
 		List<GameEventType> finishedEvents = GetFinishedEvents(context.State.ActiveEvents);
 
@@ -26,7 +31,12 @@ public sealed class EventPhase
 		int totalWeight = 0;
 
 		foreach (EventDefinition definition in events)
+		{
+			if (!_hasActivatedEvent && definition.Type == GameEventType.Drought)
+				continue;
+
 			totalWeight += System.Math.Max(definition.SelectionWeight, 0);
+		}
 
 		if (totalWeight <= 0)
 			return null;
@@ -35,6 +45,9 @@ public sealed class EventPhase
 
 		foreach (EventDefinition definition in events)
 		{
+			if (!_hasActivatedEvent && definition.Type == GameEventType.Drought)
+				continue;
+
 			selection -= System.Math.Max(definition.SelectionWeight, 0);
 
 			if (selection <= 0)
@@ -241,6 +254,7 @@ public sealed class EventPhase
 			return null;
 
 		context.State.ActiveEvents.Add(new ActiveGameEvent(definition));
+		_hasActivatedEvent = true;
 		return eventType;
 	}
 }

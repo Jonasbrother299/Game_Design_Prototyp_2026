@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://deg3dlw7wxbwh"]
 
-[ext_resource type="PackedScene" uid="uid://l3pipkjrln6w" path="res://assets/models/tiles/Rocks/Rock3.fbx" id="1_00oq2"]
+[ext_resource type="PackedScene" uid="uid://chch3e3cidtfi" path="res://assets/models/tiles/Rocks/Rock3.fbx" id="1_00oq2"]
 [ext_resource type="Material" uid="uid://ccp8pwg0ydibs" path="res://scenes/board/tiles/rocks/rockmaterial.tres" id="2_6yltd"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_6yltd"]

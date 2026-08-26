@@ -20,7 +20,7 @@
 [ext_resource type="Script" uid="uid://d2pvq043lauj3" path="res://scripts/UI/EndTurnButtonUI.cs" id="14_end_turn_feedback"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EndGameScreen.tscn" id="16_end_game"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="17_drought_effect"]
-[ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="18_ui_font"]
+[ext_resource type="FontFile" uid="uid://bxawvua8qhwde" path="res://assets/ui/fonts/OhnoBlazefaceDemo-14Point.otf" id="18_ui_font_readable"]
 [ext_resource type="Resource" uid="uid://d28g8w7xp712f" path="res://data/balance/game_balance.tres" id="20_balance"]
 [ext_resource type="Script" uid="uid://v7h0unjsq8uj" path="res://scripts/UI/DayCycleDisplayUI.cs" id="23_day_cycle_display"]
 [ext_resource type="AudioStream" uid="uid://us03fk4xjdkg" path="res://assets/audio/Sound effects/Einpflanzen.mp3" id="25_planting_audio"]
@@ -31,18 +31,42 @@
 [ext_resource type="PackedScene" uid="uid://bfjv28ce1p0ke" path="res://scenes/environment/StylizedWater.tscn" id="30_stylized_water"]
 [ext_resource type="AudioStream" uid="uid://u54mqbnxhwgf" path="res://assets/audio/ambiente/Wasser/Wasser1.mp3" id="31_water_ambience"]
 [ext_resource type="Script" uid="uid://ba25cwqxtd843" path="res://scripts/UI/FpsDisplay.cs" id="32_fps_display"]
-[ext_resource type="Texture2D" uid="uid://c4e5hmqihy3xa" path="res://assets/wetter_Icons/Sonne.png" id="33_sun_icon"]
-[ext_resource type="Texture2D" uid="uid://chbo2fm2hf12q" path="res://assets/wetter_Icons/Regen.png" id="34_rain_icon"]
-[ext_resource type="Texture2D" uid="uid://c5kuppen3oetq" path="res://assets/wetter_Icons/Dürre.png" id="35_drought_icon"]
-[ext_resource type="Texture2D" uid="uid://dpmwg6sfp3qpn" path="res://assets/wetter_Icons/Hitzetag.png" id="36_heat_day_icon"]
-[ext_resource type="Texture2D" uid="uid://mjs4kopcsm1l" path="res://assets/wetter_Icons/Wind.png" id="37_wind_icon"]
-[ext_resource type="Texture2D" uid="uid://m4yufk3qc4gv" path="res://assets/wetter_Icons/Schädlinge.png" id="38_pests_icon"]
+[ext_resource type="Texture2D" uid="uid://bx055nlssximr" path="res://assets/wetter_Icons/Sonne 1.svg" id="33_sun_icon"]
+[ext_resource type="Texture2D" uid="uid://b56sftgqgebf8" path="res://assets/wetter_Icons/Regen-Tropfen-Vektor.svg" id="34_rain_drops_icon"]
+[ext_resource type="Texture2D" uid="uid://dq3sk1linvepp" path="res://assets/wetter_Icons/Regen-Vektor.svg" id="34_rain_icon"]
+[ext_resource type="Texture2D" uid="uid://cbt34ftseggw" path="res://assets/wetter_Icons/Dürre-Vektor.svg" id="35_drought_icon"]
+[ext_resource type="Texture2D" uid="uid://ddu1jtvgwyold" path="res://assets/wetter_Icons/Hitzetag-Vektor.svg" id="36_heat_day_icon"]
+[ext_resource type="Texture2D" uid="uid://d14sdpuo7d1sn" path="res://assets/wetter_Icons/Wind-Vektor.svg" id="37_wind_icon"]
+[ext_resource type="Texture2D" uid="uid://ces4l0q2pbda7" path="res://assets/wetter_Icons/Schädlinge-Vektor.svg" id="38_pests_icon"]
+[ext_resource type="Texture2D" uid="uid://rhyiafdnpj5q" path="res://assets/wetter_Icons/Unwetter-Tropfen-Vektor.svg" id="39_heavy_rain_drops_icon"]
+[ext_resource type="Texture2D" uid="uid://b21ace8jg5n0y" path="res://assets/wetter_Icons/Unwetter-Vektor.svg" id="39_heavy_rain_icon"]
+[ext_resource type="Texture2D" uid="uid://cd176tbqocf50" path="res://assets/ui/icons/shovel.svg" id="39_shovel_icon"]
+[ext_resource type="Script" uid="uid://c6jdpmda8ql3l" path="res://scripts/effects/WindMapStreakEffect.cs" id="40_wind_streak_effect"]
+[ext_resource type="Script" uid="uid://cukh5cot8f4t5" path="res://scripts/effects/FishSchoolController.cs" id="41_fish_school"]
+[ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Test/48-fish3d/fish3D/fish/fbx/fish.fbx" id="42_fish_a"]
+[ext_resource type="PackedScene" uid="uid://b2mvjnmyam56b" path="res://assets/models/Test/fish_3d_model_free_download_animated/scene.gltf" id="43_fish_b"]
+[ext_resource type="Script" uid="uid://l182y3fk7p6k" path="res://scripts/effects/FloatingWaterLeavesController.cs" id="44_water_leaves"]
+[ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/StartingOak/LeafParticle.tres" id="45_leaf_mesh"]
+[ext_resource type="Script" uid="uid://c43ieqr6rfnkr" path="res://scripts/UI/PlantInspectionController.cs" id="46_plant_inspection"]
+[ext_resource type="Texture2D" uid="uid://cq7c6avhm8in8" path="res://assets/textures/hdris/anime_sky_panorama_v2.png" id="47_cloud_panorama"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
 shader = ExtResource("5_sky_shader")
 shader_parameter/panorama = ExtResource("5_ma7h6")
+shader_parameter/cloud_panorama = ExtResource("47_cloud_panorama")
 shader_parameter/vertical_offset = 0.0
 shader_parameter/brightness = 1.0
+shader_parameter/cloud_opacity = 0.38
+shader_parameter/cloud_horizontal_offset = 0.18
+shader_parameter/cloud_vertical_offset = 0.0
+shader_parameter/cloud_cutoff = 0.34
+shader_parameter/cloud_softness = 0.2
+shader_parameter/cloud_tint = Color(1, 0.94, 0.86, 1)
+shader_parameter/cloud_night_visibility = 0.52
+shader_parameter/night_amount = 0.0
+shader_parameter/night_tint = Color(0.82, 0.84, 0.86, 1)
+shader_parameter/night_brightness = 0.96
+shader_parameter/night_saturation = 0.88
 
 [sub_resource type="Sky" id="Sky_gsxep"]
 sky_material = SubResource("ShaderMaterial_sky")
@@ -61,6 +85,7 @@ ssil_enabled = true
 ssil_radius = 6.1
 ssil_intensity = 3.25
 ssil_sharpness = 1.0
+glow_enabled = true
 glow_intensity = 1.14
 glow_strength = 0.54
 glow_bloom = 0.25
@@ -70,22 +95,21 @@ fog_light_energy = 0.75
 fog_sun_scatter = 0.03
 fog_aerial_perspective = 0.017
 fog_sky_affect = 0.35
-volumetric_fog_enabled = true
 volumetric_fog_density = 0.0024
-volumetric_fog_emission_energy = 316.85
+volumetric_fog_emission_energy = 0.0
 volumetric_fog_anisotropy = 0.9
 volumetric_fog_length = 23.37
-volumetric_fog_ambient_inject = 16.0
+volumetric_fog_ambient_inject = 1.0
 adjustment_enabled = true
-adjustment_contrast = 0.9
-adjustment_saturation = 0.72
+adjustment_contrast = 0.825
+adjustment_saturation = 0.79
 adjustment_color_correction = ExtResource("5_hq6as")
 
 [sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_rarhs"]
 
 [sub_resource type="Compositor" id="Compositor_vcsgt"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_kxyth"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_oa6sj"]
 render_priority = 0
 shader = ExtResource("8_gsxep")
 shader_parameter/surface_color = Color(0.13068378, 0.40523514, 0.36494586, 1)
@@ -94,8 +118,8 @@ shader_parameter/foam_color = Color(1, 1, 1, 1)
 shader_parameter/rain_ripple_color = Color(0.72, 0.92, 0.96, 1)
 shader_parameter/cell_scale = 1.63
 shader_parameter/animation_speed = 0.22
-shader_parameter/refraction_strength = 0.0
-shader_parameter/refraction_mix = 0.0
+shader_parameter/refraction_strength = 0.005
+shader_parameter/refraction_mix = 0.38
 shader_parameter/refraction_edge_reach = 0.55
 shader_parameter/refraction_edge_falloff = 1.35
 shader_parameter/refraction_center_strength = 0.16
@@ -116,7 +140,7 @@ shader_parameter/contact_strength = 0.92
 shader_parameter/shore_ripple_strength = 0.47
 shader_parameter/shore_ripple_reach = 36.0
 shader_parameter/shore_ripple_speed = 0.18
-shader_parameter/surface_alpha = 0.76
+shader_parameter/surface_alpha = 0.64
 shader_parameter/rain_intensity = 0.0
 shader_parameter/rain_ripple_density = 2.64
 shader_parameter/rain_ripple_size = 0.19
@@ -194,6 +218,18 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
+[sub_resource type="StyleBoxFlat" id="StyleShovelCircle"]
+bg_color = Color(0.901961, 0.835294, 0.698039, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.11, 0.055, 1)
+corner_radius_top_left = 56
+corner_radius_top_right = 56
+corner_radius_bottom_right = 56
+corner_radius_bottom_left = 56
+
 [node name="Main" type="Node3D" unique_id=2056396165]
 
 [node name="BoardManager" type="Node3D" parent="." unique_id=986564341]
@@ -201,7 +237,7 @@ transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70
 script = ExtResource("1_0bbpv")
 Balance = ExtResource("20_balance")
 HexSize = 1.25
-GrassInstancesPerTile = 688
+GrassInstancesPerTile = 448
 GrassWindWaveSpeed = 0.11
 GrassWindWaveStrength = 0.065
 GrassWindDetailSpeed = 0.83
@@ -209,13 +245,16 @@ GrassStoneMargin = 0.13
 GrassOakMargin = 0.11
 GrassBirchMargin = 0.17
 GrassMossMargin = 0.14
+BorderRocksPerEdge = 3
+BorderRockPositionJitter = 0.02
 StoneBorderYScale = 1.2000000000000002
-DecorativeGroundRows = 8
+DecorativeGroundRows = 7
 OuterTreeChance = 0.42
 StartingOakScale = 0.65
-MushroomModelScale = 0.65
+MushroomModelScale = 0.72
 FlowerModelScale = 0.5
 BirchModelScale = 0.44
+TreeShadowStrength = 1.0
 
 [node name="TurnManager" type="Node3D" parent="." unique_id=1470133694]
 script = ExtResource("1_elqb8")
@@ -230,9 +269,12 @@ light_color = Color(0.9674689, 0.90008366, 0.7625296, 1)
 light_energy = 2.433
 light_indirect_energy = 0.84
 light_volumetric_fog_energy = 1.08
-light_angular_distance = 4.1
-shadow_enabled = false
+light_angular_distance = 1.2
+shadow_enabled = true
 shadow_opacity = 0.7
+shadow_blur = 2.0
+directional_shadow_mode = 0
+directional_shadow_max_distance = 80.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1536116527]
 environment = SubResource("Environment_bjd11")
@@ -240,14 +282,17 @@ camera_attributes = SubResource("CameraAttributesPractical_rarhs")
 compositor = SubResource("Compositor_vcsgt")
 script = ExtResource("17_drought_effect")
 
+[node name="WindMapStreakEffect" type="Node3D" parent="." unique_id=872006172]
+script = ExtResource("40_wind_streak_effect")
+
 [node name="StylizedWater" parent="." unique_id=1959249824 instance=ExtResource("30_stylized_water")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
-material_override = SubResource("ShaderMaterial_kxyth")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.038378716, -0.048188865, -0.34361994)
+material_override = SubResource("ShaderMaterial_oa6sj")
 SurfaceColor = Color(0.13068378, 0.40523514, 0.36494586, 1)
 SurfaceCellScale = 1.63
 PatternSpeed = 0.22
-RefractionStrength = 0.0
-RefractionMix = 0.0
+RefractionStrength = 0.005
+RefractionMix = 0.38
 LineWobbleStrength = 0.53
 LineBulgeSize = 0.63
 LineBulgeScale = 3.0
@@ -259,6 +304,23 @@ EditorRainIntensity = 1.44
 WaveHeight = 0.0
 WaterRadius = 26.4
 EdgeFade = 4.0
+RiverRockGroundOffset = 0.08
+
+[node name="FishController" type="Node3D" parent="." unique_id=2096968572]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
+script = ExtResource("41_fish_school")
+FishCount = 10
+FishModelA = ExtResource("42_fish_a")
+FishModelB = ExtResource("43_fish_b")
+UnderwaterTintStrength = 0.22
+UnderwaterBrightness = 0.9
+MinDepth = 0.26
+MaxDepth = 0.38
+
+[node name="FloatingWaterLeaves" type="Node3D" parent="." unique_id=740306582]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1325733, 0)
+script = ExtResource("44_water_leaves")
+LeafMesh = ExtResource("45_leaf_mesh")
 
 [node name="CameraRig" type="Node3D" parent="." unique_id=484561498]
 script = ExtResource("5_vcsgt")
@@ -269,7 +331,7 @@ MinPitchDegrees = 15.0
 MaxPitchDegrees = 75.0
 MinDistance = 14.0
 ZoomSmoothSpeed = 8.0
-StartPitchDegrees = 15.0
+StartPitchDegrees = 30.0
 StartDistance = 20.5
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=39283780]
@@ -301,7 +363,7 @@ script = ExtResource("32_fps_display")
 script = ExtResource("7_nxtc6")
 CardSize = Vector2(420, 473)
 HoverLift = 240.0
-HoverScale = 1.22
+HoverScale = 1.5
 CardSpacing = 75.0
 FanYOffset = 17.0
 HandHeight = 370.0
@@ -343,6 +405,9 @@ stretch_mode = 5
 script = ExtResource("23_day_cycle_display")
 SunIcon = ExtResource("33_sun_icon")
 RainIcon = ExtResource("34_rain_icon")
+RainDropsIcon = ExtResource("34_rain_drops_icon")
+HeavyRainIcon = ExtResource("39_heavy_rain_icon")
+HeavyRainDropsIcon = ExtResource("39_heavy_rain_drops_icon")
 DroughtIcon = ExtResource("35_drought_icon")
 HeatDayIcon = ExtResource("36_heat_day_icon")
 WindIcon = ExtResource("37_wind_icon")
@@ -418,13 +483,50 @@ theme_override_colors/font_color = Color(0.25, 0.11, 0.055, 1)
 theme_override_colors/font_pressed_color = Color(0.18, 0.075, 0.035, 1)
 theme_override_colors/font_hover_color = Color(0.3, 0.12, 0.05, 1)
 theme_override_colors/font_disabled_color = Color(0.66, 0.62, 0.54, 0.72)
-theme_override_fonts/font = ExtResource("18_ui_font")
+theme_override_fonts/font = ExtResource("18_ui_font_readable")
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleDiscardNormal")
 theme_override_styles/pressed = SubResource("StyleDiscardPressed")
 theme_override_styles/hover = SubResource("StyleDiscardHover")
 theme_override_styles/disabled = SubResource("StyleDiscardDisabled")
 text = "Hand abwerfen"
+
+[node name="ShovelBackground" type="Panel" parent="UI/CanvasLayer/GameHub" unique_id=106791393]
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 12.0
+offset_top = -56.0
+offset_right = 124.0
+offset_bottom = 56.0
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleShovelCircle")
+
+[node name="ShovelButton" type="TextureButton" parent="UI/CanvasLayer/GameHub" unique_id=1536439251]
+layout_mode = 0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -48.0
+offset_right = 116.0
+offset_bottom = 48.0
+grow_vertical = 2
+tooltip_text = "Schaufel: Pflanzen im ersten Stadium entfernen"
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("39_shovel_icon")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="ShovelCursor" type="TextureRect" parent="UI/CanvasLayer" unique_id=1449781752]
+visible = false
+z_index = 90
+offset_right = 76.0
+offset_bottom = 76.0
+mouse_filter = 2
+texture = ExtResource("39_shovel_icon")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TutorialOverlay" parent="UI/CanvasLayer" unique_id=269973507 instance=ExtResource("9_tutorial")]
 
@@ -441,3 +543,7 @@ layer = 110
 
 [node name="RainLensLayer" parent="." unique_id=802075878 instance=ExtResource("7_jlsqs")]
 visible = false
+
+[node name="PlantInspection" type="CanvasLayer" parent="." unique_id=690118822]
+layer = 80
+script = ExtResource("46_plant_inspection")

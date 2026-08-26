@@ -1,0 +1,16 @@
+[gd_resource type="NoiseTexture2D" format=3 uid="uid://dovro1tc8mtdb"]
+
+[sub_resource type="Gradient" id="Gradient_cloud_shadows"]
+offsets = PackedFloat32Array(0, 0.38, 0.54, 0.72, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 0.9, 0.9, 0.9, 1, 0.72, 0.72, 0.72, 1, 0.62, 0.62, 0.62, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_cloud_shadows"]
+seed = 8241
+frequency = 0.008
+fractal_octaves = 4
+fractal_gain = 0.46
+
+[resource]
+noise = SubResource("FastNoiseLite_cloud_shadows")
+color_ramp = SubResource("Gradient_cloud_shadows")
+seamless = true

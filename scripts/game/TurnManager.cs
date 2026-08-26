@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 public partial class TurnManager : Node
 {
+	private const int FirstCardDrawPityRound = 2;
+	private const int SecondCardDrawPityRound = 3;
+	private const int FirstCardDrawPityMultiplier = 2;
+	private const int SecondCardDrawPityMultiplier = 3;
+
 	public event Action<int> TurnStarted;
 	public event Action<int> EndTurnRequested;
 	public event Action<PlantType, HexCoord> PlantPlaced;
@@ -63,6 +68,7 @@ public partial class TurnManager : Node
 		}
 
 		State = new GameState(Config);
+		InitializeCardDrawMissedRounds();
 		DrawConfiguredStartingCards();
 		StartTurn();
 	}
@@ -135,7 +141,7 @@ public partial class TurnManager : Node
 			return;
 		}
 
-		DrawCardsUntilTargetHandSize();
+		DrawCardsUntilTargetHandSize(updateMissedRounds: true);
 		State.CurrentRound++;
 		RoundFullyResolved?.Invoke(statisticsEntry);
 		StartTurn();
@@ -218,6 +224,55 @@ public partial class TurnManager : Node
 		State.HandCards.Remove(card);
 
 		PlantPlaced?.Invoke(card.PlantType, tile.Coord);
+		return true;
+	}
+
+	public bool CanRemoveYoungPlant(HexTileData tile)
+	{
+		return State != null &&
+			!State.IsGameOver &&
+			tile?.Plant != null &&
+			!tile.Coord.Equals(new HexCoord(0, 0)) &&
+			tile.Plant.VisualGrowthStage == 1;
+	}
+
+	public bool TryRemoveYoungPlant(HexTileData tile, out string errorMessage)
+	{
+		errorMessage = "";
+
+		if (State == null)
+		{
+			errorMessage = "Das Spiel wurde noch nicht gestartet.";
+			return false;
+		}
+
+		if (State.IsGameOver)
+		{
+			errorMessage = "Die Partie ist bereits beendet.";
+			return false;
+		}
+
+		if (tile?.Plant == null)
+		{
+			errorMessage = "Auf diesem Feld steht keine lebende Pflanze.";
+			return false;
+		}
+
+		if (tile.Coord.Equals(new HexCoord(0, 0)))
+		{
+			errorMessage = "Die Haupteiche kann nicht entfernt werden.";
+			return false;
+		}
+
+		if (tile.Plant.VisualGrowthStage != 1)
+		{
+			errorMessage = "Nur Pflanzen im ersten Stadium können entfernt werden.";
+			return false;
+		}
+
+		tile.RemovePlant();
+		_boardManager.GetTileView(tile.Coord)?.UpdateVisualState();
+		_boardManager.RecalculateLightLevels();
 		return true;
 	}
 
@@ -320,6 +375,9 @@ public partial class TurnManager : Node
 				index < copies && State.HandCards.Count < targetHandSize;
 				index++)
 			{
+				if (WouldCompleteUniformHand(plant.Type, targetHandSize))
+					continue;
+
 				DrawCard(CardData.CreatePlantCard(plant.Type));
 			}
 		}
@@ -327,31 +385,41 @@ public partial class TurnManager : Node
 		DrawCardsUntilTargetHandSize();
 	}
 
-	private void DrawCardsUntilTargetHandSize()
+	private void DrawCardsUntilTargetHandSize(bool updateMissedRounds = false)
 	{
 		int targetHandSize = Mathf.Min(Config.StartingHandSize, Config.MaxHandSize);
+		HashSet<PlantType> drawnPlantTypes = new();
 
 		while (State.HandCards.Count < targetHandSize)
 		{
-			DrawRandomCard();
+			PlantType drawnPlantType = DrawRandomCard(targetHandSize);
+
+			if (drawnPlantType == PlantType.None)
+				break;
+
+			drawnPlantTypes.Add(drawnPlantType);
 		}
+
+		if (updateMissedRounds)
+			UpdateCardDrawMissedRounds(drawnPlantTypes);
 	}
 
-	private void DrawRandomCard()
+	private PlantType DrawRandomCard(int targetHandSize)
 	{
 		if (State.HandCards.Count >= Config.MaxHandSize)
-			return;
+			return PlantType.None;
 
-		EnsureDrawPile();
+		EnsureDrawPile(targetHandSize);
 		if (State.DrawPile.Count == 0)
-			return;
+			return PlantType.None;
 
 		CardData card = State.DrawPile[0];
 		State.DrawPile.RemoveAt(0);
 		DrawCard(card);
+		return card?.PlantType ?? PlantType.None;
 	}
 
-	private void EnsureDrawPile()
+	private void EnsureDrawPile(int targetHandSize)
 	{
 		if (State.DrawPile.Count > 0)
 			return;
@@ -359,7 +427,8 @@ public partial class TurnManager : Node
 		int drawBatchSize = 1;
 		for (int index = 0; index < drawBatchSize; index++)
 		{
-			CardData card = CardData.CreatePlantCard(GetRandomPlantType());
+			CardData card = CardData.CreatePlantCard(
+				GetRandomPlantType(targetHandSize));
 			if (card != null)
 				State.DrawPile.Add(card);
 		}
@@ -373,36 +442,129 @@ public partial class TurnManager : Node
 		State.HandCards.Add(card);
 	}
 
-	private PlantType GetRandomPlantType()
+	private PlantType GetRandomPlantType(int targetHandSize)
 	{
 		List<PlantDefinition> plants = PlantDatabase.GetAll();
 		int totalWeight = 0;
 
 		foreach (PlantDefinition plant in plants)
 		{
-			if (plant.Type is PlantType.None or PlantType.Oak)
+			if (plant.Type is PlantType.None or PlantType.Oak ||
+				WouldCompleteUniformHand(plant.Type, targetHandSize))
 				continue;
 
-			totalWeight += Math.Max(plant.DrawWeight, 0);
+			totalWeight += GetAdjustedDrawWeight(plant);
 		}
 
 		if (totalWeight <= 0)
-			return PlantType.Moss;
+			return GetFallbackPlantType(plants, targetHandSize);
 
 		int selection = _rng.RandiRange(1, totalWeight);
 
 		foreach (PlantDefinition plant in plants)
 		{
-			if (plant.Type is PlantType.None or PlantType.Oak)
+			if (plant.Type is PlantType.None or PlantType.Oak ||
+				WouldCompleteUniformHand(plant.Type, targetHandSize))
 				continue;
 
-			selection -= Math.Max(plant.DrawWeight, 0);
+			selection -= GetAdjustedDrawWeight(plant);
 
 			if (selection <= 0)
 				return plant.Type;
 		}
 
-		return PlantType.Moss;
+		return GetFallbackPlantType(plants, targetHandSize);
+	}
+
+	private void InitializeCardDrawMissedRounds()
+	{
+		foreach (PlantDefinition plant in PlantDatabase.GetAll())
+		{
+			if (plant.Type is PlantType.None or PlantType.Oak)
+				continue;
+
+			State.CardDrawMissedRounds[plant.Type] = 0;
+		}
+	}
+
+	private void UpdateCardDrawMissedRounds(
+		HashSet<PlantType> drawnPlantTypes)
+	{
+		foreach (PlantDefinition plant in PlantDatabase.GetAll())
+		{
+			if (plant.Type is PlantType.None or PlantType.Oak)
+				continue;
+
+			if (drawnPlantTypes.Contains(plant.Type))
+			{
+				State.CardDrawMissedRounds[plant.Type] = 0;
+				continue;
+			}
+
+			State.CardDrawMissedRounds.TryGetValue(
+				plant.Type,
+				out int missedRounds);
+			State.CardDrawMissedRounds[plant.Type] = Math.Min(
+				missedRounds + 1,
+				SecondCardDrawPityRound);
+		}
+	}
+
+	private int GetAdjustedDrawWeight(PlantDefinition plant)
+	{
+		int baseWeight = Math.Max(plant.DrawWeight, 0);
+		State.CardDrawMissedRounds.TryGetValue(
+			plant.Type,
+			out int missedRounds);
+
+		if (missedRounds >= SecondCardDrawPityRound)
+			return baseWeight * SecondCardDrawPityMultiplier;
+
+		if (missedRounds >= FirstCardDrawPityRound)
+			return baseWeight * FirstCardDrawPityMultiplier;
+
+		return baseWeight;
+	}
+
+	private bool WouldCompleteUniformHand(
+		PlantType candidateType,
+		int targetHandSize)
+	{
+		if (targetHandSize <= 1 ||
+			State.HandCards.Count == 0 ||
+			State.HandCards.Count + 1 < targetHandSize)
+		{
+			return false;
+		}
+
+		foreach (CardData card in State.HandCards)
+		{
+			if (card.CardType != CardType.Plant ||
+				card.PlantType != candidateType)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private PlantType GetFallbackPlantType(
+		List<PlantDefinition> plants,
+		int targetHandSize)
+	{
+		foreach (PlantDefinition plant in plants)
+		{
+			if (plant.Type is PlantType.None or PlantType.Oak ||
+				WouldCompleteUniformHand(plant.Type, targetHandSize))
+			{
+				continue;
+			}
+
+			return plant.Type;
+		}
+
+		return PlantType.None;
 	}
 
 	private HexCoord FindMainTreeCoord()

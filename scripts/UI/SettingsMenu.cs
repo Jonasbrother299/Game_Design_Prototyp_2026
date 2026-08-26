@@ -16,6 +16,7 @@ public partial class SettingsMenu : Control
 	private const string SettingsPath = "user://settings.cfg";
 	private const string DeveloperSection = "developer";
 	private const string DayNightCycleEnabledKey = "day_night_cycle_enabled";
+	private const string FishEnabledKey = "fish_enabled";
 	private const string CameraStartPitchKey = "camera_start_pitch_degrees";
 	private const string MusicBusName = "Music";
 	private const string EffectsBusName = "Effects";
@@ -25,6 +26,8 @@ public partial class SettingsMenu : Control
 	private const string HeatAmbienceBusName = "HeatAmbience";
 	private const string RainAmbienceBusName = "RainAmbience";
 	private const string HeavyRainAmbienceBusName = "HeavyRainAmbience";
+	private const float MinimumRenderScale = 0.5f;
+	private const float MaximumRenderScale = 1.0f;
 	private const string CameraSensitivitySetting =
 		"gameplay/camera_sensitivity_multiplier";
 	private const string ZoomSensitivitySetting =
@@ -78,13 +81,26 @@ public partial class SettingsMenu : Control
 	private CheckButton _plantsVisibilityToggle;
 	private CheckButton _stoneBorderVisibilityToggle;
 	private CheckButton _outerRingVisibilityToggle;
+	private CheckButton _outerGrassVisibilityToggle;
+	private CheckButton _outerCommonTreeVisibilityToggle;
+	private CheckButton _outerPine1VisibilityToggle;
+	private CheckButton _outerPine2VisibilityToggle;
+	private CheckButton _outerPine3VisibilityToggle;
+	private CheckButton _outerBushVisibilityToggle;
+	private CheckButton _outerFloweringBushVisibilityToggle;
+	private CheckButton _outerFlowersVisibilityToggle;
+	private CheckButton _outerMushroomsVisibilityToggle;
+	private CheckButton _outerOtherVisibilityToggle;
 	private CheckButton _waterVisibilityToggle;
+	private CheckButton _fishVisibilityToggle;
 	private CheckButton _shadowsToggle;
 	private Label _drawCallsValue;
 	private CheckButton _muteToggle;
 	private CheckButton _fullscreenToggle;
 	private CheckButton _vsyncToggle;
 	private OptionButton _resolutionOptions;
+	private HSlider _renderScaleSlider;
+	private Label _renderScaleValue;
 	private HSlider _cameraSensitivitySlider;
 	private Label _cameraSensitivityValue;
 	private HSlider _zoomSensitivitySlider;
@@ -143,13 +159,35 @@ public partial class SettingsMenu : Control
 		_plantsVisibilityToggle = GetNode<CheckButton>("%PlantsVisibilityToggle");
 		_stoneBorderVisibilityToggle = GetNode<CheckButton>("%StoneBorderVisibilityToggle");
 		_outerRingVisibilityToggle = GetNode<CheckButton>("%OuterRingVisibilityToggle");
+		_outerGrassVisibilityToggle = GetNode<CheckButton>("%OuterGrassVisibilityToggle");
+		_outerCommonTreeVisibilityToggle =
+			GetNode<CheckButton>("%OuterCommonTreeVisibilityToggle");
+		_outerPine1VisibilityToggle =
+			GetNode<CheckButton>("%OuterPine1VisibilityToggle");
+		_outerPine2VisibilityToggle =
+			GetNode<CheckButton>("%OuterPine2VisibilityToggle");
+		_outerPine3VisibilityToggle =
+			GetNode<CheckButton>("%OuterPine3VisibilityToggle");
+		_outerBushVisibilityToggle =
+			GetNode<CheckButton>("%OuterBushVisibilityToggle");
+		_outerFloweringBushVisibilityToggle =
+			GetNode<CheckButton>("%OuterFloweringBushVisibilityToggle");
+		_outerFlowersVisibilityToggle =
+			GetNode<CheckButton>("%OuterFlowersVisibilityToggle");
+		_outerMushroomsVisibilityToggle =
+			GetNode<CheckButton>("%OuterMushroomsVisibilityToggle");
+		_outerOtherVisibilityToggle =
+			GetNode<CheckButton>("%OuterOtherVisibilityToggle");
 		_waterVisibilityToggle = GetNode<CheckButton>("%WaterVisibilityToggle");
+		_fishVisibilityToggle = GetNode<CheckButton>("%FishVisibilityToggle");
 		_shadowsToggle = GetNode<CheckButton>("%ShadowsToggle");
 		_drawCallsValue = GetNode<Label>("%DrawCallsValue");
 		_muteToggle = GetNode<CheckButton>("%MuteToggle");
 		_fullscreenToggle = GetNode<CheckButton>("%FullscreenToggle");
 		_vsyncToggle = GetNode<CheckButton>("%VsyncToggle");
 		_resolutionOptions = GetNode<OptionButton>("%ResolutionOptions");
+		_renderScaleSlider = GetNode<HSlider>("%RenderScaleSlider");
+		_renderScaleValue = GetNode<Label>("%RenderScaleValue");
 		_cameraSensitivitySlider = GetNode<HSlider>("%CameraSensitivitySlider");
 		_cameraSensitivityValue = GetNode<Label>("%CameraSensitivityValue");
 		_zoomSensitivitySlider = GetNode<HSlider>("%ZoomSensitivitySlider");
@@ -204,6 +242,7 @@ public partial class SettingsMenu : Control
 		_fullscreenToggle.Toggled += OnFullscreenToggled;
 		_vsyncToggle.Toggled += OnVsyncToggled;
 		_resolutionOptions.ItemSelected += OnResolutionSelected;
+		_renderScaleSlider.ValueChanged += OnRenderScaleChanged;
 		_cameraSensitivitySlider.ValueChanged += OnControlSettingChanged;
 		_zoomSensitivitySlider.ValueChanged += OnControlSettingChanged;
 		_tileFocusDistanceSlider.ValueChanged += OnControlSettingChanged;
@@ -215,7 +254,19 @@ public partial class SettingsMenu : Control
 		_plantsVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
 		_stoneBorderVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
 		_outerRingVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerGrassVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerCommonTreeVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerPine1VisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerPine2VisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerPine3VisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerBushVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerFloweringBushVisibilityToggle.Toggled +=
+			OnRenderDiagnosticToggled;
+		_outerFlowersVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerMushroomsVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_outerOtherVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
 		_waterVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
+		_fishVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
 		_shadowsToggle.Toggled += OnRenderDiagnosticToggled;
 		_backButton.Pressed += Close;
 
@@ -291,12 +342,17 @@ public partial class SettingsMenu : Control
 			DisplayServer.WindowGetVsyncMode() != DisplayServer.VSyncMode.Disabled;
 		Vector2I windowSize = DisplayServer.WindowGetSize();
 		bool hasSavedResolution = false;
+		float renderScale = Mathf.Clamp(
+			GetTree().Root.Scaling3DScale,
+			MinimumRenderScale,
+			MaximumRenderScale);
 		float cameraSensitivity = 1.0f;
 		float zoomSensitivity = 1.0f;
 		float tileFocusDistance = 14.0f;
 		float boardOverviewDistance = 0.875f;
 		bool invertVertical = false;
 		bool dayNightCycleEnabled = true;
+		bool fishEnabled = true;
 		float cameraStartPitch = _cameraRig?.StartPitchDegrees ??
 			(float)_cameraPitchSlider.Value;
 
@@ -358,6 +414,9 @@ public partial class SettingsMenu : Control
 			windowSize = new Vector2I(
 				config.GetValue("display", "window_width", windowSize.X).AsInt32(),
 				config.GetValue("display", "window_height", windowSize.Y).AsInt32());
+			renderScale = config
+				.GetValue("display", "render_scale", renderScale)
+				.AsSingle();
 			cameraSensitivity = config
 				.GetValue("controls", "camera_sensitivity", cameraSensitivity)
 				.AsSingle();
@@ -378,6 +437,9 @@ public partial class SettingsMenu : Control
 					DeveloperSection,
 					DayNightCycleEnabledKey,
 					dayNightCycleEnabled)
+				.AsBool();
+			fishEnabled = config
+				.GetValue(DeveloperSection, FishEnabledKey, fishEnabled)
 				.AsBool();
 			cameraStartPitch = config
 				.GetValue(
@@ -413,6 +475,7 @@ public partial class SettingsMenu : Control
 		ApplyMasterMute(muted);
 		ApplyFullscreen(fullscreen);
 		ApplyVsync(vsyncEnabled);
+		ApplyRenderScale(renderScale);
 		ApplyControlSettings(
 			cameraSensitivity,
 			zoomSensitivity,
@@ -439,6 +502,11 @@ public partial class SettingsMenu : Control
 		_muteToggle.ButtonPressed = muted;
 		_fullscreenToggle.ButtonPressed = fullscreen;
 		_vsyncToggle.ButtonPressed = vsyncEnabled;
+		_renderScaleSlider.Value = Mathf.Clamp(
+			renderScale,
+			MinimumRenderScale,
+			MaximumRenderScale) * 100.0f;
+		_renderScaleValue.Text = FormatPercent(_renderScaleSlider.Value);
 		_cameraSensitivitySlider.Value = ToSensitivityPercent(cameraSensitivity);
 		_zoomSensitivitySlider.Value = ToSensitivityPercent(zoomSensitivity);
 		_tileFocusDistanceSlider.Value = Mathf.Clamp(tileFocusDistance, 8.0f, 24.0f);
@@ -446,6 +514,7 @@ public partial class SettingsMenu : Control
 			ToOverviewDistancePercent(boardOverviewDistance);
 		_invertVerticalToggle.ButtonPressed = invertVertical;
 		_dayNightCycleToggle.ButtonPressed = dayNightCycleEnabled;
+		_fishVisibilityToggle.ButtonPressed = fishEnabled;
 		UpdateVolumeLabels();
 		UpdateDeveloperVolumeLabels();
 		UpdateControlLabels();
@@ -493,6 +562,10 @@ public partial class SettingsMenu : Control
 		config.SetValue("audio", "muted", _muteToggle.ButtonPressed);
 		config.SetValue("display", "fullscreen", _fullscreenToggle.ButtonPressed);
 		config.SetValue("display", "vsync", _vsyncToggle.ButtonPressed);
+		config.SetValue(
+			"display",
+			"render_scale",
+			(float)(_renderScaleSlider.Value / 100.0));
 
 		Vector2I selectedResolution = GetSelectedResolution();
 		config.SetValue("display", "window_width", selectedResolution.X);
@@ -523,6 +596,10 @@ public partial class SettingsMenu : Control
 			_dayNightCycleToggle.ButtonPressed);
 		config.SetValue(
 			DeveloperSection,
+			FishEnabledKey,
+			_fishVisibilityToggle.ButtonPressed);
+		config.SetValue(
+			DeveloperSection,
 			CameraStartPitchKey,
 			_cameraStartPitchDegrees);
 
@@ -540,6 +617,18 @@ public partial class SettingsMenu : Control
 
 		return config
 			.GetValue(DeveloperSection, DayNightCycleEnabledKey, true)
+			.AsBool();
+	}
+
+	internal static bool IsFishEnabled()
+	{
+		ConfigFile config = new ConfigFile();
+
+		if (config.Load(SettingsPath) != Error.Ok)
+			return true;
+
+		return config
+			.GetValue(DeveloperSection, FishEnabledKey, true)
 			.AsBool();
 	}
 
@@ -607,6 +696,12 @@ public partial class SettingsMenu : Control
 		ApplyResolution(WindowSizes[(int)index]);
 	}
 
+	private void OnRenderScaleChanged(double value)
+	{
+		ApplyRenderScale((float)(value / 100.0));
+		_renderScaleValue.Text = FormatPercent(value);
+	}
+
 	private void OnControlSettingChanged(double value)
 	{
 		ApplyCurrentControlSettings();
@@ -633,7 +728,19 @@ public partial class SettingsMenu : Control
 		_plantsVisibilityToggle.Disabled = !hasBoard;
 		_stoneBorderVisibilityToggle.Disabled = !hasBoard;
 		_outerRingVisibilityToggle.Disabled = !hasBoard;
+		_outerGrassVisibilityToggle.Disabled = !hasBoard;
+		_outerCommonTreeVisibilityToggle.Disabled = !hasBoard;
+		_outerPine1VisibilityToggle.Disabled = !hasBoard;
+		_outerPine2VisibilityToggle.Disabled = !hasBoard;
+		_outerPine3VisibilityToggle.Disabled = !hasBoard;
+		_outerBushVisibilityToggle.Disabled = !hasBoard;
+		_outerFloweringBushVisibilityToggle.Disabled = !hasBoard;
+		_outerFlowersVisibilityToggle.Disabled = !hasBoard;
+		_outerMushroomsVisibilityToggle.Disabled = !hasBoard;
+		_outerOtherVisibilityToggle.Disabled = !hasBoard;
 		_waterVisibilityToggle.Disabled = !hasBoard;
+		_fishVisibilityToggle.Disabled =
+			currentScene?.GetNodeOrNull<FishSchoolController>("FishController") == null;
 		_shadowsToggle.Disabled = !hasBoard;
 	}
 
@@ -691,9 +798,40 @@ public partial class SettingsMenu : Control
 			_stoneBorderVisibilityToggle.ButtonPressed,
 			_outerRingVisibilityToggle.ButtonPressed);
 
+		OuterRingVisualGroup visibleOuterRingGroups =
+			OuterRingVisualGroup.None;
+		if (_outerGrassVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.OuterGrass;
+		if (_outerCommonTreeVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.CommonTree;
+		if (_outerPine1VisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Pine1;
+		if (_outerPine2VisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Pine2;
+		if (_outerPine3VisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Pine3;
+		if (_outerBushVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Bush;
+		if (_outerFloweringBushVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.FloweringBush;
+		if (_outerFlowersVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Flowers;
+		if (_outerMushroomsVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Mushrooms;
+		if (_outerOtherVisibilityToggle.ButtonPressed)
+			visibleOuterRingGroups |= OuterRingVisualGroup.Other;
+
+		boardManager.SetOuterRingDetailVisibility(
+			_outerRingVisibilityToggle.ButtonPressed,
+			visibleOuterRingGroups);
+
 		Node3D water = currentScene.GetNodeOrNull<Node3D>("StylizedWater");
 		if (water != null)
 			water.Visible = _waterVisibilityToggle.ButtonPressed;
+
+		FishSchoolController fishController =
+			currentScene.GetNodeOrNull<FishSchoolController>("FishController");
+		fishController?.SetFishEnabled(_fishVisibilityToggle.ButtonPressed);
 
 		DirectionalLight3D directionalLight =
 			currentScene.GetNodeOrNull<DirectionalLight3D>("DirectionalLight3D");
@@ -866,6 +1004,18 @@ public partial class SettingsMenu : Control
 			enabled
 				? DisplayServer.VSyncMode.Enabled
 				: DisplayServer.VSyncMode.Disabled);
+	}
+
+	private void ApplyRenderScale(float scale)
+	{
+		Viewport rootViewport = GetTree()?.Root;
+		if (rootViewport == null)
+			return;
+
+		rootViewport.Scaling3DScale = Mathf.Clamp(
+			scale,
+			MinimumRenderScale,
+			MaximumRenderScale);
 	}
 
 	private static void ApplyControlSettings(

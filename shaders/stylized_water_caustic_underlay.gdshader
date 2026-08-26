@@ -16,6 +16,10 @@ uniform float line_distortion_scale : hint_range(0.2, 4.0, 0.01) = 1.4;
 uniform vec2 pattern_offset = vec2(0.48, -0.34);
 uniform vec2 water_center = vec2(0.0);
 uniform float underlay_radius : hint_range(4.0, 40.0, 0.1) = 19.0;
+uniform float basin_center_depth : hint_range(0.0, 2.5, 0.05) = 0.72;
+uniform float basin_edge_depth : hint_range(0.0, 2.5, 0.05) = 0.18;
+uniform float ground_variation : hint_range(0.0, 0.5, 0.01) = 0.14;
+uniform float ground_variation_scale : hint_range(0.05, 2.0, 0.01) = 0.28;
 
 varying vec3 world_position;
 
@@ -153,6 +157,26 @@ vec2 wobble_cell_position(
 
 void vertex()
 {
+	vec3 base_world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	vec2 relative_position = base_world_position.xz - water_center;
+	float radial_distance = clamp(
+		length(relative_position) / max(underlay_radius, 0.001),
+		0.0,
+		1.0);
+	float edge_blend = smoothstep(0.12, 1.0, radial_distance);
+	float basin_depth = mix(
+		basin_center_depth,
+		basin_edge_depth,
+		edge_blend);
+	float broad_variation = value_noise(
+		relative_position * ground_variation_scale + vec2(12.7, 4.3));
+	float detail_variation = value_noise(
+		relative_position * ground_variation_scale * 2.35 + vec2(3.1, 19.6));
+	float natural_variation = (
+		broad_variation * 0.72 + detail_variation * 0.28) * 2.0 - 1.0;
+	VERTEX.y -= max(
+		0.0,
+		basin_depth + natural_variation * ground_variation);
 	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 

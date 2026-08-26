@@ -226,15 +226,6 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="AllButton" type="Button" parent="CenterContainer/Panel/Content/Tabs"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 48)
-layout_mode = 2
-toggle_mode = true
-button_pressed = true
-theme_override_font_sizes/font_size = 22
-text = "ALLE"
-
 [node name="PlantsButton" type="Button" parent="CenterContainer/Panel/Content/Tabs"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 48)
@@ -344,6 +335,17 @@ theme_override_font_sizes/bold_font_size = 25
 bbcode_enabled = true
 fit_content = false
 scroll_active = true
+
+[node name="DescriptionCard" type="TextureRect" parent="CenterContainer/Panel/Content/Body/DetailPanel/DetailRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="BackButton" type="Button" parent="CenterContainer/Panel/Content"]
 unique_name_in_owner = true

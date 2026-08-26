@@ -339,8 +339,7 @@ public partial class GameHub : Control
 		ActiveGameEvent activeEvent = _turnManager.State.ActiveEvents.Count > 0
 			? _turnManager.State.ActiveEvents[0]
 			: null;
-		if (activeEvent?.Definition != null)
-			_eventDisplay?.ShowActivated(activeEvent.Definition);
+		_eventDisplay?.ShowActivated(activeEvent?.Definition);
 		_dayCycleDisplay?.SetEvent(
 			activeEvent?.Definition?.Type ?? GameEventType.None);
 
@@ -453,7 +452,7 @@ public partial class GameHub : Control
 
 		_dayCycleDisplay?.ShowDay();
 		_dayCycleDisplay?.PlaySunset(DimmingDuration);
-		_dayNightOverlay.Color = new Color(0.05f, 0.12f, 0.30f, 0.0f);
+		_dayNightOverlay.Color = new Color(0.08f, 0.10f, 0.12f, 0.0f);
 		_dayNightOverlay.Show();
 
 		_dayNightTransitionTween = CreateTween()
@@ -463,7 +462,7 @@ public partial class GameHub : Control
 		_dayNightTransitionTween.TweenProperty(
 			_dayNightOverlay,
 			"color",
-			new Color(0.06f, 0.14f, 0.34f, 0.16f),
+			new Color(0.10f, 0.12f, 0.14f, 0.018f),
 			DimmingDuration);
 		_dayNightTransitionTween.TweenCallback(
 			Callable.From(() => _dayCycleDisplay?.ShowNight()));
@@ -475,7 +474,7 @@ public partial class GameHub : Control
 		_dayNightTransitionTween.TweenProperty(
 			_dayNightOverlay,
 			"color",
-			new Color(0.05f, 0.12f, 0.30f, 0.0f),
+			new Color(0.08f, 0.10f, 0.12f, 0.0f),
 			BrighteningDuration);
 		_dayNightTransitionTween.TweenCallback(
 			Callable.From(() => _dayCycleDisplay?.ShowDay()));

@@ -14,6 +14,7 @@ public partial class TreeProximityFade3D : Node
 	private bool _hasCanopyBounds;
 	private float _lastAppliedFade = -1.0f;
 	private bool _lastAppliedFullyHidden;
+	private bool _inspectionSuppressed;
 
 	public float FadeStartDistance { get; set; } = 3.0f;
 	public float FadeFullDistance { get; set; } = 0.6f;
@@ -45,11 +46,40 @@ public partial class TreeProximityFade3D : Node
 		if (GetParent() is Node3D treeRoot)
 			CollectGeometry(treeRoot);
 
-		SetProcess(_hasBounds && _geometryStates.Count > 0);
+		SetProcess(
+			!_inspectionSuppressed &&
+			_hasBounds &&
+			_geometryStates.Count > 0);
+	}
+
+	public void SetInspectionSuppressed(bool suppressed)
+	{
+		if (_inspectionSuppressed == suppressed)
+			return;
+
+		_inspectionSuppressed = suppressed;
+		if (suppressed)
+		{
+			_currentFade = 0.0f;
+			ApplyFade(0.0f, fullyHidden: false);
+		}
+		else
+		{
+			_lastAppliedFade = -1.0f;
+			_lastAppliedFullyHidden = false;
+		}
+
+		SetProcess(
+			!_inspectionSuppressed &&
+			_hasBounds &&
+			_geometryStates.Count > 0);
 	}
 
 	public override void _Process(double delta)
 	{
+		if (_inspectionSuppressed)
+			return;
+
 		Camera3D camera = GetViewport()?.GetCamera3D();
 		bool fullyHidden = camera != null &&
 			IsInsideCanopyBounds(camera.GlobalPosition);

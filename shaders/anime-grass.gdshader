@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode specular_disabled;
+render_mode specular_disabled, cull_disabled;
 
 uniform sampler2D grass_texture : source_color, filter_linear_mipmap_anisotropic;
 uniform sampler2D wind_noise : repeat_enable, filter_linear_mipmap;
@@ -46,12 +46,12 @@ instance uniform vec4 grass_neighbor_dry_45 = vec4(0.0);
 instance uniform vec4 grass_neighbor_state_01 = vec4(0.0);
 instance uniform vec4 grass_neighbor_state_23 = vec4(0.0);
 instance uniform vec4 grass_neighbor_state_45 = vec4(0.0);
+instance uniform vec4 canopy_shadow = vec4(1.0, 1.0, 1.0, 0.0);
 
-varying flat float blade_visible;
 varying float blade_tip;
 varying float wind_shadow;
 varying vec3 grass_world_position;
-varying flat float blade_dry_amount;
+varying float blade_dry_amount;
 varying flat vec2 grass_root_world_position;
 
 vec2 safe_normalize(vec2 value, vec2 fallback) {
@@ -95,6 +95,7 @@ vec3 state_neighbor_contribution(vec2 neighbor_state, float edge_weight) {
 
 void vertex() {
 	vec3 instance_world_position = MODEL_MATRIX[3].xyz;
+	vec3 undeformed_world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	float instance_random = hash_position(
 		instance_world_position.xz + vec2(grass_state.w * 7.31, grass_state.w * 3.17)
 	);
@@ -192,26 +193,57 @@ void vertex() {
 		grass_border_directions_45.zw,
 		grass_border.z,
 		grass_neighbor_dry_45.w);
+	vec2 dry_border_position = undeformed_world_position.xz - grass_border.xy;
+	float dry_neighbor_weight_0 = neighbor_blend_weight(
+		dry_border_position,
+		grass_border_directions_01.xy,
+		grass_border.z,
+		grass_neighbor_dry_01.y);
+	float dry_neighbor_weight_1 = neighbor_blend_weight(
+		dry_border_position,
+		grass_border_directions_01.zw,
+		grass_border.z,
+		grass_neighbor_dry_01.w);
+	float dry_neighbor_weight_2 = neighbor_blend_weight(
+		dry_border_position,
+		grass_border_directions_23.xy,
+		grass_border.z,
+		grass_neighbor_dry_23.y);
+	float dry_neighbor_weight_3 = neighbor_blend_weight(
+		dry_border_position,
+		grass_border_directions_23.zw,
+		grass_border.z,
+		grass_neighbor_dry_23.w);
+	float dry_neighbor_weight_4 = neighbor_blend_weight(
+		dry_border_position,
+		grass_border_directions_45.xy,
+		grass_border.z,
+		grass_neighbor_dry_45.y);
+	float dry_neighbor_weight_5 = neighbor_blend_weight(
+		dry_border_position,
+		grass_border_directions_45.zw,
+		grass_border.z,
+		grass_neighbor_dry_45.w);
 
 	vec2 dry_blend = vec2(grass_state.z, 1.0);
 	dry_blend += dry_neighbor_contribution(
 		grass_neighbor_dry_01.x,
-		neighbor_weight_0);
+		dry_neighbor_weight_0);
 	dry_blend += dry_neighbor_contribution(
 		grass_neighbor_dry_01.z,
-		neighbor_weight_1);
+		dry_neighbor_weight_1);
 	dry_blend += dry_neighbor_contribution(
 		grass_neighbor_dry_23.x,
-		neighbor_weight_2);
+		dry_neighbor_weight_2);
 	dry_blend += dry_neighbor_contribution(
 		grass_neighbor_dry_23.z,
-		neighbor_weight_3);
+		dry_neighbor_weight_3);
 	dry_blend += dry_neighbor_contribution(
 		grass_neighbor_dry_45.x,
-		neighbor_weight_4);
+		dry_neighbor_weight_4);
 	dry_blend += dry_neighbor_contribution(
 		grass_neighbor_dry_45.z,
-		neighbor_weight_5);
+		dry_neighbor_weight_5);
 	blade_dry_amount = clamp(dry_blend.x / dry_blend.y, 0.0, 1.0);
 
 	vec3 state_blend = vec3(grass_state.xy, 1.0);
@@ -235,9 +267,15 @@ void vertex() {
 		neighbor_weight_5);
 	vec2 blended_grass_state = state_blend.xy / max(state_blend.z, 0.0001);
 
-	blade_visible =
+	float blade_visibility =
 		step(instance_random, clamp(blended_grass_state.x, 0.0, 1.0)) *
 		(1.0 - outside_border);
+	float blocker_visibility = smoothstep(
+		0.0,
+		1.0,
+		clamp(INSTANCE_CUSTOM.r, 0.0, 1.0)
+	);
+	blade_visibility *= step(instance_random * 0.22, blocker_visibility);
 	blade_tip = smoothstep(0.0, 0.16, VERTEX.y);
 
 	vec2 cross_direction = vec2(-wind_direction.y, wind_direction.x);
@@ -268,9 +306,11 @@ void vertex() {
 	VERTEX.xz += curve_direction * shape_curve * curve_profile;
 	VERTEX.xz += local_wind * bend * blade_tip;
 	VERTEX.y -= abs(bend) * blade_tip * 0.10;
+	VERTEX.xz *= mix(0.18, 1.0, blocker_visibility);
+	VERTEX.y *= blocker_visibility;
 	NORMAL = normalize(mix(NORMAL, painted_local_normal, 0.68));
 
-	if (blade_visible < 0.5) {
+	if (blade_visibility < 0.5) {
 		VERTEX *= 0.0;
 	}
 
@@ -279,10 +319,6 @@ void vertex() {
 }
 
 void fragment() {
-	if (blade_visible < 0.5) {
-		discard;
-	}
-
 	float painted_value = mix(0.56, 0.92, blade_tip);
 	float large_patch = texture(
 		wind_noise,
@@ -302,47 +338,23 @@ void fragment() {
 		-gust_direction.y,
 		gust_direction.x
 	);
-	vec2 gust_secondary_direction = safe_normalize(
-		gust_direction + gust_cross_direction * 0.78,
-		gust_direction
-	);
-	vec2 gust_secondary_cross_direction = vec2(
-		-gust_secondary_direction.y,
-		gust_secondary_direction.x
-	);
 	float gust_time =
 		TIME * grass_wind.x * wind_gust_speed_multiplier;
-	float gust_secondary_time = gust_time * (2.0 / 7.0);
 	vec2 gust_primary_space = vec2(
 		dot(grass_root_world_position, gust_direction) * 0.72,
 		dot(grass_root_world_position, gust_cross_direction) * 1.45
 	);
-	vec2 gust_secondary_space = vec2(
-		dot(grass_root_world_position, gust_secondary_direction) * 1.73,
-		dot(grass_root_world_position, gust_secondary_cross_direction) * 1.19
-	);
 	float gust_primary = texture(
 		wind_noise,
 		gust_primary_space * wind_gust_patch_scale - vec2(gust_time, 0.0)
-	).r;
-	float gust_secondary = texture(
-		wind_noise,
-		gust_secondary_space * wind_gust_patch_scale -
-			vec2(gust_secondary_time, 0.0) + vec2(0.37, 0.61)
 	).r;
 	float gust_primary_mask = smoothstep(
 		wind_gust_threshold - wind_gust_softness,
 		wind_gust_threshold + wind_gust_softness,
 		gust_primary
 	);
-	float gust_secondary_threshold = wind_gust_threshold - 0.08;
-	float gust_secondary_mask = smoothstep(
-		gust_secondary_threshold - wind_gust_softness,
-		gust_secondary_threshold + wind_gust_softness,
-		gust_secondary
-	);
-	float wind_gust = gust_primary_mask * gust_secondary_mask;
-	wind_gust *= mix(0.58, 1.0, secondary_patch);
+	float gust_patch_mask = smoothstep(0.30, 0.78, secondary_patch);
+	float wind_gust = gust_primary_mask * mix(0.58, 1.0, gust_patch_mask);
 
 	vec3 grass_color = mix(
 		grass_shadow_color.rgb,
@@ -352,45 +364,43 @@ void fragment() {
 	grass_color = mix(grass_color, grass_cool_color.rgb, cool_patch * 0.32);
 	grass_color = mix(grass_color, grass_warm_color.rgb, warm_patch * 0.25);
 	grass_color = mix(grass_color, grass_shadow_color.rgb, wind_shadow * 0.08);
-	float dry_patch = texture(
-		wind_noise,
-		grass_world_position.xz * patch_scale * 0.63 + vec2(0.19, 0.71)
-	).r;
-	float dry_light_patch = texture(
-		wind_noise,
-		grass_world_position.xz * patch_scale * 1.18 + vec2(0.67, 0.23)
-	).r;
-	float green_patch = texture(
-		wind_noise,
-		grass_world_position.xz * patch_scale * 0.72 + vec2(0.43, 0.89)
-	).r;
-	vec3 varied_dry_color = mix(
-		grass_dry_shadow_color.rgb,
-		grass_dry_color.rgb,
-		smoothstep(0.0, 1.0, dry_patch));
-	varied_dry_color = mix(
-		varied_dry_color,
-		grass_dry_light_color.rgb,
-		smoothstep(0.18, 0.98, dry_light_patch) * 0.30);
-	varied_dry_color = mix(
-		varied_dry_color,
-		grass_dry_green_color.rgb,
-		0.05);
-	varied_dry_color = mix(
-		varied_dry_color,
-		grass_dry_green_color.rgb,
-		smoothstep(0.25, 0.95, green_patch) * 0.16);
 	float dry_mix_amount =
 		smoothstep(0.0, 1.0, blade_dry_amount) * 0.88;
-	float natural_green_patch = smoothstep(0.48, 0.92, green_patch);
-	dry_mix_amount *= 1.0 - natural_green_patch * 0.24;
-	grass_color = mix(grass_color, varied_dry_color, dry_mix_amount);
+	if (dry_mix_amount > 0.001) {
+		float dry_patch = secondary_patch;
+		float dry_light_patch = large_patch;
+		float green_patch = mix(large_patch, secondary_patch, 0.42);
+		vec3 varied_dry_color = mix(
+			grass_dry_shadow_color.rgb,
+			grass_dry_color.rgb,
+			smoothstep(0.0, 1.0, dry_patch));
+		varied_dry_color = mix(
+			varied_dry_color,
+			grass_dry_light_color.rgb,
+			smoothstep(0.18, 0.98, dry_light_patch) * 0.30);
+		varied_dry_color = mix(
+			varied_dry_color,
+			grass_dry_green_color.rgb,
+			0.05);
+		varied_dry_color = mix(
+			varied_dry_color,
+			grass_dry_green_color.rgb,
+			smoothstep(0.25, 0.95, green_patch) * 0.16);
+		float natural_green_patch = smoothstep(0.48, 0.92, green_patch);
+		dry_mix_amount *= 1.0 - natural_green_patch * 0.24;
+		grass_color = mix(grass_color, varied_dry_color, dry_mix_amount);
+	}
 	float wind_light_amount =
 		wind_gust * wind_gust_strength * mix(0.72, 1.0, blade_tip);
 	grass_color = mix(
 		grass_color,
 		grass_wind_light_color.rgb,
 		wind_light_amount
+	);
+	grass_color *= mix(
+		vec3(1.0),
+		canopy_shadow.rgb,
+		clamp(canopy_shadow.a, 0.0, 1.0)
 	);
 
 	ALBEDO = grass_color;

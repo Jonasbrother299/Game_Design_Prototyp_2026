@@ -26,6 +26,7 @@ public partial class EndGameScreen : Control
 	private TurnManager _turnManager;
 	private Tween _entranceTween;
 	private bool _isInspectingBoard;
+	private bool _hasWarnedAboutMissingTurnManager;
 
 	public override void _Ready()
 	{
@@ -55,19 +56,23 @@ public partial class EndGameScreen : Control
 		if (_cameraRig != null)
 			_cameraRigProcessMode = _cameraRig.ProcessMode;
 
-		_turnManager = GetTree().CurrentScene?.GetNodeOrNull<TurnManager>(
-			"TurnManager");
-		if (_turnManager != null)
-			_turnManager.GameEnded += ShowResult;
-		else
-			GD.PushWarning("EndGameScreen: TurnManager fehlt.");
+		EnsureTurnManagerConnection();
 
 		Hide();
 	}
 
+	public override void _Process(double delta)
+	{
+		EnsureTurnManagerConnection();
+
+		GameState state = _turnManager?.State;
+		if (!Visible && state?.IsGameOver == true)
+			ShowResult(state);
+	}
+
 	public override void _ExitTree()
 	{
-		if (_turnManager != null)
+		if (_turnManager != null && IsInstanceValid(_turnManager))
 			_turnManager.GameEnded -= ShowResult;
 
 		if (_viewBoardButton != null)
@@ -90,6 +95,30 @@ public partial class EndGameScreen : Control
 			_cameraRig.SetInteractionEnabled(true);
 			_cameraRig.ProcessMode = _cameraRigProcessMode;
 		}
+	}
+
+	private void EnsureTurnManagerConnection()
+	{
+		if (_turnManager != null && IsInstanceValid(_turnManager))
+			return;
+
+		_turnManager = GetNodeOrNull<TurnManager>("../../../TurnManager") ??
+			GetTree().CurrentScene?.GetNodeOrNull<TurnManager>("TurnManager");
+
+		if (_turnManager == null)
+		{
+			if (!_hasWarnedAboutMissingTurnManager)
+			{
+				GD.PushWarning("EndGameScreen: TurnManager fehlt.");
+				_hasWarnedAboutMissingTurnManager = true;
+			}
+
+			return;
+		}
+
+		_hasWarnedAboutMissingTurnManager = false;
+		_turnManager.GameEnded -= ShowResult;
+		_turnManager.GameEnded += ShowResult;
 	}
 
 	public override void _Input(InputEvent inputEvent)

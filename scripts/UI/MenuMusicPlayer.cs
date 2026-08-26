@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class MenuMusicPlayer : PanelContainer
 {
@@ -13,22 +14,30 @@ public partial class MenuMusicPlayer : PanelContainer
 	[Export] public AudioStream[] Tracks = Array.Empty<AudioStream>();
 	[Export] public string[] TrackTitles = Array.Empty<string>();
 	[Export] public string[] TrackArtists = Array.Empty<string>();
-	[Export] public Texture2D[] TrackArtwork = Array.Empty<Texture2D>();
 
 	[ExportGroup("Layout")]
-	[Export] public Vector2 ExpandedSize = new(760.0f, 350.0f);
-	[Export] public Vector2 CollapsedSize = new(420.0f, 96.0f);
+	[Export] public Vector2 ExpandedSize = new(680.0f, 500.0f);
+	[Export] public Vector2 CollapsedSize = new(460.0f, 94.0f);
 	[Export] public bool StartCollapsed;
+
+	[ExportGroup("Retro Animation")]
+	[Export(PropertyHint.Range, "0.0,90.0,1.0")]
+	public float RecordRotationDegreesPerSecond = 22.0f;
+
+	[Export(PropertyHint.Range, "1.0,8.0,0.5")]
+	public float ButtonPressDepth = 5.0f;
+
+	[Export(PropertyHint.Range, "0.03,0.2,0.01")]
+	public float ButtonPressDuration = 0.07f;
 
 	private AudioStreamPlayer _audioPlayer;
 	private Control _content;
 	private Control _collapsedContent;
-	private TextureRect _coverImage;
-	private Label _coverFallback;
 	private Label _trackTitle;
 	private Label _trackArtist;
 	private Label _collapsedTrackTitle;
 	private Button _previousButton;
+	private Button _playPauseButton;
 	private Button _stopButton;
 	private Button _nextButton;
 	private Button _muteButton;
@@ -37,21 +46,28 @@ public partial class MenuMusicPlayer : PanelContainer
 	private ProgressBar _progressBar;
 	private Label _elapsedTimeLabel;
 	private Label _durationLabel;
+	private TextureRect _recordDisc;
+	private Control _playbackLamp;
+	private Button[] _animatedButtons = Array.Empty<Button>();
+	private readonly Dictionary<Button, Vector2> _buttonRestPositions = new();
+	private readonly Dictionary<Button, Tween> _buttonTweens = new();
+	private readonly Dictionary<Button, Action> _buttonDownHandlers = new();
+	private readonly Dictionary<Button, Action> _buttonUpHandlers = new();
 	private int _currentTrackIndex;
 	private int _musicBusIndex = -1;
 	private bool _isCollapsed;
+	private bool _retroPartsPrepared;
 
 	public override void _Ready()
 	{
 		_audioPlayer = GetNode<AudioStreamPlayer>("%AudioPlayer");
 		_content = GetNode<Control>("%Content");
 		_collapsedContent = GetNode<Control>("%CollapsedContent");
-		_coverImage = GetNode<TextureRect>("%CoverImage");
-		_coverFallback = GetNode<Label>("%CoverFallback");
 		_trackTitle = GetNode<Label>("%TrackTitle");
 		_trackArtist = GetNode<Label>("%TrackArtist");
 		_collapsedTrackTitle = GetNode<Label>("%CollapsedTrackTitle");
 		_previousButton = GetNode<Button>("%PreviousButton");
+		_playPauseButton = GetNode<Button>("%PlayPauseButton");
 		_stopButton = GetNode<Button>("%StopButton");
 		_nextButton = GetNode<Button>("%NextButton");
 		_muteButton = GetNode<Button>("%MuteButton");
@@ -60,15 +76,30 @@ public partial class MenuMusicPlayer : PanelContainer
 		_progressBar = GetNode<ProgressBar>("%TrackProgress");
 		_elapsedTimeLabel = GetNode<Label>("%ElapsedTimeLabel");
 		_durationLabel = GetNode<Label>("%DurationLabel");
+		_recordDisc = GetNode<TextureRect>("%RecordDisc");
+		_playbackLamp = GetNode<Control>("%PlaybackLamp");
+		_animatedButtons = new[]
+		{
+			_previousButton,
+			_playPauseButton,
+			_stopButton,
+			_nextButton,
+			_muteButton,
+			_collapseButton,
+			_expandButton
+		};
 
 		EnsureMusicBus();
 		_previousButton.Pressed += PlayPreviousTrack;
+		_playPauseButton.Pressed += TogglePlayback;
 		_stopButton.Pressed += StopPlayback;
 		_nextButton.Pressed += PlayNextTrack;
 		_muteButton.Pressed += ToggleMute;
 		_collapseButton.Pressed += CollapsePlayer;
 		_expandButton.Pressed += ExpandPlayer;
 		_audioPlayer.Finished += PlayNextTrack;
+		foreach (Button button in _animatedButtons)
+			BindButtonAnimation(button);
 
 		SetCollapsed(StartCollapsed);
 		UpdatePlayerState();
@@ -80,6 +111,8 @@ public partial class MenuMusicPlayer : PanelContainer
 	{
 		if (_previousButton != null)
 			_previousButton.Pressed -= PlayPreviousTrack;
+		if (_playPauseButton != null)
+			_playPauseButton.Pressed -= TogglePlayback;
 		if (_stopButton != null)
 			_stopButton.Pressed -= StopPlayback;
 		if (_nextButton != null)
@@ -92,11 +125,28 @@ public partial class MenuMusicPlayer : PanelContainer
 			_expandButton.Pressed -= ExpandPlayer;
 		if (_audioPlayer != null)
 			_audioPlayer.Finished -= PlayNextTrack;
+
+		foreach (Button button in _animatedButtons)
+		{
+			if (_buttonDownHandlers.TryGetValue(button, out Action downHandler))
+				button.ButtonDown -= downHandler;
+			if (_buttonUpHandlers.TryGetValue(button, out Action upHandler))
+				button.ButtonUp -= upHandler;
+		}
+
+		foreach (Tween tween in _buttonTweens.Values)
+		{
+			if (tween != null && tween.IsValid())
+				tween.Kill();
+		}
 	}
 
-	public override void _Process(double _)
+	public override void _Process(double delta)
 	{
+		PrepareRetroParts();
+		AnimateRetroMechanics((float)delta);
 		UpdateProgress();
+		UpdatePlaybackButton();
 		UpdateMuteButton();
 	}
 
@@ -127,8 +177,32 @@ public partial class MenuMusicPlayer : PanelContainer
 		if (_audioPlayer == null)
 			return;
 
+		_audioPlayer.StreamPaused = false;
 		_audioPlayer.Stop();
 		UpdateProgress();
+		UpdatePlaybackButton();
+	}
+
+	private void TogglePlayback()
+	{
+		if (_audioPlayer?.Stream == null)
+			return;
+
+		if (_audioPlayer.StreamPaused)
+		{
+			_audioPlayer.StreamPaused = false;
+		}
+		else if (_audioPlayer.Playing)
+		{
+			_audioPlayer.StreamPaused = true;
+		}
+		else
+		{
+			_audioPlayer.StreamPaused = false;
+			_audioPlayer.Play();
+		}
+
+		UpdatePlaybackButton();
 	}
 
 	private void CollapsePlayer()
@@ -191,6 +265,7 @@ public partial class MenuMusicPlayer : PanelContainer
 
 		_currentTrackIndex = trackIndex;
 		_audioPlayer.Stream = track;
+		_audioPlayer.StreamPaused = false;
 		_audioPlayer.Play();
 		UpdatePlayerState();
 	}
@@ -199,14 +274,12 @@ public partial class MenuMusicPlayer : PanelContainer
 	{
 		bool hasTracks = HasPlayableTracks();
 		_previousButton.Disabled = !hasTracks;
+		_playPauseButton.Disabled = !hasTracks;
 		_stopButton.Disabled = !hasTracks;
 		_nextButton.Disabled = !hasTracks;
 
 		if (!hasTracks)
 		{
-			_coverImage.Texture = null;
-			_coverImage.Hide();
-			_coverFallback.Show();
 			_trackTitle.Text = "KEIN TITEL AUSGEWÄHLT";
 			_trackArtist.Text = "Musikdateien folgen";
 			_progressBar.Value = 0.0;
@@ -221,12 +294,18 @@ public partial class MenuMusicPlayer : PanelContainer
 		_trackArtist.Text = GetTrackArtist(_currentTrackIndex);
 		_collapsedTrackTitle.Text =
 			$"MUSIK  •  {GetTrackTitle(_currentTrackIndex)}";
-		Texture2D artwork = GetTrackArtwork(_currentTrackIndex);
-		_coverImage.Texture = artwork;
-		_coverImage.Visible = artwork != null;
-		_coverFallback.Visible = artwork == null;
 		UpdateProgress();
 		UpdateMuteButton();
+	}
+
+	private void UpdatePlaybackButton()
+	{
+		bool isActivelyPlaying =
+			_audioPlayer?.Playing == true && !_audioPlayer.StreamPaused;
+		_playPauseButton.Text = isActivelyPlaying ? "Ⅱ" : "▶";
+		_playPauseButton.TooltipText = isActivelyPlaying
+			? "Musik pausieren"
+			: "Musik abspielen";
 	}
 
 	private void UpdateProgress()
@@ -252,11 +331,93 @@ public partial class MenuMusicPlayer : PanelContainer
 		bool isMuted =
 			_musicBusIndex >= 0 && AudioServer.IsBusMute(_musicBusIndex);
 		_muteButton.Text = isMuted
-			? "♪ WALDKLANG AUS"
-			: "♪ WALDKLANG AN";
+			? "KLANG AUS"
+			: "KLANG AN";
 		_muteButton.TooltipText = isMuted
 			? "Musik einschalten"
 			: "Musik stummschalten";
+	}
+
+	private void PrepareRetroParts()
+	{
+		if (_retroPartsPrepared || _recordDisc.Size.X <= 0.0f)
+			return;
+
+		_recordDisc.PivotOffset = _recordDisc.Size * 0.5f;
+		foreach (Button button in _animatedButtons)
+		{
+			button.PivotOffset = button.Size * 0.5f;
+			_buttonRestPositions[button] = button.Position;
+		}
+
+		_retroPartsPrepared = true;
+	}
+
+	private void AnimateRetroMechanics(float delta)
+	{
+		bool isPlaying =
+			_audioPlayer?.Playing == true && !_audioPlayer.StreamPaused;
+		if (isPlaying)
+		{
+			_recordDisc.Rotation = Mathf.PosMod(
+				_recordDisc.Rotation +
+				Mathf.DegToRad(RecordRotationDegreesPerSecond) * delta,
+				Mathf.Tau);
+		}
+
+		_playbackLamp.SelfModulate = isPlaying
+			? new Color(0.82f, 0.32f, 0.15f, 1.0f)
+			: new Color(0.28f, 0.16f, 0.09f, 0.72f);
+	}
+
+	private void BindButtonAnimation(Button button)
+	{
+		Action downHandler = () => AnimateButtonPress(button, pressed: true);
+		Action upHandler = () => AnimateButtonPress(button, pressed: false);
+		_buttonDownHandlers[button] = downHandler;
+		_buttonUpHandlers[button] = upHandler;
+		button.ButtonDown += downHandler;
+		button.ButtonUp += upHandler;
+	}
+
+	private void AnimateButtonPress(Button button, bool pressed)
+	{
+		button.PivotOffset = button.Size * 0.5f;
+		if (!_buttonRestPositions.TryGetValue(button, out Vector2 restPosition))
+		{
+			restPosition = button.Position;
+			_buttonRestPositions[button] = restPosition;
+		}
+
+		if (_buttonTweens.TryGetValue(button, out Tween previousTween) &&
+			previousTween != null && previousTween.IsValid())
+		{
+			previousTween.Kill();
+		}
+
+		float duration = Mathf.Max(ButtonPressDuration, 0.01f);
+		Tween tween = CreateTween()
+			.SetTrans(Tween.TransitionType.Quad)
+			.SetEase(pressed ? Tween.EaseType.Out : Tween.EaseType.InOut)
+			.SetParallel(true);
+		tween.TweenProperty(
+			button,
+			"position",
+			pressed
+				? restPosition + new Vector2(0.0f, ButtonPressDepth)
+				: restPosition,
+			duration);
+		tween.TweenProperty(
+			button,
+			"scale",
+			pressed ? new Vector2(0.98f, 0.90f) : Vector2.One,
+			duration);
+		tween.TweenProperty(
+			button,
+			"self_modulate",
+			pressed ? new Color(0.82f, 0.72f, 0.56f, 1.0f) : Colors.White,
+			duration);
+		_buttonTweens[button] = tween;
 	}
 
 	private bool HasPlayableTracks()
@@ -319,14 +480,6 @@ public partial class MenuMusicPlayer : PanelContainer
 		}
 
 		return "ECOSYSTEM-SOUNDTRACK";
-	}
-
-	private Texture2D GetTrackArtwork(int trackIndex)
-	{
-		if (TrackArtwork == null || trackIndex >= TrackArtwork.Length)
-			return null;
-
-		return TrackArtwork[trackIndex];
 	}
 
 	private void EnsureMusicBus()

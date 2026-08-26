@@ -116,7 +116,8 @@ public static class WaterBalanceCalculator
 		BoardManager boardManager,
 		HexTileData tile)
 	{
-		if (tile.Plant.Definition.Type is PlantType.Oak or PlantType.Birch)
+		if (!tile.Plant.IsMature ||
+			tile.Plant.Definition.Type is PlantType.Oak or PlantType.Birch)
 			return 0;
 
 		foreach (HexTileData neighbor in boardManager.GetNeighborData(tile.Coord))

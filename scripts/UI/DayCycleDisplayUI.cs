@@ -2,8 +2,13 @@ using Godot;
 
 public partial class DayCycleDisplayUI : TextureRect
 {
+	private const bool HeavyRainIconAnimationEnabled = false;
+
 	[Export] public Texture2D SunIcon;
 	[Export] public Texture2D RainIcon;
+	[Export] public Texture2D RainDropsIcon;
+	[Export] public Texture2D HeavyRainIcon;
+	[Export] public Texture2D HeavyRainDropsIcon;
 	[Export] public Texture2D DroughtIcon;
 	[Export] public Texture2D HeatDayIcon;
 	[Export] public Texture2D WindIcon;
@@ -17,11 +22,22 @@ public partial class DayCycleDisplayUI : TextureRect
 	private bool _isSunrise;
 	private bool _isTransitioning;
 	private GameEventType _eventType;
+	private WeatherIconRainOverlay _rainOverlay;
 
 	public override void _Ready()
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
 		ProcessMode = ProcessModeEnum.Always;
+		ClipContents = true;
+
+		_rainOverlay = new WeatherIconRainOverlay
+		{
+			Name = "RainAnimation"
+		};
+		AddChild(_rainOverlay);
+		_rainOverlay.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+		_rainOverlay.SetDropTextures(RainDropsIcon, HeavyRainDropsIcon);
+
 		ShowDay();
 		UpdateIcon();
 	}
@@ -107,13 +123,19 @@ public partial class DayCycleDisplayUI : TextureRect
 		Texture = _eventType switch
 		{
 			GameEventType.Rain => RainIcon,
-			GameEventType.HeavyRain => RainIcon,
+			GameEventType.HeavyRain => HeavyRainIcon,
 			GameEventType.Drought => DroughtIcon,
 			GameEventType.HeatDay => HeatDayIcon,
 			GameEventType.Wind => WindIcon,
 			GameEventType.Pests => PestsIcon,
 			_ => SunIcon
 		};
+
+		_rainOverlay?.SetRainMode(
+			_eventType == GameEventType.Rain ||
+			(_eventType == GameEventType.HeavyRain &&
+				HeavyRainIconAnimationEnabled),
+			_eventType == GameEventType.HeavyRain);
 	}
 
 	private void UpdateTooltip()

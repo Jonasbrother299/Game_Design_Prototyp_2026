@@ -259,58 +259,6 @@ theme_override_font_sizes/font_size = 24
 text = "Baue ein stabiles Ökosystem auf und halte die alte Eiche am Leben."
 autowrap_mode = 2
 
-[node name="StatusPanel" type="PanelContainer" parent="CenterContainer/PausePanel/Content"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleInfoPanel")
-
-[node name="StatusGrid" type="GridContainer" parent="CenterContainer/PausePanel/Content/StatusPanel"]
-layout_mode = 2
-theme_override_constants/h_separation = 32
-theme_override_constants/v_separation = 10
-columns = 2
-
-[node name="RoundTitle" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
-custom_minimum_size = Vector2(270, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.16, 0.085, 1)
-theme_override_font_sizes/font_size = 22
-text = "RUNDE"
-
-[node name="RoundValue" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
-theme_override_font_sizes/font_size = 24
-text = "–"
-
-[node name="WaterTitle" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
-custom_minimum_size = Vector2(270, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.16, 0.085, 1)
-theme_override_font_sizes/font_size = 22
-text = "WASSER"
-
-[node name="WaterValue" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
-theme_override_font_sizes/font_size = 24
-text = "–"
-
-[node name="EventTitle" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
-custom_minimum_size = Vector2(270, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.16, 0.085, 1)
-theme_override_font_sizes/font_size = 22
-text = "AKTIVES EREIGNIS"
-
-[node name="EventValue" type="Label" parent="CenterContainer/PausePanel/Content/StatusPanel/StatusGrid"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
-theme_override_font_sizes/font_size = 24
-text = "Keines"
-
 [node name="NavigationHeading" type="Label" parent="CenterContainer/PausePanel/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.19, 0.29, 0.1, 1)

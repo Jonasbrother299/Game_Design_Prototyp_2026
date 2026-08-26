@@ -36,7 +36,7 @@ public partial class CardHandUI : Control
 	[Export(PropertyHint.Range, "0.5,1.0,0.01")]
 	public float DealStartScale = 0.82f;
 
-	private const float DragScale = 0.45f;
+    private const float DragScale = 0.20f;
 
 	private const int HoverZIndex = 100;
 	private const int DragZIndex = 200;
@@ -369,7 +369,7 @@ public partial class CardHandUI : Control
 		card.Position = targetPosition + new Vector2(0.0f, DealStartYOffset);
 		card.Scale = new Vector2(DealStartScale, DealStartScale);
 		card.RotationDegrees = targetRotation;
-		card.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+		card.Modulate = Colors.White;
 
 		Tween tween = CreateTween();
 		tween.SetParallel(true);
@@ -384,11 +384,6 @@ public partial class CardHandUI : Control
 			.SetDelay(delay)
 			.SetTrans(Tween.TransitionType.Back)
 			.SetEase(Tween.EaseType.Out);
-		tween.TweenProperty(card, "modulate", Colors.White, DealDuration * 0.7f)
-			.SetDelay(delay)
-			.SetTrans(Tween.TransitionType.Sine)
-			.SetEase(Tween.EaseType.Out);
-
 		_tweens[card] = tween;
 	}
 
@@ -527,13 +522,14 @@ public partial class CardHandUI : Control
 		card.RotationDegrees = 0.0f;
 		card.Scale = new Vector2(DragScale, DragScale);
 
-		Vector2 mousePosition = GetGlobalMousePosition();
-		_dragOffset = mousePosition - card.GlobalPosition;
+		Vector2 globalCardCenter = card.GetGlobalTransform() * card.PivotOffset;
+		Vector2 viewportCardCenter = card.GetGlobalTransformWithCanvas() * card.PivotOffset;
+		_dragOffset = globalCardCenter - card.GlobalPosition;
+		GetViewport().WarpMouse(viewportCardCenter);
 
 		if (_draggedPlantType.HasValue)
 		{
-			Vector2 viewportMousePosition = GetViewport().GetMousePosition();
-			PlantCardDragged?.Invoke(_draggedPlantType.Value, viewportMousePosition);
+			PlantCardDragged?.Invoke(_draggedPlantType.Value, viewportCardCenter);
 		}
 
 	}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="disc" cx="40%" cy="34%" r="72%">
+      <stop offset="0" stop-color="#5b4031"/>
+      <stop offset="0.42" stop-color="#2d211b"/>
+      <stop offset="1" stop-color="#17110f"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="94" fill="url(#disc)" stroke="#6b3d28" stroke-width="6"/>
+  <g fill="none" stroke="#b78e64" stroke-opacity="0.22">
+    <circle cx="100" cy="100" r="79"/>
+    <circle cx="100" cy="100" r="69"/>
+    <circle cx="100" cy="100" r="58"/>
+    <circle cx="100" cy="100" r="47"/>
+  </g>
+  <path d="M37 66a76 76 0 0 1 50-36" fill="none" stroke="#f0d8a0" stroke-width="5" stroke-linecap="round" opacity="0.28"/>
+  <path d="M49 78a61 61 0 0 1 37-27" fill="none" stroke="#f0d8a0" stroke-width="2.5" stroke-linecap="round" opacity="0.22"/>
+  <circle cx="100" cy="100" r="31" fill="#b95f39" stroke="#e1bb77" stroke-width="4"/>
+  <circle cx="100" cy="100" r="17" fill="#d9b568" opacity="0.92"/>
+  <circle cx="100" cy="100" r="5" fill="#2b1c16"/>
+  <path d="M100 73v54M73 100h54" stroke="#733620" stroke-width="2" opacity="0.35"/>
+</svg>

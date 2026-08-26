@@ -1,5 +1,4 @@
 using Godot;
-using System.Collections.Generic;
 
 public partial class PauseMenu : Control
 {
@@ -29,15 +28,11 @@ public partial class PauseMenu : Control
 	private Button _controlsBackButton;
 	private Button _cancelButton;
 	private Button _confirmButton;
-	private Label _roundValue;
-	private Label _waterValue;
-	private Label _eventValue;
 	private Label _confirmTitle;
 	private Label _confirmMessage;
 	private SettingsMenu _settingsMenu;
 	private EncyclopediaMenu _encyclopediaMenu;
 	private GameHub _gameHub;
-	private TurnManager _turnManager;
 	private PendingAction _pendingAction;
 
 	public override void _Ready()
@@ -58,9 +53,6 @@ public partial class PauseMenu : Control
 		_controlsBackButton = GetNode<Button>("%ControlsBackButton");
 		_cancelButton = GetNode<Button>("%CancelButton");
 		_confirmButton = GetNode<Button>("%ConfirmButton");
-		_roundValue = GetNode<Label>("%RoundValue");
-		_waterValue = GetNode<Label>("%WaterValue");
-		_eventValue = GetNode<Label>("%EventValue");
 		_confirmTitle = GetNode<Label>("%ConfirmTitle");
 		_confirmMessage = GetNode<Label>("%ConfirmMessage");
 		_settingsMenu = GetNode<SettingsMenu>("SettingsMenu");
@@ -86,7 +78,6 @@ public partial class PauseMenu : Control
 		else
 			GD.PushWarning("PauseMenu: GameHub fehlt.");
 
-		_turnManager = GetTree().CurrentScene?.GetNodeOrNull<TurnManager>("TurnManager");
 		Hide();
 	}
 
@@ -124,7 +115,6 @@ public partial class PauseMenu : Control
 		if (Visible)
 			return;
 
-		UpdateGameState();
 		Show();
 		ShowPausePanel();
 		GetTree().Paused = true;
@@ -139,37 +129,6 @@ public partial class PauseMenu : Control
 		_confirmOverlay.Hide();
 		Hide();
 		GetTree().Paused = false;
-	}
-
-	private void UpdateGameState()
-	{
-		GameState state = _turnManager?.State;
-		if (state == null)
-		{
-			_roundValue.Text = "–";
-			_waterValue.Text = "–";
-			_eventValue.Text = "Keines";
-			return;
-		}
-
-		_roundValue.Text = state.CurrentRound.ToString();
-		_waterValue.Text = state.Water.ToString();
-
-		if (state.ActiveEvents.Count == 0)
-		{
-			_eventValue.Text = "Keines";
-			return;
-		}
-
-		List<string> activeEventTexts = new();
-		foreach (ActiveGameEvent activeEvent in state.ActiveEvents)
-		{
-			string eventName = activeEvent.Definition?.DisplayName ?? "Unbekannt";
-			activeEventTexts.Add(
-				$"{eventName} ({activeEvent.RemainingRounds} R.)");
-		}
-
-		_eventValue.Text = string.Join(", ", activeEventTexts);
 	}
 
 	private void OpenSettings()
