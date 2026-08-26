@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cbpc6bq5aq0uy" path="res://assets/models/plants/birch/textures/BirchSapling_DefaultMaterial_AlbedoTransparency.png" id="2_u70gb"]
 [ext_resource type="Texture2D" uid="uid://bodyhwbg0fui3" path="res://assets/models/plants/birch/textures/BirchSapling_DefaultMaterial_Normal.png" id="3_dxhr8"]
 [ext_resource type="Texture2D" uid="uid://dtw6u5gj2xntn" path="res://assets/models/plants/birch/textures/BirchSapling_DefaultMaterial_Roughness.png" id="4_runh2"]
-[ext_resource type="PackedScene" uid="uid://nltltbcqjf7c" path="res://assets/models/StartingOak/Leaves2.fbx" id="5_dxhr8"]
+[ext_resource type="PackedScene" uid="uid://bsym22eryhdnu" path="res://assets/models/plants/StartingOak/Leaves2.fbx" id="5_dxhr8"]
 [ext_resource type="Material" uid="uid://cwulbgkycarrl" path="res://assets/models/plants/birch/birchleaves.tres" id="6_runh2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jh7d2"]

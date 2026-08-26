@@ -46,7 +46,7 @@
 [ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Test/48-fish3d/fish3D/fish/fbx/fish.fbx" id="42_fish_a"]
 [ext_resource type="PackedScene" uid="uid://b2mvjnmyam56b" path="res://assets/models/Test/fish_3d_model_free_download_animated/scene.gltf" id="43_fish_b"]
 [ext_resource type="Script" uid="uid://l182y3fk7p6k" path="res://scripts/effects/FloatingWaterLeavesController.cs" id="44_water_leaves"]
-[ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/StartingOak/LeafParticle.tres" id="45_leaf_mesh"]
+[ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/plants/StartingOak/LeafParticle.tres" id="45_leaf_mesh"]
 [ext_resource type="Script" uid="uid://c43ieqr6rfnkr" path="res://scripts/UI/PlantInspectionController.cs" id="46_plant_inspection"]
 [ext_resource type="Texture2D" uid="uid://cq7c6avhm8in8" path="res://assets/textures/hdris/anime_sky_panorama_v2.png" id="47_cloud_panorama"]
 
