@@ -15,6 +15,9 @@ public partial class MainMenu : Control
 	private EncyclopediaMenu _encyclopediaMenu;
 	private AchievementMenu _achievementMenu;
 	private SettingsMenu _settingsMenu;
+	private MarginContainer _menuMargin;
+	private TextureButton _musicToggle;
+	private TextureButton _soundToggle;
 	private bool _isChangingScene;
 
 	public override void _Ready()
@@ -28,9 +31,18 @@ public partial class MainMenu : Control
 		_encyclopediaMenu = GetNodeOrNull<EncyclopediaMenu>("EncyclopediaMenu");
 		_achievementMenu = GetNodeOrNull<AchievementMenu>("AchievementMenu");
 		_settingsMenu = GetNodeOrNull<SettingsMenu>("SettingsMenu");
+		_menuMargin = GetNode<MarginContainer>("MenuMargin");
+		_musicToggle = GetNode<TextureButton>("%MusicToggle");
+		_soundToggle = GetNode<TextureButton>("%SoundToggle");
 
 		if (!AreRequiredNodesAvailable())
 			return;
+
+		GetViewport().SizeChanged += UpdateMenuLayout;
+		UpdateMenuLayout();
+		_musicToggle.Toggled += OnMusicMuteToggled;
+		_soundToggle.Toggled += OnSoundMuteToggled;
+		UpdateAudioShortcuts();
 
 		_playButton.Pressed += StartNewGame;
 		_achievementsButton.Pressed += OpenAchievements;
@@ -55,6 +67,11 @@ public partial class MainMenu : Control
 
 	public override void _ExitTree()
 	{
+		GetViewport().SizeChanged -= UpdateMenuLayout;
+		if (_musicToggle != null)
+			_musicToggle.Toggled -= OnMusicMuteToggled;
+		if (_soundToggle != null)
+			_soundToggle.Toggled -= OnSoundMuteToggled;
 		if (_playButton != null)
 			_playButton.Pressed -= StartNewGame;
 		if (_achievementsButton != null)
@@ -73,6 +90,54 @@ public partial class MainMenu : Control
 			_achievementMenu.Closed -= OnAchievementsClosed;
 		if (SceneTransition.Instance != null)
 			SceneTransition.Instance.SceneChangeFailed -= OnSceneChangeFailed;
+	}
+
+	public override void _Process(double delta)
+	{
+		UpdateAudioShortcuts();
+	}
+
+	private void UpdateMenuLayout()
+	{
+		Vector2 viewportSize = GetViewportRect().Size;
+		if (viewportSize.X <= 0.0f || viewportSize.Y <= 0.0f)
+			return;
+
+		float scale = Mathf.Min(viewportSize.X / 1920.0f, viewportSize.Y / 1080.0f);
+		_menuMargin.SetAnchorsAndOffsetsPreset(LayoutPreset.TopLeft);
+		_menuMargin.Size = viewportSize / scale;
+		_menuMargin.Scale = Vector2.One * scale;
+		_menuMargin.AddThemeConstantOverride(
+			"margin_left", Mathf.RoundToInt(viewportSize.X * 0.10f / scale));
+	}
+
+	private void OnMusicMuteToggled(bool muted)
+	{
+		int busIndex = AudioServer.GetBusIndex("Music");
+		if (busIndex >= 0)
+			AudioServer.SetBusMute(busIndex, muted);
+		UpdateAudioShortcuts();
+	}
+
+	private void OnSoundMuteToggled(bool muted)
+	{
+		_settingsMenu.SetMasterMuted(muted);
+		UpdateAudioShortcuts();
+	}
+
+	private void UpdateAudioShortcuts()
+	{
+		if (_musicToggle == null || _soundToggle == null)
+			return;
+
+		int musicBus = AudioServer.GetBusIndex("Music");
+		int masterBus = AudioServer.GetBusIndex("Master");
+		_musicToggle.SetPressedNoSignal(musicBus >= 0 && AudioServer.IsBusMute(musicBus));
+		_soundToggle.SetPressedNoSignal(masterBus >= 0 && AudioServer.IsBusMute(masterBus));
+		_musicToggle.TooltipText = _musicToggle.ButtonPressed
+			? "Musik einschalten" : "Musik stummschalten";
+		_soundToggle.TooltipText = _soundToggle.ButtonPressed
+			? "Stummschaltung aufheben" : "Gesamten Ton stummschalten";
 	}
 
 	private bool AreRequiredNodesAvailable()
@@ -213,5 +278,7 @@ public partial class MainMenu : Control
 		_encyclopediaButton.Disabled = disabled;
 		_settingsButton.Disabled = disabled;
 		_quitButton.Disabled = disabled;
+		_musicToggle.Disabled = disabled;
+		_soundToggle.Disabled = disabled;
 	}
 }

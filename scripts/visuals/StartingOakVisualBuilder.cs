@@ -31,8 +31,49 @@ public static class StartingOakVisualBuilder
 		model.Position = Vector3.Zero;
 		model.Rotation = Vector3.Zero;
 		model.Scale = Vector3.One * modelScale;
+		AddCanopyClickBody(model);
 
 		return model;
+	}
+
+	private static void AddCanopyClickBody(Node3D model)
+	{
+		MultiMeshInstance3D canopy =
+			model.GetNodeOrNull<MultiMeshInstance3D>("Leaves/MultiMeshInstance3D");
+		MultiMesh leaves = canopy?.Multimesh;
+		if (leaves?.Mesh == null || leaves.InstanceCount == 0)
+			return;
+
+		int visibleCount = leaves.VisibleInstanceCount < 0
+			? leaves.InstanceCount
+			: Mathf.Min(leaves.VisibleInstanceCount, leaves.InstanceCount);
+		if (visibleCount == 0)
+			return;
+
+		Aabb leafBounds = leaves.Mesh.GetAabb();
+		Vector3[] points = new Vector3[visibleCount * 8];
+		for (int instanceIndex = 0; instanceIndex < visibleCount; instanceIndex++)
+		{
+			Transform3D leafTransform = leaves.GetInstanceTransform(instanceIndex);
+			for (int corner = 0; corner < 8; corner++)
+			{
+				points[instanceIndex * 8 + corner] =
+					leafTransform * leafBounds.GetEndpoint(corner);
+			}
+		}
+
+		StaticBody3D body = new StaticBody3D
+		{
+			Name = "CanopyClickBody",
+			CollisionLayer = 1,
+			CollisionMask = 0
+		};
+		body.AddChild(new CollisionShape3D
+		{
+			Name = "CanopyClickShape",
+			Shape = new ConvexPolygonShape3D { Points = points }
+		});
+		canopy.AddChild(body);
 	}
 
 	private static Node3D CreateFallback(PlantInstance plant)

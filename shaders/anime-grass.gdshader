@@ -47,6 +47,8 @@ instance uniform vec4 grass_neighbor_state_01 = vec4(0.0);
 instance uniform vec4 grass_neighbor_state_23 = vec4(0.0);
 instance uniform vec4 grass_neighbor_state_45 = vec4(0.0);
 instance uniform vec4 canopy_shadow = vec4(1.0, 1.0, 1.0, 0.0);
+// xyz: Wurzelschatten, w: Grashöhenfaktor; beide teilen sich einen Instance-Uniform-Slot.
+instance uniform vec4 grass_appearance = vec4(0.58, 0.72, 0.16, 1.0);
 
 varying float blade_tip;
 varying float wind_shadow;
@@ -307,7 +309,7 @@ void vertex() {
 	VERTEX.xz += local_wind * bend * blade_tip;
 	VERTEX.y -= abs(bend) * blade_tip * 0.10;
 	VERTEX.xz *= mix(0.18, 1.0, blocker_visibility);
-	VERTEX.y *= blocker_visibility;
+	VERTEX.y *= blocker_visibility * max(grass_appearance.w, 0.0);
 	NORMAL = normalize(mix(NORMAL, painted_local_normal, 0.68));
 
 	if (blade_visibility < 0.5) {
@@ -397,6 +399,20 @@ void fragment() {
 		grass_wind_light_color.rgb,
 		wind_light_amount
 	);
+	float root_shadow_mask = 1.0 - smoothstep(
+		0.0,
+		max(grass_appearance.y, 0.001),
+		blade_tip
+	);
+	float root_shadow_variation = mix(
+		1.0 - grass_appearance.z,
+		1.0,
+		mix(large_patch, secondary_patch, 0.45)
+	);
+	grass_color *= 1.0 -
+		root_shadow_mask *
+		root_shadow_variation *
+		grass_appearance.x;
 	grass_color *= mix(
 		vec3(1.0),
 		canopy_shadow.rgb,

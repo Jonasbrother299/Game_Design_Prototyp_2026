@@ -15,23 +15,23 @@ public partial class PauseMenu : Control
 	private const string MainMenuScenePath = "res://scenes/UI/MainMenu.tscn";
 
 	private PanelContainer _pausePanel;
-	private Control _controlsOverlay;
 	private Control _confirmOverlay;
 	private Button _resumeButton;
-	private Button _settingsButton;
-	private Button _controlsButton;
+	private TextureButton _settingsButton;
 	private Button _encyclopediaButton;
 	private Button _restartButton;
 	private Button _tutorialButton;
 	private Button _mainMenuButton;
 	private Button _quitButton;
-	private Button _controlsBackButton;
 	private Button _cancelButton;
 	private Button _confirmButton;
 	private Label _confirmTitle;
 	private Label _confirmMessage;
 	private SettingsMenu _settingsMenu;
 	private EncyclopediaMenu _encyclopediaMenu;
+	private TextureButton _musicToggle;
+	private TextureButton _soundToggle;
+	private CenterContainer[] _scaledCenters;
 	private GameHub _gameHub;
 	private PendingAction _pendingAction;
 
@@ -40,45 +40,101 @@ public partial class PauseMenu : Control
 		ProcessMode = ProcessModeEnum.Always;
 
 		_pausePanel = GetNode<PanelContainer>("%PausePanel");
-		_controlsOverlay = GetNode<Control>("%ControlsOverlay");
 		_confirmOverlay = GetNode<Control>("%ConfirmOverlay");
 		_resumeButton = GetNode<Button>("%ResumeButton");
-		_settingsButton = GetNode<Button>("%SettingsButton");
-		_controlsButton = GetNode<Button>("%ControlsButton");
+		_settingsButton = GetNode<TextureButton>("%SettingsButton");
 		_encyclopediaButton = GetNode<Button>("%EncyclopediaButton");
 		_restartButton = GetNode<Button>("%RestartButton");
 		_tutorialButton = GetNode<Button>("%TutorialButton");
 		_mainMenuButton = GetNode<Button>("%MainMenuButton");
 		_quitButton = GetNode<Button>("%QuitButton");
-		_controlsBackButton = GetNode<Button>("%ControlsBackButton");
 		_cancelButton = GetNode<Button>("%CancelButton");
 		_confirmButton = GetNode<Button>("%ConfirmButton");
 		_confirmTitle = GetNode<Label>("%ConfirmTitle");
 		_confirmMessage = GetNode<Label>("%ConfirmMessage");
 		_settingsMenu = GetNode<SettingsMenu>("SettingsMenu");
 		_encyclopediaMenu = GetNode<EncyclopediaMenu>("EncyclopediaMenu");
+		_musicToggle = GetNode<TextureButton>("%MusicToggle");
+		_soundToggle = GetNode<TextureButton>("%SoundToggle");
+		_scaledCenters = new[]
+		{
+			GetNode<CenterContainer>("CenterContainer"),
+			GetNode<CenterContainer>("ConfirmOverlay/CenterContainer")
+		};
+		Resized += UpdatePauseLayout;
+		UpdatePauseLayout();
+		UpdateAudioShortcuts();
 
 		_resumeButton.Pressed += ClosePauseMenu;
+		_musicToggle.Toggled += OnMusicMuteToggled;
+		_soundToggle.Toggled += OnSoundMuteToggled;
 		_settingsButton.Pressed += OpenSettings;
-		_controlsButton.Pressed += OpenControls;
 		_encyclopediaButton.Pressed += OpenEncyclopedia;
 		_restartButton.Pressed += RequestRestart;
 		_tutorialButton.Pressed += RequestTutorialReplay;
 		_mainMenuButton.Pressed += RequestMainMenu;
 		_quitButton.Pressed += RequestQuit;
-		_controlsBackButton.Pressed += CloseControls;
 		_cancelButton.Pressed += CancelConfirmation;
 		_confirmButton.Pressed += ConfirmPendingAction;
 		_settingsMenu.Closed += OnSettingsClosed;
 		_encyclopediaMenu.Closed += OnEncyclopediaClosed;
 
-		_gameHub = GetTree().CurrentScene?.GetNodeOrNull<GameHub>("UI/CanvasLayer/GameHub");
+		_gameHub = GetNodeOrNull<GameHub>("../../CanvasLayer/GameHub");
 		if (_gameHub != null)
 			_gameHub.MenuRequested += OpenPauseMenu;
 		else
 			GD.PushWarning("PauseMenu: GameHub fehlt.");
 
 		Hide();
+	}
+
+	public override void _Process(double delta)
+	{
+		if (Visible && _pausePanel.Visible)
+			UpdateAudioShortcuts();
+	}
+
+	private void UpdatePauseLayout()
+	{
+		if (_scaledCenters == null || Size.X <= 0.0f || Size.Y <= 0.0f)
+			return;
+
+		foreach (CenterContainer center in _scaledCenters)
+		{
+			Vector2 panelSize = center.GetChild<Control>(0).GetCombinedMinimumSize();
+			float scale = Mathf.Min(1.0f, Mathf.Min(
+				Size.X * 0.92f / Mathf.Max(panelSize.X, 1.0f),
+				Size.Y * 0.94f / Mathf.Max(panelSize.Y, 1.0f)));
+			center.SetAnchorsAndOffsetsPreset(LayoutPreset.TopLeft);
+			center.Size = Size / scale;
+			center.Scale = Vector2.One * scale;
+		}
+	}
+
+	private void OnMusicMuteToggled(bool muted)
+	{
+		int busIndex = AudioServer.GetBusIndex("Music");
+		if (busIndex >= 0)
+			AudioServer.SetBusMute(busIndex, muted);
+		UpdateAudioShortcuts();
+	}
+
+	private void OnSoundMuteToggled(bool muted)
+	{
+		_settingsMenu.SetMasterMuted(muted);
+		UpdateAudioShortcuts();
+	}
+
+	private void UpdateAudioShortcuts()
+	{
+		int musicBus = AudioServer.GetBusIndex("Music");
+		int masterBus = AudioServer.GetBusIndex("Master");
+		_musicToggle.SetPressedNoSignal(musicBus >= 0 && AudioServer.IsBusMute(musicBus));
+		_soundToggle.SetPressedNoSignal(masterBus >= 0 && AudioServer.IsBusMute(masterBus));
+		_musicToggle.TooltipText = _musicToggle.ButtonPressed
+			? "Musik einschalten" : "Musik stummschalten";
+		_soundToggle.TooltipText = _soundToggle.ButtonPressed
+			? "Stummschaltung aufheben" : "Gesamten Ton stummschalten";
 	}
 
 	public override void _Input(InputEvent inputEvent)
@@ -90,8 +146,6 @@ public partial class PauseMenu : Control
 			CancelConfirmation();
 		else if (_encyclopediaMenu.Visible)
 			_encyclopediaMenu.Close();
-		else if (_controlsOverlay.Visible)
-			CloseControls();
 		else if (_settingsMenu.Visible)
 			_settingsMenu.Close();
 		else if (Visible)
@@ -104,6 +158,11 @@ public partial class PauseMenu : Control
 
 	public override void _ExitTree()
 	{
+		Resized -= UpdatePauseLayout;
+		if (_musicToggle != null)
+			_musicToggle.Toggled -= OnMusicMuteToggled;
+		if (_soundToggle != null)
+			_soundToggle.Toggled -= OnSoundMuteToggled;
 		if (_gameHub != null)
 			_gameHub.MenuRequested -= OpenPauseMenu;
 
@@ -117,6 +176,8 @@ public partial class PauseMenu : Control
 
 		Show();
 		ShowPausePanel();
+		UpdatePauseLayout();
+		UpdateAudioShortcuts();
 		GetTree().Paused = true;
 		_resumeButton.GrabFocus();
 	}
@@ -125,7 +186,6 @@ public partial class PauseMenu : Control
 	{
 		_settingsMenu.Hide();
 		_encyclopediaMenu.Hide();
-		_controlsOverlay.Hide();
 		_confirmOverlay.Hide();
 		Hide();
 		GetTree().Paused = false;
@@ -141,20 +201,6 @@ public partial class PauseMenu : Control
 	{
 		ShowPausePanel();
 		_settingsButton.GrabFocus();
-	}
-
-	private void OpenControls()
-	{
-		_pausePanel.Hide();
-		_controlsOverlay.Show();
-		_controlsBackButton.GrabFocus();
-	}
-
-	private void CloseControls()
-	{
-		_controlsOverlay.Hide();
-		ShowPausePanel();
-		_controlsButton.GrabFocus();
 	}
 
 	private void OpenEncyclopedia()
@@ -218,6 +264,7 @@ public partial class PauseMenu : Control
 
 		_pausePanel.Hide();
 		_confirmOverlay.Show();
+		UpdatePauseLayout();
 		_cancelButton.GrabFocus();
 	}
 
@@ -278,7 +325,6 @@ public partial class PauseMenu : Control
 	private void ShowPausePanel()
 	{
 		_encyclopediaMenu.Hide();
-		_controlsOverlay.Hide();
 		_confirmOverlay.Hide();
 		_pausePanel.Show();
 	}

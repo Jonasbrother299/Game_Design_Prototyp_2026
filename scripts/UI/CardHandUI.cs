@@ -357,16 +357,21 @@ public partial class CardHandUI : Control
 
 		Vector2 viewportSize = GetViewportRect().Size;
 		float centerIndex = (totalCards - 1) / 2.0f;
+		float availableSpan = Mathf.Max(viewportSize.X - CardSize.X * 2.0f, 0.0f);
+		float spacing = totalCards > 1
+			? Mathf.Min(CardSpacing, availableSpan / (totalCards - 1))
+			: 0.0f;
 
 		for (int i = 0; i < totalCards; i++)
 		{
 			TextureRect card = _cards[i];
 			float relativeIndex = i - centerIndex;
+			float fanIndex = relativeIndex / Mathf.Max(centerIndex, 1.0f);
 			float centerX = viewportSize.X / 2.0f - CardSize.X / 2.0f;
-			float baseX = centerX + relativeIndex * CardSpacing;
-			float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
+			float baseX = centerX + relativeIndex * spacing;
+			float baseY = 80.0f + Mathf.Abs(fanIndex) * FanYOffset;
 			Vector2 basePosition = new Vector2(baseX, baseY);
-			float baseRotation = relativeIndex * FanRotationDegrees;
+			float baseRotation = fanIndex * FanRotationDegrees;
 
 			_basePositions[card] = basePosition;
 			_baseRotations[card] = baseRotation;
@@ -691,6 +696,10 @@ public partial class CardHandUI : Control
 		Vector2 viewportSize = GetViewportRect().Size;
 
 		float centerIndex = (totalCards - 1) / 2.0f;
+		float availableSpan = Mathf.Max(viewportSize.X - CardSize.X * 2.0f, 0.0f);
+		float spacing = totalCards > 1
+			? Mathf.Min(CardSpacing, availableSpan / (totalCards - 1))
+			: 0.0f;
 
 		for (int i = 0; i < totalCards; i++)
 		{
@@ -700,13 +709,14 @@ public partial class CardHandUI : Control
 				continue;
 
 			float relativeIndex = i - centerIndex;
+			float fanIndex = relativeIndex / Mathf.Max(centerIndex, 1.0f);
 
 			float centerX = viewportSize.X / 2.0f - CardSize.X / 2.0f;
-			float baseX = centerX + relativeIndex * CardSpacing;
-			float baseY = 80.0f + Mathf.Abs(relativeIndex) * FanYOffset;
+			float baseX = centerX + relativeIndex * spacing;
+			float baseY = 80.0f + Mathf.Abs(fanIndex) * FanYOffset;
 
 			Vector2 basePosition = new Vector2(baseX, baseY);
-			float baseRotation = relativeIndex * FanRotationDegrees;
+			float baseRotation = fanIndex * FanRotationDegrees;
 
 			_basePositions[card] = basePosition;
 			_baseRotations[card] = baseRotation;

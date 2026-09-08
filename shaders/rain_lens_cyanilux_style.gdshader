@@ -233,17 +233,25 @@ void fragment()
 	vec2 fast_p = vec2(
 		fast_local_x - fast_x_center,
 		(effect_uv.y - fast_y_center) * fast_columns);
-	float fast_stretch = drop_stretch * mix(
-		1.15,
-		1.45,
-		hash21(fast_seed + 68.41));
 	float fast_cycle_width = fast_width_scale * mix(
 		1.0 - fast_width_variation,
 		1.0 + fast_width_variation,
 		hash21(fast_seed + 76.93));
+	float fast_stretch = drop_stretch * fast_cycle_width * mix(
+		0.66,
+		0.82,
+		hash21(fast_seed + 68.41));
+	float fast_vertical_position = clamp(
+		fast_p.y / max(drop_radius * fast_stretch, 0.0001) * 0.5 + 0.5,
+		0.0,
+		1.0);
+	float fast_shape_width = fast_cycle_width * mix(
+		0.58,
+		1.08,
+		smoothstep(0.0, 1.0, fast_vertical_position));
 	vec2 fast_shape = vec2(
-		fast_p.x / max(fast_cycle_width, 0.01),
-		fast_p.y / fast_stretch);
+		fast_p.x / max(fast_shape_width, 0.01),
+		fast_p.y / max(fast_stretch, 0.0001));
 	float fast_dist = length(fast_shape);
 	float fast_drop = 1.0 - smoothstep(
 		drop_radius * 0.54,
@@ -258,7 +266,9 @@ void fragment()
 		drop_radius * 1.18,
 		fast_dist);
 
-	float fast_trail_length = trail_length * 2.60;
+	float fast_trail_length = min(
+		trail_length,
+		drop_radius * fast_stretch * 2.0);
 	float fast_trail_progress = clamp(
 		-fast_p.y / max(fast_trail_length, 0.0001),
 		0.0,
@@ -287,7 +297,7 @@ void fragment()
 	fast_trail *= step(
 		1.0 - trail_chance,
 		hash21(fast_seed + 101.53));
-	float fast_trail_surface = fast_trail * trail_strength;
+	float fast_trail_surface = fast_trail * trail_strength * 0.60;
 
 	float main_surface = max(drop, trail_surface) * main_visibility;
 	float fast_surface = max(

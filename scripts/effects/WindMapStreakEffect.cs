@@ -6,6 +6,8 @@ public partial class WindMapStreakEffect : Node3D
 {
 	private const string ShaderPath =
 		"res://shaders/wind-map-streaks.gdshader";
+	private const string LeafShaderPath =
+		"res://shaders/wind-leaf-particles.gdshader";
 
 	[ExportGroup("Connections")]
 	[Export] public NodePath TurnManagerPath =
@@ -131,11 +133,120 @@ public partial class WindMapStreakEffect : Node3D
 	[Export(PropertyHint.Range, "0.0,0.5,0.01")]
 	public float CenterHighlight = 0.16f;
 
+	[ExportGroup("Windpartikel")]
+	[Export] public bool LeafParticlesEnabled = true;
+
+	[Export(PropertyHint.Range, "16,256,1")]
+	public int LeafParticleCount = 28;
+
+	[Export(PropertyHint.Range, "16,320,1")]
+	public int DustParticleCount = 48;
+
+	[Export(PropertyHint.Range, "1.0,8.0,0.1")]
+	public float LeafLifetime = 4.2f;
+
+	[Export] public Vector3 LeafEmissionSize = new Vector3(10.8f, 4.8f, 1.8f);
+
+	[Export(PropertyHint.Range, "0.0,8.0,0.1")]
+	public float LeafEmissionHeight = 0.0f;
+
+	[Export(PropertyHint.Range, "1.0,12.0,0.1")]
+	public float LeafCameraDistance = 5.2f;
+
+	[ExportGroup("Windpartikel - Bewegung")]
+	[Export(PropertyHint.Range, "0.2,20.0,0.1")]
+	public float LeafMinSpeed = 4.8f;
+
+	[Export(PropertyHint.Range, "0.2,24.0,0.1")]
+	public float LeafMaxSpeed = 8.8f;
+
+	[Export(PropertyHint.Range, "0.02,1.0,0.01")]
+	public float LeafMinSize = 0.16f;
+
+	[Export(PropertyHint.Range, "0.02,1.2,0.01")]
+	public float LeafMaxSize = 0.46f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.05")]
+	public float LeafFallSpeed = 0.55f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.05")]
+	public float LeafVerticalWobble = 0.7f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.05")]
+	public float LeafSideWobble = 0.55f;
+
+	[Export(PropertyHint.Range, "0.1,5.0,0.05")]
+	public float LeafWobbleFrequencyMin = 1.1f;
+
+	[Export(PropertyHint.Range, "0.1,6.0,0.05")]
+	public float LeafWobbleFrequencyMax = 2.7f;
+
+	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
+	public float LeafLateralSpread = 0.72f;
+
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float LeafVerticalSpread = 0.22f;
+
+	[Export(PropertyHint.Range, "0.0,8.0,0.05")]
+	public float LeafMinSpin = 1.2f;
+
+	[Export(PropertyHint.Range, "0.0,10.0,0.05")]
+	public float LeafMaxSpin = 4.3f;
+
+	[ExportGroup("Windpartikel - Böen")]
+	[Export(PropertyHint.Range, "0.0,5.0,0.01")]
+	public float GustPrimarySpeed = 1.65f;
+
+	[Export(PropertyHint.Range, "0.0,5.0,0.01")]
+	public float GustSecondarySpeed = 0.59f;
+
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GustMinimumStrength = 0.32f;
+
+	[ExportGroup("Staubpartikel")]
+	[Export(PropertyHint.Range, "0.1,2.0,0.01")]
+	public float DustLifetimeMultiplier = 0.62f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
+	public float DustMinSpeedMultiplier = 0.62f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
+	public float DustMaxSpeedMultiplier = 0.82f;
+
+	[Export(PropertyHint.Range, "-1.0,2.0,0.01")]
+	public float DustMinFallSpeed = -0.08f;
+
+	[Export(PropertyHint.Range, "-1.0,2.0,0.01")]
+	public float DustMaxFallSpeed = 0.18f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
+	public float DustVerticalWobbleMultiplier = 0.55f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
+	public float DustSideWobbleMultiplier = 0.45f;
+
+	[Export(PropertyHint.Range, "0.005,0.2,0.001")]
+	public float DustMinSize = 0.018f;
+
+	[Export(PropertyHint.Range, "0.005,0.3,0.001")]
+	public float DustMaxSize = 0.052f;
+
+	[Export(PropertyHint.Range, "0.0,5.0,0.05")]
+	public float DustMinSpin = 0.35f;
+
+	[Export(PropertyHint.Range, "0.0,6.0,0.05")]
+	public float DustMaxSpin = 1.3f;
+
 	private TurnManager _turnManager;
 	private MultiMeshInstance3D _streakInstance;
 	private ShaderMaterial _material;
+	private GpuParticles3D _leafParticles;
+	private GpuParticles3D _dustParticles;
+	private ShaderMaterial _leafProcessMaterial;
+	private ShaderMaterial _dustProcessMaterial;
 	private float _eventBlend;
 	private float _animationTime;
+	private float _gustTime;
 	private bool _windEventActive;
 
 	private int _builtStreakCount = -1;
@@ -150,9 +261,12 @@ public partial class WindMapStreakEffect : Node3D
 	public override void _Ready()
 	{
 		BuildVisual();
+		BuildLeafParticles();
 		ConnectTurnManager();
 		RefreshWindEventState();
+		UpdateLeafParticleTransform();
 		ApplyShaderParameters();
+		ApplyLeafParticleParameters();
 	}
 
 	public override void _Process(double delta)
@@ -169,11 +283,14 @@ public partial class WindMapStreakEffect : Node3D
 			1.0f,
 			WindEventSpeedMultiplier,
 			_eventBlend);
+		_gustTime += (float)delta;
 
 		if (_streakInstance != null)
 			_streakInstance.Visible = EffectEnabled;
 
+		UpdateLeafParticleTransform();
 		ApplyShaderParameters();
+		ApplyLeafParticleParameters();
 	}
 
 	public override void _ExitTree()
@@ -250,6 +367,132 @@ public partial class WindMapStreakEffect : Node3D
 		_builtHeightVariation = HeightVariation;
 		_builtDirectionDegrees = DirectionDegrees;
 		_builtDirectionVariationDegrees = DirectionVariationDegrees;
+	}
+
+	private void BuildLeafParticles()
+	{
+		Shader shader = GD.Load<Shader>(LeafShaderPath);
+		if (shader == null)
+		{
+			GD.PushWarning("WindMapStreakEffect: Blatt-Partikel-Shader fehlt.");
+			return;
+		}
+
+		StandardMaterial3D drawMaterial = new StandardMaterial3D
+		{
+			AlbedoColor = Colors.White,
+			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+			CullMode = BaseMaterial3D.CullModeEnum.Disabled,
+			VertexColorUseAsAlbedo = true
+		};
+		ArrayMesh particleMesh = CreateLeafParticleMesh(drawMaterial);
+
+		_leafProcessMaterial = new ShaderMaterial
+		{
+			Shader = shader
+		};
+		_dustProcessMaterial = new ShaderMaterial
+		{
+			Shader = shader
+		};
+
+		_leafParticles = CreateParticleEmitter(
+			"WindLeaves",
+			LeafParticleCount,
+			LeafLifetime,
+			_leafProcessMaterial,
+			particleMesh);
+		_dustParticles = CreateParticleEmitter(
+			"WindDust",
+			DustParticleCount,
+			Mathf.Max(LeafLifetime * DustLifetimeMultiplier, 1.0f),
+			_dustProcessMaterial,
+			particleMesh);
+
+		AddChild(_leafParticles);
+		AddChild(_dustParticles);
+	}
+
+	private void UpdateLeafParticleTransform()
+	{
+		if (_leafParticles == null || _dustParticles == null)
+			return;
+
+		Camera3D camera = GetViewport()?.GetCamera3D();
+		if (camera == null)
+			return;
+
+		_leafParticles.GlobalTransform = camera.GlobalTransform;
+		_dustParticles.GlobalTransform = camera.GlobalTransform;
+	}
+
+	private static GpuParticles3D CreateParticleEmitter(
+		string name,
+		int amount,
+		float lifetime,
+		ShaderMaterial processMaterial,
+		Mesh particleMesh)
+	{
+		return new GpuParticles3D
+		{
+			Name = name,
+			Amount = Math.Max(amount, 1),
+			AmountRatio = 0.0f,
+			Lifetime = Mathf.Max(lifetime, 0.1f),
+			Randomness = 0.35f,
+			Preprocess = 0.5f,
+			Emitting = false,
+			LocalCoords = true,
+			FixedFps = 30,
+			Interpolate = true,
+			FractDelta = true,
+			VisibilityAabb = new Aabb(
+				new Vector3(-24.0f, -2.0f, -20.0f),
+				new Vector3(48.0f, 14.0f, 40.0f)),
+			ProcessMaterial = processMaterial,
+			DrawPass1 = particleMesh,
+			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off
+		};
+	}
+
+	private static ArrayMesh CreateLeafParticleMesh(Material material)
+	{
+		SurfaceTool surface = new SurfaceTool();
+		surface.Begin(Mesh.PrimitiveType.Triangles);
+
+		Vector3 center = new Vector3(0.0f, 0.035f, 0.0f);
+		Vector3[] edge =
+		{
+			new Vector3(0.0f, 0.0f, 0.5f),
+			new Vector3(-0.14f, 0.0f, 0.30f),
+			new Vector3(-0.23f, -0.02f, 0.02f),
+			new Vector3(-0.13f, 0.0f, -0.29f),
+			new Vector3(0.0f, -0.01f, -0.5f),
+			new Vector3(0.13f, 0.0f, -0.29f),
+			new Vector3(0.23f, -0.02f, 0.02f),
+			new Vector3(0.14f, 0.0f, 0.30f)
+		};
+
+		for (int index = 0; index < edge.Length; index++)
+		{
+			AddParticleMeshVertex(surface, center);
+			AddParticleMeshVertex(surface, edge[index]);
+			AddParticleMeshVertex(surface, edge[(index + 1) % edge.Length]);
+		}
+
+		ArrayMesh mesh = surface.Commit();
+		mesh.SurfaceSetMaterial(0, material);
+		return mesh;
+	}
+
+	private static void AddParticleMeshVertex(
+		SurfaceTool surface,
+		Vector3 position)
+	{
+		surface.SetColor(Colors.White);
+		surface.SetNormal(Vector3.Up);
+		surface.AddVertex(position);
 	}
 
 	private ArrayMesh CreateRibbonMesh()
@@ -404,6 +647,199 @@ public partial class WindMapStreakEffect : Node3D
 			_streakInstance.ExtraCullMargin =
 				TravelDistance + MaxLength + LoopRadius * 2.0f;
 		}
+	}
+
+	private void ApplyLeafParticleParameters()
+	{
+		if (
+			_leafParticles == null ||
+			_dustParticles == null ||
+			_leafProcessMaterial == null ||
+			_dustProcessMaterial == null)
+		{
+			return;
+		}
+
+		int leafAmount = Math.Max(LeafParticleCount, 1);
+		int dustAmount = Math.Max(DustParticleCount, 1);
+		float leafLifetime = Mathf.Max(LeafLifetime, 0.1f);
+		float dustLifetime = Mathf.Max(
+			LeafLifetime * DustLifetimeMultiplier,
+			0.1f);
+
+		if (_leafParticles.Amount != leafAmount)
+			_leafParticles.Amount = leafAmount;
+		if (_dustParticles.Amount != dustAmount)
+			_dustParticles.Amount = dustAmount;
+		if (!Mathf.IsEqualApprox(_leafParticles.Lifetime, leafLifetime))
+			_leafParticles.Lifetime = leafLifetime;
+		if (!Mathf.IsEqualApprox(_dustParticles.Lifetime, dustLifetime))
+			_dustParticles.Lifetime = dustLifetime;
+
+		float intensity = EffectEnabled && LeafParticlesEnabled
+			? _eventBlend
+			: 0.0f;
+		float primaryGust =
+			0.5f + 0.5f * Mathf.Sin(_gustTime * GustPrimarySpeed);
+		float secondaryGust =
+			0.5f + 0.5f * Mathf.Sin(
+				_gustTime * GustSecondarySpeed + 1.7f);
+		float minimumGust = Mathf.Clamp(
+			GustMinimumStrength,
+			0.0f,
+			1.0f);
+		float gust = Mathf.Clamp(
+			minimumGust +
+				(1.0f - minimumGust) * primaryGust * secondaryGust,
+			0.0f,
+			1.0f);
+		float gustBurst = gust * gust;
+		bool shouldEmit =
+			EffectEnabled &&
+			LeafParticlesEnabled &&
+			(_windEventActive || intensity > 0.002f);
+
+		_leafParticles.Visible = shouldEmit;
+		_dustParticles.Visible = shouldEmit;
+		_leafParticles.Emitting = shouldEmit;
+		_dustParticles.Emitting = shouldEmit;
+		_leafParticles.AmountRatio = Mathf.Clamp(
+			intensity * Mathf.Lerp(0.28f, 1.0f, gustBurst),
+			0.0f,
+			1.0f);
+		_dustParticles.AmountRatio = Mathf.Clamp(
+			intensity * Mathf.Lerp(0.4f, 0.9f, gustBurst),
+			0.0f,
+			1.0f);
+
+		Vector3 windDirection = Vector3.Forward;
+		Vector3 emissionBox = new Vector3(
+			Mathf.Max(Mathf.Abs(LeafEmissionSize.X), 0.1f),
+			Mathf.Max(Mathf.Abs(LeafEmissionSize.Y), 0.1f),
+			Mathf.Max(Mathf.Abs(LeafEmissionSize.Z), 0.1f));
+		Vector3 emissionCenter = new Vector3(
+			0.0f,
+			LeafEmissionHeight,
+			-Mathf.Max(LeafCameraDistance, 0.1f));
+		float minSpeed = Mathf.Min(LeafMinSpeed, LeafMaxSpeed);
+		float maxSpeed = Mathf.Max(LeafMinSpeed, LeafMaxSpeed);
+		float minSize = Mathf.Min(LeafMinSize, LeafMaxSize);
+		float maxSize = Mathf.Max(LeafMinSize, LeafMaxSize);
+
+		ApplyCommonParticleParameters(
+			_leafProcessMaterial,
+			emissionCenter,
+			emissionBox,
+			windDirection,
+			intensity,
+			gust,
+			LeafWobbleFrequencyMin,
+			LeafWobbleFrequencyMax,
+			LeafLateralSpread,
+			LeafVerticalSpread);
+		_leafProcessMaterial.SetShaderParameter("speed_min", minSpeed);
+		_leafProcessMaterial.SetShaderParameter("speed_max", maxSpeed);
+		_leafProcessMaterial.SetShaderParameter(
+			"fall_speed_min",
+			LeafFallSpeed * 0.55f);
+		_leafProcessMaterial.SetShaderParameter(
+			"fall_speed_max",
+			LeafFallSpeed * 1.35f);
+		_leafProcessMaterial.SetShaderParameter(
+			"vertical_wobble",
+			LeafVerticalWobble);
+		_leafProcessMaterial.SetShaderParameter(
+			"side_wobble",
+			LeafSideWobble);
+		_leafProcessMaterial.SetShaderParameter("size_min", minSize);
+		_leafProcessMaterial.SetShaderParameter("size_max", maxSize);
+		_leafProcessMaterial.SetShaderParameter("spin_min", LeafMinSpin);
+		_leafProcessMaterial.SetShaderParameter("spin_max", LeafMaxSpin);
+		_leafProcessMaterial.SetShaderParameter(
+			"color_one",
+			new Color(0.69f, 0.45f, 0.12f, 0.94f));
+		_leafProcessMaterial.SetShaderParameter(
+			"color_two",
+			new Color(0.48f, 0.58f, 0.16f, 0.92f));
+		_leafProcessMaterial.SetShaderParameter(
+			"color_three",
+			new Color(0.72f, 0.25f, 0.12f, 0.92f));
+		_leafProcessMaterial.SetShaderParameter(
+			"color_four",
+			new Color(0.35f, 0.18f, 0.10f, 0.90f));
+
+		ApplyCommonParticleParameters(
+			_dustProcessMaterial,
+			emissionCenter,
+			emissionBox,
+			windDirection,
+			intensity,
+			gust,
+			LeafWobbleFrequencyMin,
+			LeafWobbleFrequencyMax,
+			LeafLateralSpread,
+			LeafVerticalSpread);
+		_dustProcessMaterial.SetShaderParameter(
+			"speed_min",
+			minSpeed * DustMinSpeedMultiplier);
+		_dustProcessMaterial.SetShaderParameter(
+			"speed_max",
+			maxSpeed * DustMaxSpeedMultiplier);
+		_dustProcessMaterial.SetShaderParameter(
+			"fall_speed_min",
+			DustMinFallSpeed);
+		_dustProcessMaterial.SetShaderParameter(
+			"fall_speed_max",
+			DustMaxFallSpeed);
+		_dustProcessMaterial.SetShaderParameter(
+			"vertical_wobble",
+			LeafVerticalWobble * DustVerticalWobbleMultiplier);
+		_dustProcessMaterial.SetShaderParameter(
+			"side_wobble",
+			LeafSideWobble * DustSideWobbleMultiplier);
+		_dustProcessMaterial.SetShaderParameter("size_min", DustMinSize);
+		_dustProcessMaterial.SetShaderParameter("size_max", DustMaxSize);
+		_dustProcessMaterial.SetShaderParameter("spin_min", DustMinSpin);
+		_dustProcessMaterial.SetShaderParameter("spin_max", DustMaxSpin);
+		_dustProcessMaterial.SetShaderParameter(
+			"color_one",
+			new Color(0.93f, 0.79f, 0.55f, 0.28f));
+		_dustProcessMaterial.SetShaderParameter(
+			"color_two",
+			new Color(0.76f, 0.84f, 0.67f, 0.24f));
+		_dustProcessMaterial.SetShaderParameter(
+			"color_three",
+			new Color(0.87f, 0.58f, 0.38f, 0.24f));
+		_dustProcessMaterial.SetShaderParameter(
+			"color_four",
+			new Color(0.66f, 0.53f, 0.38f, 0.22f));
+	}
+
+	private static void ApplyCommonParticleParameters(
+		ShaderMaterial material,
+		Vector3 emissionCenter,
+		Vector3 emissionBox,
+		Vector3 windDirection,
+		float intensity,
+		float gust,
+		float wobbleFrequencyMin,
+		float wobbleFrequencyMax,
+		float lateralSpread,
+		float verticalSpread)
+	{
+		material.SetShaderParameter("emission_center", emissionCenter);
+		material.SetShaderParameter("emission_box", emissionBox);
+		material.SetShaderParameter("wind_direction", windDirection);
+		material.SetShaderParameter("wind_intensity", intensity);
+		material.SetShaderParameter("gust_strength", gust);
+		material.SetShaderParameter(
+			"wobble_frequency_min",
+			wobbleFrequencyMin);
+		material.SetShaderParameter(
+			"wobble_frequency_max",
+			wobbleFrequencyMax);
+		material.SetShaderParameter("lateral_spread", lateralSpread);
+		material.SetShaderParameter("vertical_spread", verticalSpread);
 	}
 
 	private void RefreshWindEventState()

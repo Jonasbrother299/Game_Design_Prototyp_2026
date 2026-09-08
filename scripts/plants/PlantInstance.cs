@@ -63,8 +63,11 @@ public class PlantInstance
 			Definition.Type == PlantType.Birch;
 		bool isGrowingSpreadMoss =
 			Definition.Type == PlantType.Moss && !IsMature;
+		bool isGrowingSpreadFlower =
+			Definition.Type == PlantType.Flower && !IsMature;
 
-		if (WasCreatedBySpread && (isSpreadTree || isGrowingSpreadMoss))
+		if (WasCreatedBySpread &&
+			(isSpreadTree || isGrowingSpreadMoss || isGrowingSpreadFlower))
 		{
 			return 0;
 		}

@@ -23,6 +23,7 @@ public partial class EncyclopediaMenu : Control
 	private Button _eventsButton;
 	private Label _entryCountLabel;
 	private GridContainer _cardGrid;
+	private ScrollContainer _cardScroll;
 	private Button _entryCardTemplate;
 	private Button _lockedCardTemplate;
 	private RichTextLabel _detailsText;
@@ -30,6 +31,7 @@ public partial class EncyclopediaMenu : Control
 	private Button _backButton;
 	private Button _firstCardButton;
 	private Button _selectedCardButton;
+	private MarginContainer _menuLayout;
 
 	private readonly List<PlantDefinition> _plants = new();
 	private readonly List<EventDefinition> _events = new();
@@ -41,11 +43,15 @@ public partial class EncyclopediaMenu : Control
 		_eventsButton = GetNode<Button>("%EventsButton");
 		_entryCountLabel = GetNode<Label>("%EntryCountLabel");
 		_cardGrid = GetNode<GridContainer>("%CardGrid");
+		_cardScroll = GetNode<ScrollContainer>("%CardScroll");
+		_cardScroll.Resized += UpdateCardColumns;
 		_entryCardTemplate = GetNode<Button>("%EntryCardTemplate");
 		_lockedCardTemplate = GetNode<Button>("%LockedCardTemplate");
 		_detailsText = GetNode<RichTextLabel>("%DetailsText");
 		_descriptionCard = GetNode<TextureRect>("%DescriptionCard");
 		_backButton = GetNode<Button>("%BackButton");
+		_menuLayout = GetNode<MarginContainer>("CenterContainer");
+		Resized += UpdateMenuLayout;
 
 		_plantsButton.Pressed += ShowPlants;
 		_eventsButton.Pressed += ShowEvents;
@@ -53,6 +59,37 @@ public partial class EncyclopediaMenu : Control
 
 		LoadEntries();
 		RefreshCards();
+		UpdateMenuLayout();
+	}
+
+	public override void _ExitTree()
+	{
+		Resized -= UpdateMenuLayout;
+		_cardScroll.Resized -= UpdateCardColumns;
+	}
+
+	private void UpdateCardColumns()
+	{
+		if (_cardScroll.Size.X <= 0.0f)
+			return;
+
+		float availableWidth = _cardScroll.Size.X
+			- _cardScroll.GetVScrollBar().GetCombinedMinimumSize().X - 16.0f;
+		int separation = _cardGrid.GetThemeConstant("h_separation");
+		float cardWidth = _entryCardTemplate.CustomMinimumSize.X;
+		_cardGrid.Columns = Mathf.Max(1,
+			Mathf.FloorToInt((availableWidth + separation) / (cardWidth + separation)));
+	}
+
+	private void UpdateMenuLayout()
+	{
+		if (Size.X <= 0.0f || Size.Y <= 0.0f)
+			return;
+
+		float scale = Mathf.Min(Size.X / 1920.0f, Size.Y / 1080.0f);
+		_menuLayout.SetAnchorsAndOffsetsPreset(LayoutPreset.TopLeft);
+		_menuLayout.Size = Size / scale;
+		_menuLayout.Scale = Vector2.One * scale;
 	}
 
 	public override void _UnhandledInput(InputEvent inputEvent)
@@ -67,6 +104,7 @@ public partial class EncyclopediaMenu : Control
 	public void Open()
 	{
 		Show();
+		UpdateMenuLayout();
 		ResetDetailView();
 		(_firstCardButton ?? _plantsButton).GrabFocus();
 	}
@@ -133,6 +171,7 @@ public partial class EncyclopediaMenu : Control
 
 		UpdateEntryCount();
 		ResetDetailView();
+		UpdateCardColumns();
 	}
 
 	private void AddPlantCard(PlantDefinition plant)
@@ -142,6 +181,22 @@ public partial class EncyclopediaMenu : Control
 			"PFLANZE",
 			plant.CardImage,
 			plant.Type == PlantType.Oak ? "♣" : "PFLANZE");
+		if (plant.CardImage != null)
+		{
+			StyleBoxEmpty emptyStyle = new();
+			foreach (string state in new[] { "normal", "hover" })
+				card.AddThemeStyleboxOverride(state, emptyStyle);
+			card.GetNode<Control>("CardContent").SetAnchorsAndOffsetsPreset(
+				LayoutPreset.FullRect);
+			card.GetNode<Label>("CardContent/Category").Hide();
+			card.GetNode<Label>("CardContent/Title").Hide();
+			PanelContainer artFrame = card.GetNode<PanelContainer>("CardContent/ArtFrame");
+			artFrame.CustomMinimumSize = new Vector2(0.0f, card.CustomMinimumSize.Y);
+			artFrame.SizeFlagsVertical = SizeFlags.ExpandFill;
+			artFrame.AddThemeStyleboxOverride("panel", emptyStyle);
+			card.GetNode<TextureRect>("CardContent/ArtFrame/CardImage").TextureFilter =
+				TextureFilterEnum.Linear;
+		}
 		card.TooltipText = $"Details zu {plant.DisplayName} anzeigen";
 		card.Pressed += () => SelectCard(card, plant);
 	}
@@ -162,8 +217,8 @@ public partial class EncyclopediaMenu : Control
 	{
 		string iconPath = eventType switch
 		{
-			GameEventType.Rain => "res://assets/wetter_Icons/Regen-Vektor.svg",
-			GameEventType.HeavyRain => "res://assets/wetter_Icons/Unwetter-Vektor.svg",
+			GameEventType.Rain => "res://assets/wetter_Icons/Regen-Original.svg",
+			GameEventType.HeavyRain => "res://assets/wetter_Icons/Unwetter2-Vektor.svg",
 			GameEventType.Drought => "res://assets/wetter_Icons/Dürre-Vektor.svg",
 			GameEventType.HeatDay => "res://assets/wetter_Icons/Hitzetag-Vektor.svg",
 			GameEventType.Wind => "res://assets/wetter_Icons/Wind-Vektor.svg",
@@ -179,8 +234,10 @@ public partial class EncyclopediaMenu : Control
 		string cardPath = eventType switch
 		{
 			GameEventType.Rain => "res://assets/wetter_Icons/Regen-Beschreibung.svg",
+			GameEventType.HeavyRain => "res://assets/wetter_Icons/Unwetter-Beschreibung.svg",
 			GameEventType.Drought => "res://assets/wetter_Icons/Dürre-Beschreibung.svg",
 			GameEventType.HeatDay => "res://assets/wetter_Icons/Hitzetag-Beschreibung.svg",
+			GameEventType.Wind => "res://assets/wetter_Icons/Wind-Beschreibung.svg",
 			GameEventType.Pests => "res://assets/wetter_Icons/Schädlinge-Beschreibung.svg",
 			_ => null
 		};
@@ -191,16 +248,21 @@ public partial class EncyclopediaMenu : Control
 	private static void ConfigureEventCard(Button card)
 	{
 		StyleBoxEmpty emptyStyle = new StyleBoxEmpty();
-		card.CustomMinimumSize = new Vector2(370.0f, 410.0f);
+		card.CustomMinimumSize = new Vector2(216.0f, 216.0f);
 		card.AddThemeStyleboxOverride("normal", emptyStyle);
 		card.AddThemeStyleboxOverride("hover", emptyStyle);
 		card.AddThemeStyleboxOverride("pressed", emptyStyle);
 		card.AddThemeStyleboxOverride("hover_pressed", emptyStyle);
-		card.AddThemeStyleboxOverride("focus", emptyStyle);
 
+		VBoxContainer content = card.GetNode<VBoxContainer>("CardContent");
+		content.OffsetLeft = 8.0f;
+		content.OffsetTop = 8.0f;
+		content.OffsetRight = -8.0f;
+		content.OffsetBottom = -8.0f;
+		content.AddThemeConstantOverride("separation", 8);
 		card.GetNode<Label>("CardContent/Category").Visible = false;
 		PanelContainer artFrame = card.GetNode<PanelContainer>("CardContent/ArtFrame");
-		artFrame.CustomMinimumSize = new Vector2(0.0f, 320.0f);
+		artFrame.CustomMinimumSize = new Vector2(0.0f, 160.0f);
 		artFrame.AddThemeStyleboxOverride("panel", emptyStyle);
 		card.GetNode<TextureRect>("CardContent/ArtFrame/CardImage").TextureFilter =
 			CanvasItem.TextureFilterEnum.Linear;
@@ -300,7 +362,7 @@ public partial class EncyclopediaMenu : Control
 		_descriptionCard.Texture = null;
 		_detailsText.Visible = true;
 		_detailsText.Text =
-			"[font_size=38][color=#5f2d1d][b]Noch keine Karte ausgewählt[/b]" +
+			"[font_size=26][color=#75432d][b]Noch keine Karte ausgewählt[/b]" +
 			"[/color][/font_size]\n\n" +
 			"Wähle links eine bekannte Karte, um Werte, Wirkung und " +
 			"Beschreibung anzuzeigen.";
@@ -308,75 +370,59 @@ public partial class EncyclopediaMenu : Control
 
 	private void ShowPlant(PlantDefinition plant)
 	{
+		_detailsText.ScrollToLine(0);
 		_descriptionCard.Visible = false;
 		_descriptionCard.Texture = null;
 		_detailsText.Visible = true;
 
 		StringBuilder text = new StringBuilder();
 		text.AppendLine(FormatTitle(plant.DisplayName));
-		text.AppendLine(plant.Type == PlantType.Oak
-			? "[color=#77752f]PFLANZE · HAUPTEICHE[/color]"
-			: "[color=#77752f]PFLANZE[/color]");
 		text.AppendLine();
 
 		if (plant.Type == PlantType.Oak)
 		{
 			GameConfig config = GameConfig.LoadDefault();
-			text.AppendLine(FormatSection("★", "SPIELZIEL"));
-			text.AppendLine("Baue rund um die Haupteiche ein stabiles Ökosystem auf und sichere den Wasservorrat.");
-			text.AppendLine();
+			text.AppendLine(FormatSection("★", "Spielziel"));
+			text.AppendLine("Baue ein stabiles Ökosystem auf und sichere den Wasservorrat.");
 			text.AppendLine(FormatValue("Sieg", $"Erreiche {config.WinWaterLimit} Wasser"));
-			text.AppendLine(FormatValue(
-				"Niederlage",
-				$"Bei {config.LoseWaterLimit} Wasser ist das Spiel verloren"));
+			text.AppendLine(FormatValue("Niederlage", $"Bei {config.LoseWaterLimit} Wasser"));
 			text.AppendLine();
-			text.AppendLine(FormatSection("♣", "ROLLE DER HAUPTEICHE"));
-			text.AppendLine("Die Haupteiche steht zu Spielbeginn auf dem Feld. " +
-				"Sie verbraucht und produziert kein Wasser und erzeugt sofort Schatten.");
-			text.AppendLine();
+			text.AppendLine(FormatSection("♣", "Haupteiche"));
+			text.AppendLine("Steht zu Spielbeginn auf dem Feld, verbraucht und produziert " +
+				"kein Wasser und erzeugt sofort Schatten.");
 		}
 		else
 		{
-			text.AppendLine(FormatSection("●", "WASSERHAUSHALT"));
-			text.AppendLine($"Verbraucht pro Runde {plant.WaterConsumption} Wasser. " +
-				$"Nach dem Auswachsen produziert die Pflanze {plant.WaterProduction} Wasser pro Runde.");
-			text.AppendLine();
-			text.AppendLine(FormatValue("Verbrauch pro Runde", plant.WaterConsumption.ToString()));
+			text.AppendLine(FormatSection("●", "Wasser je Runde"));
+			text.AppendLine(FormatValue("Verbrauch", plant.WaterConsumption.ToString()));
 			text.AppendLine(FormatValue("Produktion ausgewachsen", plant.WaterProduction.ToString()));
-			text.AppendLine(FormatValue(
-				"Bilanz ausgewachsen",
+			text.AppendLine(FormatValue("Bilanz ausgewachsen",
 				FormatSignedNumber(plant.WaterProduction - plant.WaterConsumption)));
 			text.AppendLine();
-
-			text.AppendLine(FormatSection("◆", "ENTWICKLUNG"));
-			text.AppendLine(FormatValue(
-				"Ausgewachsen nach",
-				$"{plant.GrowthRounds} Runden"));
-			text.AppendLine(FormatValue(
-				"Wachstumsstufen",
-				plant.GrowthStageCount.ToString()));
-			text.AppendLine(FormatValue(
-				"Ausbreitung",
+			text.AppendLine(FormatSection("◆", "Entwicklung"));
+			text.AppendLine(FormatValue("Ausgewachsen nach",
+				$"{plant.GrowthRounds} Runden") + " · " +
+				FormatValue("Stufen", plant.GrowthStageCount.ToString()));
+			text.AppendLine(FormatValue("Ausbreitung",
 				FormatChance(plant.SpreadChanceDenominator)));
 			if (plant.EventDeathResistancePerGrowthStage > 0)
 			{
-				text.AppendLine(FormatValue(
-					"Ereigniswiderstand je Stufe",
+				text.AppendLine(FormatValue("Ereigniswiderstand je Stufe",
 					$"+{plant.EventDeathResistancePerGrowthStage}"));
 			}
 		}
 
 		text.AppendLine();
-		text.AppendLine(FormatSection("▸", "STANDORT"));
-		text.AppendLine(FormatValue("Standort", FormatLightLevels(plant)));
+		text.AppendLine(FormatSection("▸", "Standort"));
+		text.AppendLine(FormatLightLevels(plant));
 		text.AppendLine();
-		text.AppendLine(FormatSection("✦", "WIRKUNG"));
+		text.AppendLine(FormatSection("✦", "Wirkung"));
 		text.AppendLine(FormatPlantEffect(plant));
 
 		if (!string.IsNullOrWhiteSpace(plant.Description))
 		{
 			text.AppendLine();
-			text.AppendLine(FormatSection("▤", "BESCHREIBUNG"));
+			text.AppendLine(FormatSection("▤", "Beschreibung"));
 			text.AppendLine(plant.Description);
 		}
 
@@ -385,6 +431,7 @@ public partial class EncyclopediaMenu : Control
 
 	private void ShowEvent(EventDefinition gameEvent)
 	{
+		_detailsText.ScrollToLine(0);
 		Texture2D descriptionTexture = GetEventDescriptionCard(gameEvent.Type);
 		_descriptionCard.Texture = descriptionTexture;
 		_descriptionCard.Visible = descriptionTexture != null;
@@ -438,7 +485,7 @@ public partial class EncyclopediaMenu : Control
 
 	private static string FormatTitle(string title)
 	{
-		return $"[font_size=40][color=#5f2d1d][b]{title}[/b][/color][/font_size]";
+		return $"[font_size=30][color=#75432d][b]{title}[/b][/color][/font_size]";
 	}
 
 	private static string FormatValue(string label, string value)
@@ -448,7 +495,7 @@ public partial class EncyclopediaMenu : Control
 
 	private static string FormatSection(string icon, string title)
 	{
-		return $"[font_size=28][color=#77752f][b]{icon}  {title}[/b][/color][/font_size]";
+		return $"[font_size=22][color=#77752f][b]{icon}  {title}[/b][/color][/font_size]";
 	}
 
 	private static string FormatSignedNumber(int value)

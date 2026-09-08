@@ -15,12 +15,10 @@
 [ext_resource type="PackedScene" uid="uid://ccsqc8nj81y5c" path="res://scenes/tutorial/TutorialOverlay.tscn" id="9_tutorial"]
 [ext_resource type="PackedScene" path="res://scenes/UI/PauseMenu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" uid="uid://dbsnedk2icmha" path="res://scenes/UI/Water.tscn" id="11_water"]
-[ext_resource type="Texture2D" uid="uid://c4htaarh2oul1" path="res://assets/ui/button/endTurn_button.png" id="12_end_turn"]
-[ext_resource type="PackedScene" path="res://scenes/UI/RoundDisplay.tscn" id="13_round"]
-[ext_resource type="Script" uid="uid://d2pvq043lauj3" path="res://scripts/UI/EndTurnButtonUI.cs" id="14_end_turn_feedback"]
+[ext_resource type="PackedScene" path="res://scenes/UI/RoundCalendarButton.tscn" id="12_end_turn"]
+[ext_resource type="Texture2D" uid="uid://daj2h3i4jrih2" path="res://assets/ui/button/discard_hand.png" id="14_discard_hand"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EndGameScreen.tscn" id="16_end_game"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="17_drought_effect"]
-[ext_resource type="FontFile" uid="uid://bxawvua8qhwde" path="res://assets/ui/fonts/OhnoBlazefaceDemo-14Point.otf" id="18_ui_font_readable"]
 [ext_resource type="Resource" uid="uid://d28g8w7xp712f" path="res://data/balance/game_balance.tres" id="20_balance"]
 [ext_resource type="Script" uid="uid://v7h0unjsq8uj" path="res://scripts/UI/DayCycleDisplayUI.cs" id="23_day_cycle_display"]
 [ext_resource type="AudioStream" uid="uid://us03fk4xjdkg" path="res://assets/audio/Sound effects/Einpflanzen.mp3" id="25_planting_audio"]
@@ -38,8 +36,9 @@
 [ext_resource type="Texture2D" uid="uid://ddu1jtvgwyold" path="res://assets/wetter_Icons/Hitzetag-Vektor.svg" id="36_heat_day_icon"]
 [ext_resource type="Texture2D" uid="uid://d14sdpuo7d1sn" path="res://assets/wetter_Icons/Wind-Vektor.svg" id="37_wind_icon"]
 [ext_resource type="Texture2D" uid="uid://ces4l0q2pbda7" path="res://assets/wetter_Icons/Schädlinge-Vektor.svg" id="38_pests_icon"]
-[ext_resource type="Texture2D" uid="uid://rhyiafdnpj5q" path="res://assets/wetter_Icons/Unwetter-Tropfen-Vektor.svg" id="39_heavy_rain_drops_icon"]
-[ext_resource type="Texture2D" uid="uid://b21ace8jg5n0y" path="res://assets/wetter_Icons/Unwetter-Vektor.svg" id="39_heavy_rain_icon"]
+[ext_resource type="Texture2D" uid="uid://bi0keovwe5t0l" path="res://assets/wetter_Icons/Unwetter2-Tropfen.svg" id="39_heavy_rain_drops_icon"]
+[ext_resource type="Texture2D" uid="uid://bf8t8qqhxmi4q" path="res://assets/wetter_Icons/Unwetter2-Animation.svg" id="39_heavy_rain_icon"]
+[ext_resource type="Texture2D" uid="uid://bs0ows73nu7nu" path="res://assets/ui/button/shovel.png" id="39_shovel_button"]
 [ext_resource type="Texture2D" uid="uid://cd176tbqocf50" path="res://assets/ui/icons/shovel.svg" id="39_shovel_icon"]
 [ext_resource type="Script" uid="uid://c6jdpmda8ql3l" path="res://scripts/effects/WindMapStreakEffect.cs" id="40_wind_streak_effect"]
 [ext_resource type="Script" uid="uid://cukh5cot8f4t5" path="res://scripts/effects/FishSchoolController.cs" id="41_fish_school"]
@@ -49,6 +48,7 @@
 [ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/plants/StartingOak/LeafParticle.tres" id="45_leaf_mesh"]
 [ext_resource type="Script" uid="uid://c43ieqr6rfnkr" path="res://scripts/UI/PlantInspectionController.cs" id="46_plant_inspection"]
 [ext_resource type="Texture2D" uid="uid://cq7c6avhm8in8" path="res://assets/textures/hdris/anime_sky_panorama_v2.png" id="47_cloud_panorama"]
+[ext_resource type="Script" uid="uid://cblpqjdggd5mq" path="res://scripts/effects/PestPlantSwarmEffect.cs" id="48_pest_swarm"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
 shader = ExtResource("5_sky_shader")
@@ -85,6 +85,7 @@ ssil_enabled = true
 ssil_radius = 6.1
 ssil_intensity = 3.25
 ssil_sharpness = 1.0
+sdfgi_use_occlusion = true
 glow_enabled = true
 glow_intensity = 1.14
 glow_strength = 0.54
@@ -147,88 +148,8 @@ shader_parameter/rain_ripple_size = 0.19
 shader_parameter/rain_ripple_speed = 1.64
 shader_parameter/rain_ripple_brightness = 0.31
 shader_parameter/water_center = Vector2(0, 0)
-shader_parameter/water_radius = 26.4
-shader_parameter/edge_fade = 4.0
-
-[sub_resource type="StyleBoxFlat" id="StyleDiscardNormal"]
-content_margin_left = 18.0
-content_margin_top = 10.0
-content_margin_right = 18.0
-content_margin_bottom = 10.0
-bg_color = Color(0.82, 0.68, 0.43, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.28, 0.13, 0.07, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0, 0, 0, 0.42)
-shadow_size = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleDiscardPressed"]
-content_margin_left = 18.0
-content_margin_top = 10.0
-content_margin_right = 18.0
-content_margin_bottom = 10.0
-bg_color = Color(0.67, 0.51, 0.3, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.22, 0.1, 0.05, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-
-[sub_resource type="StyleBoxFlat" id="StyleDiscardHover"]
-content_margin_left = 18.0
-content_margin_top = 10.0
-content_margin_right = 18.0
-content_margin_bottom = 10.0
-bg_color = Color(0.94, 0.82, 0.56, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.38, 0.17, 0.08, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0, 0, 0, 0.48)
-shadow_size = 7
-
-[sub_resource type="StyleBoxFlat" id="StyleDiscardDisabled"]
-content_margin_left = 18.0
-content_margin_top = 10.0
-content_margin_right = 18.0
-content_margin_bottom = 10.0
-bg_color = Color(0.38, 0.35, 0.29, 0.72)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.21, 0.19, 0.16, 0.76)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-
-[sub_resource type="StyleBoxFlat" id="StyleShovelCircle"]
-bg_color = Color(0.901961, 0.835294, 0.698039, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.25, 0.11, 0.055, 1)
-corner_radius_top_left = 56
-corner_radius_top_right = 56
-corner_radius_bottom_right = 56
-corner_radius_bottom_left = 56
+shader_parameter/water_radius = 29.0
+shader_parameter/edge_fade = 1.2
 
 [node name="Main" type="Node3D" unique_id=2056396165]
 
@@ -247,11 +168,11 @@ GrassBirchMargin = 0.17
 GrassMossMargin = 0.14
 BorderRocksPerEdge = 3
 BorderRockPositionJitter = 0.02
-StoneBorderYScale = 1.2000000000000002
+StoneBorderYScale = 1.2
 DecorativeGroundRows = 7
 OuterTreeChance = 0.42
 StartingOakScale = 0.65
-MushroomModelScale = 0.72
+MushroomModelScale = 1.0
 FlowerModelScale = 0.5
 BirchModelScale = 0.44
 TreeShadowStrength = 1.0
@@ -266,7 +187,7 @@ script = ExtResource("3_rarhs")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=664851863]
 transform = Transform3D(0.7523971, -0.5703108, 0.3296119, -0.516126, -0.19950591, 0.8329533, -0.40928274, -0.796833, -0.44445992, 0, 1.2775217, 1.4064736)
 light_color = Color(0.9674689, 0.90008366, 0.7625296, 1)
-light_energy = 2.433
+light_energy = 2.819
 light_indirect_energy = 0.84
 light_volumetric_fog_energy = 1.08
 light_angular_distance = 1.2
@@ -285,6 +206,9 @@ script = ExtResource("17_drought_effect")
 [node name="WindMapStreakEffect" type="Node3D" parent="." unique_id=872006172]
 script = ExtResource("40_wind_streak_effect")
 
+[node name="PestPlantSwarmEffect" type="Node3D" parent="." unique_id=864710467]
+script = ExtResource("48_pest_swarm")
+
 [node name="StylizedWater" parent="." unique_id=1959249824 instance=ExtResource("30_stylized_water")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.038378716, -0.048188865, -0.34361994)
 material_override = SubResource("ShaderMaterial_oa6sj")
@@ -302,8 +226,10 @@ RainRippleDensity = 2.64
 ShowRainInEditor = false
 EditorRainIntensity = 1.44
 WaveHeight = 0.0
-WaterRadius = 26.4
-EdgeFade = 4.0
+WaterRadius = 29.0
+UnderwaterBasinEdgeDepth = 0.1
+UnderwaterGroundVariation = 0.5
+UnderwaterGroundVariationScale = 1.65
 RiverRockGroundOffset = 0.08
 
 [node name="FishController" type="Node3D" parent="." unique_id=2096968572]
@@ -362,7 +288,7 @@ script = ExtResource("32_fps_display")
 [node name="CardHand" parent="UI/CanvasLayer" unique_id=1779362432 instance=ExtResource("6_c01mt")]
 script = ExtResource("7_nxtc6")
 CardSize = Vector2(420, 473)
-HoverLift = 240.0
+HoverLift = 260.0
 HoverScale = 1.5
 CardSpacing = 75.0
 FanYOffset = 17.0
@@ -391,13 +317,10 @@ color = Color(0.05, 0.12, 0.3, 0)
 [node name="DayCycleDisplay" type="TextureRect" parent="UI/CanvasLayer/GameHub" unique_id=1252813340]
 z_index = 12
 layout_mode = 0
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -80.0
+offset_left = 32.0
 offset_top = 16.0
-offset_right = 80.0
+offset_right = 192.0
 offset_bottom = 176.0
-grow_horizontal = 2
 tooltip_text = "Tag"
 mouse_filter = 2
 expand_mode = 1
@@ -440,30 +363,18 @@ volume_db = -13.0
 [node name="WaterLabel" parent="UI/CanvasLayer/GameHub" unique_id=1513438614 instance=ExtResource("11_water")]
 layout_mode = 1
 
-[node name="RoundDisplay" parent="UI/CanvasLayer/GameHub" unique_id=193843681 instance=ExtResource("13_round")]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 500.0
-offset_bottom = 125.0
-
-[node name="EndTurnButton" type="TextureButton" parent="UI/CanvasLayer/GameHub" unique_id=629424259]
+[node name="EndTurnButton" parent="UI/CanvasLayer/GameHub" unique_id=629424259 instance=ExtResource("12_end_turn")]
 layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -284.0
-offset_top = -110.0
+offset_left = -424.0
+offset_top = -146.0
 offset_right = -24.0
 offset_bottom = -34.0
 grow_horizontal = 0
 grow_vertical = 0
-tooltip_text = "Runde beenden"
-texture_normal = ExtResource("12_end_turn")
-ignore_texture_size = true
-stretch_mode = 5
-script = ExtResource("14_end_turn_feedback")
 
 [node name="DiscardHandButton" type="Button" parent="UI/CanvasLayer/GameHub" unique_id=13557766]
 layout_mode = 0
@@ -471,50 +382,39 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -534.0
-offset_top = -110.0
-offset_right = -304.0
-offset_bottom = -34.0
+offset_left = -574.0
+offset_top = -156.0
+offset_right = -442.0
+offset_bottom = -24.0
 grow_horizontal = 0
 grow_vertical = 0
 tooltip_text = "Alle Handkarten abwerfen. Neue Karten kommen erst in der nächsten Runde."
+focus_mode = 0
 mouse_default_cursor_shape = 2
-theme_override_colors/font_color = Color(0.25, 0.11, 0.055, 1)
-theme_override_colors/font_pressed_color = Color(0.18, 0.075, 0.035, 1)
-theme_override_colors/font_hover_color = Color(0.3, 0.12, 0.05, 1)
-theme_override_colors/font_disabled_color = Color(0.66, 0.62, 0.54, 0.72)
-theme_override_fonts/font = ExtResource("18_ui_font_readable")
-theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleDiscardNormal")
-theme_override_styles/pressed = SubResource("StyleDiscardPressed")
-theme_override_styles/hover = SubResource("StyleDiscardHover")
-theme_override_styles/disabled = SubResource("StyleDiscardDisabled")
-text = "Hand abwerfen"
-
-[node name="ShovelBackground" type="Panel" parent="UI/CanvasLayer/GameHub" unique_id=106791393]
-layout_mode = 0
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 12.0
-offset_top = -56.0
-offset_right = 124.0
-offset_bottom = 56.0
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleShovelCircle")
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.78, 0.7, 0.58, 1)
+theme_override_colors/icon_hover_color = Color(1.08, 1.04, 0.9, 1)
+theme_override_colors/icon_disabled_color = Color(0.55, 0.55, 0.52, 0.58)
+icon = ExtResource("14_discard_hand")
+flat = true
+expand_icon = true
 
 [node name="ShovelButton" type="TextureButton" parent="UI/CanvasLayer/GameHub" unique_id=1536439251]
+texture_filter = 2
 layout_mode = 0
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 20.0
-offset_top = -48.0
-offset_right = 116.0
-offset_bottom = 48.0
-grow_vertical = 2
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -724.0
+offset_top = -156.0
+offset_right = -592.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
 tooltip_text = "Schaufel: Pflanzen im ersten Stadium entfernen"
 mouse_default_cursor_shape = 2
-texture_normal = ExtResource("39_shovel_icon")
+texture_normal = ExtResource("39_shovel_button")
 ignore_texture_size = true
 stretch_mode = 5
 

@@ -1,23 +1,25 @@
-[gd_scene format=3 uid="uid://dbsnedk2icmha"]
+[gd_scene load_steps=7 format=3 uid="uid://dbsnedk2icmha"]
 
-[ext_resource type="Texture2D" uid="uid://cil4ny7ps22ie" path="res://assets/ui/waterbar/WaterCircleMask.png" id="1_6wpi5"]
-[ext_resource type="FontFile" uid="uid://dect5b5hqlpwn" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="1_jsh08"]
-[ext_resource type="Script" path="res://scripts/UI/WaterDisplayUI.cs" id="2_script"]
-[ext_resource type="Texture2D" uid="uid://pm80s0yti35v" path="res://assets/ui/waterbar/WaterCircle.png" id="3_uxdov"]
+[ext_resource type="Script" path="res://scripts/UI/WaterDisplayUI.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/waterbar/water_tree.png" id="2_tree"]
+[ext_resource type="Texture2D" path="res://assets/ui/waterbar/water_tree_mask.svg" id="3_mask"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="4_font"]
+[ext_resource type="ShaderMaterial" path="res://assets/ui/waterbar/water_tree_material.tres" id="5_tree_material"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_progress"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_production"]
-bg_color = Color(0, 0.85, 1.35, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_water"]
-bg_color = Color(0.05, 1.35, 0.15, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_consumption"]
-bg_color = Color(0.02, 0.35, 1.5, 1)
+[sub_resource type="StyleBoxFlat" id="BalanceStyle"]
+bg_color = Color(0.965, 0.945, 0.902, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.435, 0.263, 0.176, 1)
+corner_radius_top_left = 38
+corner_radius_top_right = 38
+corner_radius_bottom_left = 38
+corner_radius_bottom_right = 38
 
 [node name="Water" type="Control" unique_id=985273860]
-custom_minimum_size = Vector2(280, 320)
+custom_minimum_size = Vector2(280, 432)
 layout_mode = 3
 anchors_preset = 1
 anchor_left = 1.0
@@ -25,165 +27,89 @@ anchor_right = 1.0
 offset_left = -360.0
 offset_top = 16.0
 offset_right = -80.0
-offset_bottom = 336.0
+offset_bottom = 448.0
 grow_horizontal = 0
 scale = Vector2(1.2, 1.2)
 mouse_filter = 2
-script = ExtResource("2_script")
+script = ExtResource("1_script")
 
-[node name="WaterProductionValue" type="Label" parent="." unique_id=953852327]
-z_index = 1
+[node name="WaterMask" type="TextureRect" parent="."]
+clip_children = 1
+texture_filter = 2
 layout_mode = 0
-offset_left = 38.0
-offset_top = 214.0
-offset_right = 98.0
-offset_bottom = 294.0
-size_flags_horizontal = 0
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0, 0.85, 1.35, 1)
-theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.04, 1)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("1_jsh08")
-theme_override_font_sizes/font_size = 36
-text = "0"
-horizontal_alignment = 1
-vertical_alignment = 1
+offset_left = 10.0
+offset_right = 270.0
+offset_bottom = 313.59
+mouse_filter = 2
+texture = ExtResource("3_mask")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="WaterFill" type="ColorRect" parent="WaterMask"]
+layout_mode = 1
+anchor_top = 0.868962
+anchor_right = 1.0
+anchor_bottom = 0.868962
+mouse_filter = 2
+color = Color(0.439, 0.694, 0.757, 1)
+
+[node name="WaterPreview" type="ColorRect" parent="WaterMask"]
+visible = false
+layout_mode = 1
+anchor_top = 0.868962
+anchor_right = 1.0
+anchor_bottom = 0.868962
+mouse_filter = 2
+color = Color(0.678, 0.824, 0.863, 1)
+
+[node name="Tree" type="TextureRect" parent="."]
+texture_filter = 2
+material = ExtResource("5_tree_material")
+layout_mode = 0
+offset_left = 10.0
+offset_right = 270.0
+offset_bottom = 313.59
+mouse_filter = 2
+texture = ExtResource("2_tree")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="ProductionArc" type="Line2D" parent="."]
+points = PackedVector2Array(65.80, 252.20, 66.27, 256.39, 66.87, 260.51, 67.60, 264.55, 68.47, 268.51, 69.47, 272.40, 70.60, 276.21, 71.87, 279.94, 73.27, 283.58, 74.81, 287.13, 76.48, 290.60, 78.29, 293.99, 80.22, 297.27, 82.30, 300.47, 84.51, 303.57, 86.85, 306.58, 89.33, 309.49, 91.94, 312.30, 94.68, 315.00, 97.57, 317.61, 100.58, 320.10, 103.73, 322.49, 107.02, 324.77, 110.44, 326.94, 114.00, 329.00)
+width = 7.0
+default_color = Color(0.439, 0.694, 0.757, 1)
+begin_cap_mode = 0
+end_cap_mode = 2
+antialiased = true
+
+[node name="ConsumptionArc" type="Line2D" parent="."]
+points = PackedVector2Array(207.00, 336.00, 210.68, 338.58, 214.23, 341.30, 217.64, 344.17, 220.91, 347.18, 224.04, 350.31, 227.04, 353.56, 229.90, 356.93, 232.61, 360.41, 235.19, 363.98, 237.63, 367.66, 239.92, 371.41, 242.07, 375.25, 244.08, 379.16, 245.95, 383.14, 247.67, 387.17, 249.25, 391.26, 250.68, 395.39, 251.97, 399.56, 253.11, 403.76, 254.11, 407.99, 254.95, 412.23, 255.65, 416.49, 256.20, 420.75, 256.60, 425.00)
+width = 7.0
+default_color = Color(0.773, 0.294, 0.329, 1)
+begin_cap_mode = 2
+end_cap_mode = 0
+antialiased = true
+
+[node name="Balance" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 122.5
+offset_top = 295.0
+offset_right = 198.5
+offset_bottom = 371.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BalanceStyle")
 
 [node name="WaterCarryValue" type="Label" parent="." unique_id=1486893033]
-z_index = 1
 layout_mode = 0
-offset_left = 92.0
-offset_top = 192.0
-offset_right = 188.0
-offset_bottom = 300.0
-size_flags_horizontal = 0
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.05, 1.35, 0.15, 1)
-theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.02, 1)
-theme_override_constants/line_spacing = 0
-theme_override_constants/outline_size = 5
-theme_override_fonts/font = ExtResource("1_jsh08")
-theme_override_font_sizes/font_size = 48
-text = "10"
+offset_left = 125.5
+offset_top = 298.0
+offset_right = 195.5
+offset_bottom = 368.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.435, 0.263, 0.176, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("4_font")
+theme_override_font_sizes/font_size = 34
+text = "+0"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="WaterConsumptionValue" type="Label" parent="." unique_id=553137713]
-z_index = 1
-layout_mode = 0
-offset_left = 192.0
-offset_top = 214.0
-offset_right = 252.0
-offset_bottom = 294.0
-size_flags_horizontal = 0
-size_flags_vertical = 0
-theme_override_colors/font_color = Color(0.02, 0.35, 1.5, 1)
-theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.05, 1)
-theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("1_jsh08")
-theme_override_font_sizes/font_size = 36
-text = "0"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1000220392]
-layout_mode = 0
-offset_left = 15.0
-offset_top = -8.0
-offset_right = 265.0
-offset_bottom = 306.0
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="BarMask" type="TextureRect" parent="MarginContainer" unique_id=106998466]
-clip_children = 1
-layout_mode = 2
-texture = ExtResource("1_6wpi5")
-expand_mode = 5
-
-[node name="Control" type="Control" parent="MarginContainer/BarMask" unique_id=1257070595]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/BarMask/Control" unique_id=598367244]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 2
-
-[node name="WaterProduction" type="Panel" parent="MarginContainer/BarMask/Control/HBoxContainer" unique_id=2101760752]
-self_modulate = Color(1, 1, 1, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.05
-
-[node name="WaterProductionProgress" type="ProgressBar" parent="MarginContainer/BarMask/Control/HBoxContainer/WaterProduction" unique_id=204357106]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 126.969574
-offset_bottom = -65.78003
-grow_horizontal = 2
-grow_vertical = 2
-max_value = 20.0
-fill_mode = 3
-show_percentage = false
-theme_override_styles/background = SubResource("StyleBoxEmpty_progress")
-theme_override_styles/fill = SubResource("StyleBoxFlat_production")
-
-[node name="Tree" type="Panel" parent="MarginContainer/BarMask/Control/HBoxContainer" unique_id=1470691714]
-self_modulate = Color(1, 1, 1, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="TreeProgress" type="ProgressBar" parent="MarginContainer/BarMask/Control/HBoxContainer/Tree" unique_id=42332202]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 102.969574
-offset_bottom = -115.030426
-grow_horizontal = 2
-grow_vertical = 2
-max_value = 50.0
-fill_mode = 3
-show_percentage = false
-theme_override_styles/background = SubResource("StyleBoxEmpty_progress")
-theme_override_styles/fill = SubResource("StyleBoxFlat_water")
-
-[node name="WaterExpenditure" type="Panel" parent="MarginContainer/BarMask/Control/HBoxContainer" unique_id=927052338]
-self_modulate = Color(1, 1, 1, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="WaterExpenditureProgress" type="ProgressBar" parent="MarginContainer/BarMask/Control/HBoxContainer/WaterExpenditure" unique_id=1332632486]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 107.969574
-offset_bottom = -74.030426
-grow_horizontal = 2
-grow_vertical = 2
-max_value = 20.0
-fill_mode = 3
-show_percentage = false
-theme_override_styles/background = SubResource("StyleBoxEmpty_progress")
-theme_override_styles/fill = SubResource("StyleBoxFlat_consumption")
-
-[node name="Tree" type="TextureRect" parent="MarginContainer" unique_id=2116540058]
-layout_mode = 2
-texture = ExtResource("3_uxdov")
-expand_mode = 5

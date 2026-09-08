@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/EndGameScreen.cs" id="1_script"]
-[ext_resource type="FontFile" path="res://assets/ui/fonts/Eckmannpsych-Medium.ttf" id="2_font"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleResultPanel"]
 content_margin_left = 54.0

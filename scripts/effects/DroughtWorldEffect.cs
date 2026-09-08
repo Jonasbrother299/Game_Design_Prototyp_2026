@@ -189,6 +189,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	private BoardManager _boardManager;
 	private DirectionalLight3D _directionalLight;
 	private NightFireflyController _nightFireflies;
+	private StylizedWaterController _stylizedWater;
 	private Tween _transitionTween;
 	private Tween _dayNightTween;
 	private Tween _sunPathTween;
@@ -235,6 +236,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 		_nightFireflies = GetTree()?.GetFirstNodeInGroup(
 			NightFirefliesGroup) as NightFireflyController;
 		_nightFireflies?.SetNightAmount(0.0f);
+		_stylizedWater = GetNodeOrNull<StylizedWaterController>("../StylizedWater");
 		_boardManager = GetNodeOrNull<BoardManager>("../BoardManager");
 		_skyMaterial = Environment.Sky?.SkyMaterial as ShaderMaterial;
 		SetupDroughtHeatWaves();
@@ -268,7 +270,19 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	public override void _Process(double delta)
 	{
 		if (Engine.IsEditorHint())
+		{
 			UpdateDroughtHeatWaveEditorPreview();
+			return;
+		}
+
+		if (_droughtHeatWaveMaterial == null && EnableDroughtHeatWaves)
+			SetupDroughtHeatWaves();
+
+		if (_droughtHeatWaveMaterial == null)
+			return;
+
+		ApplyDroughtHeatWaveShaderSettings();
+		SetDroughtHeatWavesActive(_currentLook, immediate: false);
 	}
 
 	public override void _ExitTree()
@@ -942,6 +956,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 			"night_amount",
 			_skyNightAmount);
 		_nightFireflies?.SetNightAmount(_skyNightAmount);
+		_stylizedWater?.SetNightAmount(_skyNightAmount);
 	}
 
 	private void RestoreDayNightAtmosphere()

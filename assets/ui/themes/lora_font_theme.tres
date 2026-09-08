@@ -1,0 +1,9 @@
+[gd_resource type="Theme" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="1_regular"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_bold"]
+
+[resource]
+default_font = ExtResource("1_regular")
+RichTextLabel/fonts/normal_font = ExtResource("1_regular")
+RichTextLabel/fonts/bold_font = ExtResource("2_bold")

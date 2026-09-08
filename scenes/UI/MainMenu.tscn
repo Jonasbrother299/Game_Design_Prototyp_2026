@@ -1,7 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://ifs463km2wex"]
+[gd_scene load_steps=31 format=3 uid="uid://ifs463km2wex"]
 
 [ext_resource type="Script" uid="uid://dsiubbb3giavj" path="res://scripts/UI/MainMenu.cs" id="1_menu"]
-[ext_resource type="Texture2D" path="res://assets/images/LoadingScreen.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/images/HomeScreen.png" id="2_background"]
 [ext_resource type="Theme" path="res://assets/ui/themes/forest_card_theme.tres" id="3_theme"]
 [ext_resource type="PackedScene" path="res://scenes/UI/SettingsMenu.tscn" id="4_settings"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EncyclopediaMenu.tscn" id="5_encyclopedia"]
@@ -15,25 +15,95 @@
 [ext_resource type="AudioStream" uid="uid://jw6n3yc0tp2g" path="res://assets/audio/Musik/celeronbeats-good-nature-chill-lofi-guitar-amp-forest-river-564350.mp3" id="13_good_nature"]
 [ext_resource type="AudioStream" uid="uid://ccangilhdawdi" path="res://assets/audio/Musik/wings_of_freedom-lofi-and-rain-432544.mp3" id="14_wings_of_freedom"]
 
-[sub_resource type="StyleBoxFlat" id="MenuPanelStyle"]
-content_margin_left = 42.0
-content_margin_top = 34.0
-content_margin_right = 42.0
-content_margin_bottom = 34.0
-bg_color = Color(0.89, 0.77, 0.59, 0.96)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.29, 0.125, 0.07, 1)
-corner_radius_top_left = 28
-corner_radius_top_right = 28
-corner_radius_bottom_right = 28
-corner_radius_bottom_left = 28
-shadow_color = Color(0.015, 0.025, 0.012, 0.72)
-shadow_size = 16
-shadow_offset = Vector2(4, 8)
-anti_aliasing = true
+[ext_resource type="Texture2D" path="res://assets/ui/settings/music_on.png" id="15_music_on"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/music_muted.png" id="16_music_muted"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/sound_on.png" id="17_sound_on"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/sound_muted.png" id="18_sound_muted"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="19_lora_regular"]
+
+[sub_resource type="Theme" id="MenuTextTheme"]
+default_font = ExtResource("19_lora_regular")
+
+[sub_resource type="AtlasTexture" id="MusicMutedIcon"]
+atlas = ExtResource("16_music_muted")
+region = Rect2(70, 72, 227, 226)
+
+[sub_resource type="AtlasTexture" id="SoundMutedIcon"]
+atlas = ExtResource("18_sound_muted")
+region = Rect2(70, 72, 227, 226)
+
+[sub_resource type="Gradient" id="MenuShadeGradient"]
+offsets = PackedFloat32Array(0, 0.22, 0.48, 0.72, 1)
+colors = PackedColorArray(0, 0.01, 0.006, 0.96, 0, 0.01, 0.006, 0.8, 0, 0.01, 0.006, 0.3, 0, 0.01, 0.006, 0, 0, 0.01, 0.006, 0)
+
+[sub_resource type="GradientTexture2D" id="MenuShadeTexture"]
+gradient = SubResource("MenuShadeGradient")
+width = 256
+height = 1
+fill_from = Vector2(0, 0)
+fill_to = Vector2(1, 0)
+
+[sub_resource type="StyleBoxFlat" id="MenuButtonNormal"]
+content_margin_left = 16.0
+content_margin_top = 0.0
+content_margin_right = 16.0
+content_margin_bottom = 0.0
+bg_color = Color(0.847, 0.737, 0.58, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.459, 0.31, 0.208, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_left = 11
+corner_radius_bottom_right = 11
+
+[sub_resource type="StyleBoxFlat" id="MenuButtonHover"]
+content_margin_left = 16.0
+content_margin_top = 0.0
+content_margin_right = 16.0
+content_margin_bottom = 0.0
+bg_color = Color(0.91, 0.82, 0.66, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.54, 0.36, 0.23, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_left = 11
+corner_radius_bottom_right = 11
+
+[sub_resource type="StyleBoxFlat" id="MenuButtonPressed"]
+content_margin_left = 16.0
+content_margin_top = 0.0
+content_margin_right = 16.0
+content_margin_bottom = 0.0
+bg_color = Color(0.74, 0.61, 0.45, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.459, 0.31, 0.208, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_left = 11
+corner_radius_bottom_right = 11
+
+[sub_resource type="StyleBoxFlat" id="MenuButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.93, 0.84, 0.66, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_left = 11
+corner_radius_bottom_right = 11
+
+[sub_resource type="StyleBoxEmpty" id="MenuPanelStyle"]
 
 [sub_resource type="StyleBoxFlat" id="TitleMedallionStyle"]
 content_margin_left = 18.0
@@ -73,7 +143,7 @@ texture = ExtResource("2_background")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Atmosphere" type="ColorRect" parent="."]
+[node name="Atmosphere" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -81,7 +151,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.025, 0.055, 0.025, 0.24)
+texture = SubResource("MenuShadeTexture")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="MenuMargin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -90,16 +162,16 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 72
-theme_override_constants/margin_top = 48
-theme_override_constants/margin_right = 72
-theme_override_constants/margin_bottom = 48
+theme_override_constants/margin_left = 192
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 40
 
 [node name="MenuRow" type="HBoxContainer" parent="MenuMargin"]
 layout_mode = 2
 
 [node name="MenuPanel" type="PanelContainer" parent="MenuMargin/MenuRow"]
-custom_minimum_size = Vector2(680, 700)
+custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("MenuPanelStyle")
@@ -107,13 +179,15 @@ theme_override_styles/panel = SubResource("MenuPanelStyle")
 [node name="MenuContent" type="VBoxContainer" parent="MenuMargin/MenuRow/MenuPanel"]
 z_index = 1
 layout_mode = 2
-theme_override_constants/separation = 12
+theme = SubResource("MenuTextTheme")
+theme_override_constants/separation = 24
 alignment = 1
 
 [node name="EyebrowPanel" type="PanelContainer" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("TitleMedallionStyle")
+visible = false
 
 [node name="Eyebrow" type="Label" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/EyebrowPanel"]
 layout_mode = 2
@@ -124,17 +198,21 @@ horizontal_alignment = 1
 
 [node name="TitleLabel" type="Label" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
-theme_override_colors/font_shadow_color = Color(0.96, 0.84, 0.64, 0.9)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 0
 theme_override_fonts/font = ExtResource("6_title_font")
-theme_override_font_sizes/font_size = 62
-text = "ECOSYSTEM"
+theme_override_font_sizes/font_size = 80
+text = "ECO\nCARDS"
 horizontal_alignment = 1
+custom_minimum_size = Vector2(0, 150)
+theme_override_constants/line_spacing = -12
+vertical_alignment = 1
 
 [node name="TitleSeparator" type="HSeparator" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
 layout_mode = 2
+visible = false
 
 [node name="SubtitleLabel" type="Label" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
 custom_minimum_size = Vector2(470, 56)
@@ -143,70 +221,139 @@ theme_override_colors/font_color = Color(0.31, 0.19, 0.115, 1)
 theme_override_font_sizes/font_size = 22
 text = "Baue ein stabiles Ökosystem auf\nund rette die alte Eiche."
 horizontal_alignment = 1
+visible = false
 
 [node name="MainActionGroup" type="VBoxContainer" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 22
 
 [node name="MenuSpacer" type="Control" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/MainActionGroup"]
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 mouse_filter = 2
+visible = false
 
 [node name="PlayButton" type="Button" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/MainActionGroup"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(450, 60)
+custom_minimum_size = Vector2(460, 64)
 layout_mode = 2
 size_flags_horizontal = 4
 focus_neighbor_bottom = NodePath("../AchievementsButton")
-theme_override_font_sizes/font_size = 27
-text = "SPIELEN"
+theme_override_font_sizes/font_size = 40
+text = "Spielen"
+theme_override_colors/font_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_pressed_color = Color(0.35, 0.2, 0.12, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_styles/normal = SubResource("MenuButtonNormal")
+theme_override_styles/hover = SubResource("MenuButtonHover")
+theme_override_styles/pressed = SubResource("MenuButtonPressed")
+theme_override_styles/focus = SubResource("MenuButtonFocus")
 
 [node name="AchievementsButton" type="Button" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/MainActionGroup"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(450, 60)
+custom_minimum_size = Vector2(460, 64)
 layout_mode = 2
 size_flags_horizontal = 4
 focus_neighbor_top = NodePath("../PlayButton")
 focus_neighbor_bottom = NodePath("../EncyclopediaButton")
-theme_override_font_sizes/font_size = 25
-text = "ERFOLGE"
+theme_override_font_sizes/font_size = 40
+text = "Erfolge"
+theme_override_colors/font_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_pressed_color = Color(0.35, 0.2, 0.12, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_styles/normal = SubResource("MenuButtonNormal")
+theme_override_styles/hover = SubResource("MenuButtonHover")
+theme_override_styles/pressed = SubResource("MenuButtonPressed")
+theme_override_styles/focus = SubResource("MenuButtonFocus")
 
 [node name="EncyclopediaButton" type="Button" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/MainActionGroup"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(450, 60)
+custom_minimum_size = Vector2(460, 64)
 layout_mode = 2
 size_flags_horizontal = 4
 focus_neighbor_top = NodePath("../AchievementsButton")
 focus_neighbor_bottom = NodePath("../SettingsButton")
-theme_override_font_sizes/font_size = 25
-text = "LEXIKON"
+theme_override_font_sizes/font_size = 40
+text = "Lexikon"
+theme_override_colors/font_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_pressed_color = Color(0.35, 0.2, 0.12, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_styles/normal = SubResource("MenuButtonNormal")
+theme_override_styles/hover = SubResource("MenuButtonHover")
+theme_override_styles/pressed = SubResource("MenuButtonPressed")
+theme_override_styles/focus = SubResource("MenuButtonFocus")
 
 [node name="SettingsButton" type="Button" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/MainActionGroup"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(450, 60)
+custom_minimum_size = Vector2(460, 64)
 layout_mode = 2
 size_flags_horizontal = 4
 focus_neighbor_top = NodePath("../EncyclopediaButton")
 focus_neighbor_bottom = NodePath("../QuitButton")
-theme_override_font_sizes/font_size = 25
-text = "EINSTELLUNGEN"
+theme_override_font_sizes/font_size = 40
+text = "Einstellungen"
+theme_override_colors/font_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_pressed_color = Color(0.35, 0.2, 0.12, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_styles/normal = SubResource("MenuButtonNormal")
+theme_override_styles/hover = SubResource("MenuButtonHover")
+theme_override_styles/pressed = SubResource("MenuButtonPressed")
+theme_override_styles/focus = SubResource("MenuButtonFocus")
 
 [node name="QuitButton" type="Button" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/MainActionGroup"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(450, 60)
+custom_minimum_size = Vector2(460, 64)
 layout_mode = 2
 size_flags_horizontal = 4
 focus_neighbor_top = NodePath("../SettingsButton")
-theme_override_font_sizes/font_size = 25
-text = "BEENDEN"
+theme_override_font_sizes/font_size = 40
+text = "Beenden"
+theme_override_colors/font_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_colors/font_pressed_color = Color(0.35, 0.2, 0.12, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.31, 0.208, 1)
+theme_override_styles/normal = SubResource("MenuButtonNormal")
+theme_override_styles/hover = SubResource("MenuButtonHover")
+theme_override_styles/pressed = SubResource("MenuButtonPressed")
+theme_override_styles/focus = SubResource("MenuButtonFocus")
+
+[node name="AudioShortcuts" type="HBoxContainer" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
+layout_mode = 2
+theme_override_constants/separation = 84
+alignment = 1
+
+[node name="MusicToggle" type="TextureButton" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/AudioShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 84)
+layout_mode = 2
+tooltip_text = "Musik stummschalten"
+toggle_mode = true
+texture_normal = ExtResource("15_music_on")
+texture_pressed = SubResource("MusicMutedIcon")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SoundToggle" type="TextureButton" parent="MenuMargin/MenuRow/MenuPanel/MenuContent/AudioShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 84)
+layout_mode = 2
+tooltip_text = "Gesamten Ton stummschalten"
+toggle_mode = true
+texture_normal = ExtResource("17_sound_on")
+texture_pressed = SubResource("SoundMutedIcon")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="MenuErrorLabel" type="Label" parent="MenuMargin/MenuRow/MenuPanel/MenuContent"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.17, 0.12, 1)
+theme_override_colors/font_color = Color(0.96, 0.72, 0.54, 1)
 theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -214,6 +361,7 @@ autowrap_mode = 2
 [node name="IvyDecoration" type="Control" parent="MenuMargin/MenuRow/MenuPanel"]
 layout_mode = 2
 mouse_filter = 2
+visible = false
 
 [node name="TopLeftIvy" type="TextureRect" parent="MenuMargin/MenuRow/MenuPanel/IvyDecoration"]
 layout_mode = 0
@@ -310,6 +458,7 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 15
 text = "PLAYTEST-BUILD"
 horizontal_alignment = 2
+visible = false
 
 [node name="MenuMusicPlayer" parent="." instance=ExtResource("10_music_player")]
 Tracks = [ExtResource("11_travel_nature"), ExtResource("12_summer_anthem"), ExtResource("13_good_nature"), ExtResource("14_wings_of_freedom")]

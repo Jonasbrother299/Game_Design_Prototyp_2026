@@ -1,6 +1,6 @@
 [gd_resource type="ArrayMesh" format=4 uid="uid://c1a1xghsw27ku"]
 
-[ext_resource type="Texture2D" uid="uid://uwt7dummjtjk" path="res://assets/models/plants/StartingOak/LeafParticle.fbm/leafsingle.png" id="1_uye5k"]
+[ext_resource type="Texture2D" uid="uid://cauxhgnp6npfu" path="res://assets/models/plants/StartingOak/LeafParticle.fbm/leafsingle.png" id="1_uye5k"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ecxti"]
 resource_name = "Material.002"

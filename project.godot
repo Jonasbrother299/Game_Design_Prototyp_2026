@@ -29,6 +29,11 @@ window/size/borderless=true
 
 project/assembly_name="GameDesign-Prototyp"
 
+[gui]
+
+theme/custom="res://assets/ui/themes/lora_font_theme.tres"
+theme/custom_font="res://assets/ui/fonts/lora/Lora-Regular.otf"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

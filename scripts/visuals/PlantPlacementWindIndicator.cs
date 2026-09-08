@@ -14,6 +14,44 @@ public partial class PlantPlacementWindIndicator : Node3D
 	private const int SparkCount = 12;
 	private const float AuraRadius = 1.18f;
 
+	[ExportGroup("Windlinien")]
+	[Export(PropertyHint.Range, "0.2,1.5,0.01")]
+	public float RibbonBaseRadius = 1.074f;
+
+	[Export(PropertyHint.Range, "-0.3,0.5,0.01")]
+	public float RibbonBaseHeight = 0.07f;
+
+	[Export(PropertyHint.Range, "0.1,1.8,0.01")]
+	public float RibbonRiseHeight = 0.62f;
+
+	[Export(PropertyHint.Range, "0.01,0.5,0.005")]
+	public float RibbonRiseSpeed = 0.055f;
+
+	[Export(PropertyHint.Range, "0.0,2.0,0.01")]
+	public float RibbonSpinSpeed = 0.24f;
+
+	[Export(PropertyHint.Range, "0.0,8.0,0.05")]
+	public float RibbonStartDelay = 3.5f;
+
+	[Export(PropertyHint.Range, "0.1,8.0,0.1")]
+	public float RibbonGrowthDuration = 2.8f;
+
+	[Export(PropertyHint.Range, "1.0,12.0,0.1")]
+	public float RibbonAppearanceCycleDuration = 6.2f;
+
+	[Export(PropertyHint.Range, "0.1,0.9,0.01")]
+	public float RibbonVisibleFraction = 0.50f;
+
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float RibbonAppearanceChance = 0.62f;
+
+	[ExportGroup("Lichtpunkte")]
+	[Export(PropertyHint.Range, "0.01,1.0,0.01")]
+	public float SparkRiseSpeed = 0.12f;
+
+	[Export(PropertyHint.Range, "0.2,2.5,0.05")]
+	public float SparkMaximumHeight = 1.35f;
+
 	private static Shader _sharedRibbonShader;
 	private static Shader _sharedSparkShader;
 	private static Shader _sharedFillShader;
@@ -32,11 +70,21 @@ public partial class PlantPlacementWindIndicator : Node3D
 	private float _opacity = 1.0f;
 	private float _emissionStrength = 1.0f;
 	private float _fillOpacity;
+	private float _ribbonAnimationTime;
 	private bool _isSetup;
 
 	public override void _Ready()
 	{
 		Setup();
+	}
+
+	public override void _Process(double delta)
+	{
+		_ribbonAnimationTime += (float)delta;
+		ApplyMotionParameters();
+		_ribbonMaterial?.SetShaderParameter(
+			"animation_time",
+			_ribbonAnimationTime);
 	}
 
 	public void Setup()
@@ -47,6 +95,7 @@ public partial class PlantPlacementWindIndicator : Node3D
 		_isSetup = true;
 		BuildVisual();
 		Visible = false;
+		SetProcess(false);
 	}
 
 	public void Display(
@@ -57,13 +106,22 @@ public partial class PlantPlacementWindIndicator : Node3D
 		Color? fillColor = null)
 	{
 		Setup();
+		bool startsAnimation = !Visible;
 		_effectColor = effectColor;
 		_fillColor = fillColor ?? effectColor;
 		_opacity = Mathf.Max(opacity, 0.0f);
 		_emissionStrength = Mathf.Max(emissionStrength, 0.0f);
 		_fillOpacity = Mathf.Max(fillOpacity, 0.0f);
 		ApplyStyle();
+
+		if (startsAnimation)
+		{
+			_ribbonAnimationTime = 0.0f;
+			_ribbonMaterial?.SetShaderParameter("animation_time", 0.0f);
+		}
+
 		Visible = true;
+		SetProcess(true);
 	}
 
 	public void SetIntensity(float opacity, float emissionStrength)
@@ -76,6 +134,7 @@ public partial class PlantPlacementWindIndicator : Node3D
 	public void Conceal()
 	{
 		Visible = false;
+		SetProcess(false);
 	}
 
 	private void BuildVisual()
@@ -140,6 +199,8 @@ public partial class PlantPlacementWindIndicator : Node3D
 
 	private void ApplyStyle()
 	{
+		ApplyMotionParameters();
+
 		if (_ribbonMaterial != null)
 		{
 			_ribbonMaterial.SetShaderParameter("effect_color", _effectColor);
@@ -162,6 +223,41 @@ public partial class PlantPlacementWindIndicator : Node3D
 		{
 			_fillMaterial.SetShaderParameter("fill_color", _fillColor);
 			_fillMaterial.SetShaderParameter("opacity", _fillOpacity);
+		}
+	}
+
+	private void ApplyMotionParameters()
+	{
+		if (_ribbonMaterial != null)
+		{
+			_ribbonMaterial.SetShaderParameter("base_radius", RibbonBaseRadius);
+			_ribbonMaterial.SetShaderParameter("base_height", RibbonBaseHeight);
+			_ribbonMaterial.SetShaderParameter("rise_height", RibbonRiseHeight);
+			_ribbonMaterial.SetShaderParameter("rise_speed", RibbonRiseSpeed);
+			_ribbonMaterial.SetShaderParameter("spin_speed", RibbonSpinSpeed);
+			_ribbonMaterial.SetShaderParameter(
+				"start_delay_span",
+				RibbonStartDelay);
+			_ribbonMaterial.SetShaderParameter(
+				"growth_duration",
+				RibbonGrowthDuration);
+			_ribbonMaterial.SetShaderParameter(
+				"appearance_cycle_duration",
+				RibbonAppearanceCycleDuration);
+			_ribbonMaterial.SetShaderParameter(
+				"visible_fraction",
+				RibbonVisibleFraction);
+			_ribbonMaterial.SetShaderParameter(
+				"appearance_chance",
+				RibbonAppearanceChance);
+		}
+
+		if (_sparkMaterial != null)
+		{
+			_sparkMaterial.SetShaderParameter("rise_speed", SparkRiseSpeed);
+			_sparkMaterial.SetShaderParameter(
+				"maximum_height",
+				SparkMaximumHeight);
 		}
 	}
 
