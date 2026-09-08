@@ -16,6 +16,7 @@ public partial class TutorialManager : Node
 	{
 		Intro,
 		Goal,
+		CardExplanation,
 		WaitForMossPlacement,
 		OptionalCardPlay,
 		Water,
@@ -25,7 +26,17 @@ public partial class TutorialManager : Node
 		PlantDeath
 	}
 
+	private enum CardExplanationPage
+	{
+		Light,
+		Growth,
+		WaterConsumption,
+		WaterProduction,
+		Description
+	}
+
 	private TutorialStepId _currentStep = TutorialStepId.Intro;
+	private CardExplanationPage _cardExplanationPage = CardExplanationPage.Light;
 
 	private bool _hasShownWater;
 	private bool _hasShownGrowth;
@@ -100,7 +111,11 @@ public partial class TutorialManager : Node
 				break;
 
 			case TutorialStepId.Goal:
-				GoToStep(TutorialStepId.WaitForMossPlacement);
+				GoToStep(TutorialStepId.CardExplanation);
+				break;
+
+			case TutorialStepId.CardExplanation:
+				AdvanceCardExplanation();
 				break;
 
 			case TutorialStepId.Water:
@@ -139,14 +154,39 @@ public partial class TutorialManager : Node
 
 	private void OnBack()
 	{
-		// Zurück ist im interaktiven Tutorial zunächst deaktiviert.
-		// Grund: Schritte wie Karte platzieren oder Runde beenden verändern den echten Spielzustand.
+		if (_currentStep != TutorialStepId.CardExplanation)
+			return;
+
+		if (_cardExplanationPage == CardExplanationPage.Light)
+			return;
+
+		_cardExplanationPage--;
+		ShowCardExplanationPage();
 	}
 
 	private void GoToStep(TutorialStepId step)
 	{
+		if (step == TutorialStepId.CardExplanation &&
+			_currentStep != TutorialStepId.CardExplanation)
+		{
+			_cardExplanationPage = CardExplanationPage.Light;
+		}
+
 		_currentStep = step;
 		ShowCurrentStep();
+	}
+
+	private void AdvanceCardExplanation()
+	{
+		if (_cardExplanationPage < CardExplanationPage.Description)
+		{
+			_cardExplanationPage++;
+			ShowCardExplanationPage();
+			return;
+		}
+
+		_overlay?.HideCardExplanation();
+		GoToStep(TutorialStepId.WaitForMossPlacement);
 	}
 
 	public bool CanPlayCard(CardData card, HexTileData tile)
@@ -154,8 +194,6 @@ public partial class TutorialManager : Node
 		if (_isFinished)
 			return true;
 
-		// Sobald kein Tutorialfenster sichtbar ist, soll das Spiel normal bedienbar sein.
-		// Der TutorialManager bleibt trotzdem aktiv und kann spätere Just-in-Time-Erklärungen zeigen.
 		if (!_isTutorialVisible)
 			return true;
 
@@ -176,8 +214,9 @@ public partial class TutorialManager : Node
 			return tile.Coord.Equals(_requiredMossPlacementCoord.Value);
 		}
 
+		// Im ersten Tutorial-Zug bleibt es bei genau einer gespielten Karte.
 		if (_currentStep == TutorialStepId.OptionalCardPlay)
-			return true;
+			return false;
 
 		return false;
 	}
@@ -187,7 +226,6 @@ public partial class TutorialManager : Node
 		if (_isFinished)
 			return true;
 
-		// Wenn gerade kein Tutorialfenster offen ist, darf die Runde normal beendet werden.
 		if (!_isTutorialVisible)
 			return true;
 
@@ -196,10 +234,7 @@ public partial class TutorialManager : Node
 
 	public void RefreshTutorialHighlights()
 	{
-		if (_isFinished)
-			return;
-
-		if (!_isTutorialVisible)
+		if (_isFinished || !_isTutorialVisible)
 			return;
 
 		if (_currentStep == TutorialStepId.WaitForMossPlacement)
@@ -209,18 +244,19 @@ public partial class TutorialManager : Node
 		}
 
 		if (_currentStep == TutorialStepId.OptionalCardPlay)
-		{
-			// Kein Highlight auf CardHand:
-			// Das würde aktuell nur einen großen Kasten um alle Karten erzeugen.
-			// Einzelkarten-Highlights bauen wir später sauber in CardHandUI/CardView.
 			HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
-		}
 	}
 
 	private void ShowCurrentStep()
 	{
 		ClearHighlights();
 		_isTutorialVisible = true;
+
+		if (_currentStep == TutorialStepId.CardExplanation)
+		{
+			ShowCardExplanationPage();
+			return;
+		}
 
 		if (_currentStep == TutorialStepId.Intro)
 			_overlay.ShowModal();
@@ -244,40 +280,40 @@ public partial class TutorialManager : Node
 			case TutorialStepId.Intro:
 				SetTitle("Einstieg");
 				SetText(
-					"Die Natur ist aus dem Gleichgewicht geraten. Lass dieses kleine Ökosystem wachsen."
+					"Die Natur ist aus dem Gleichgewicht geraten.\n\n" +
+					"Lass dieses kleine Ökosystem wachsen."
 				);
 				break;
 
 			case TutorialStepId.Goal:
 				SetTitle("Ziel");
 				SetText(
-					"Baue ein stabiles Ökosystem auf, damit diese alte Eiche überleben kann.\n\n" +
-					"Die Eiche in der Mitte ist dein wichtigstes Ziel. Fällt der Wasserwert auf 0, stirbt sie."
+					"Baue ein stabiles Ökosystem auf und halte die alte Eiche am Leben."
 				);
 				HighlightCenterTile();
 				break;
 
 			case TutorialStepId.WaitForMossPlacement:
-				SetTitle("Karten ausspielen");
+				_cardHand?.SetCardInteractionFilter(IsMossCard);
+
+				SetTitle("Deine erste Karte");
 				SetText(
-					"Ziehe die Moos-Karte auf das leuchtende Feld.\n\n" +
-					"Moos ist eine gute Startpflanze. Platziere sie auf einem geeigneten Feld neben der Eiche. " +
-					"Danach kannst du weitere Karten spielen oder die Runde beenden."
+					"Ziehe die Mooskarte auf das leuchtende Feld.\n\n" +
+					"Im ersten Zug ist nur Moos spielbar."
 				);
+
 				HighlightFirstPlayableTileFor(PlantType.Moss);
 				break;
 
 			case TutorialStepId.OptionalCardPlay:
-				SetTitle("Weitere Karten spielen");
+				_cardHand?.SetCardInteractionFilter(_ => false);
+
+				SetTitle("Runde beenden");
 				SetText(
-					"Du hast Moos erfolgreich platziert.\n\n" +
-					"Jetzt kannst du so viele weitere Karten spielen, wie du möchtest — von keiner bis zu allen. " +
-					"Wenn du fertig bist, beende die Runde, damit dein Ökosystem sich entwickeln kann."
+					"Moos ist platziert.\n\n" +
+					"Beende jetzt die Runde."
 				);
 
-				// Kein Highlight auf CardHand:
-				// Aktuell wirkt das als großer Kasten / Farbschleier über allen Karten.
-				// Für einzelne Karten bauen wir danach ein eigenes Karten-Highlight.
 				HighlightNode("UI/CanvasLayer/GameHub/EndTurnButton");
 				break;
 
@@ -286,10 +322,10 @@ public partial class TutorialManager : Node
 
 				SetTitle("Wasserhaushalt");
 				SetText(
-					"Der Wasserhaushalt zeigt, ob dein Ökosystem stabil bleibt.\n\n" +
-					"Einige Pflanzen produzieren Wasser, andere verbrauchen es. Fällt der Wert auf 0, stirbt die Eiche. " +
-					"Achte nach jeder Runde darauf, wie sich der Wasserwert verändert."
+					"Pflanzen produzieren oder verbrauchen Wasser.\n\n" +
+					"Fällt der Wasserwert auf 0, stirbt die Eiche."
 				);
+
 				HighlightNode("UI/CanvasLayer/GameHub/WaterLabel");
 				break;
 
@@ -298,9 +334,8 @@ public partial class TutorialManager : Node
 
 				SetTitle("Wachstum");
 				SetText(
-					"Dein Moos ist gerade gewachsen.\n\n" +
-					"In jeder Übergangsphase wachsen bestehende Pflanzen weiter. " +
-					"Sobald eine Pflanze ausgewachsen ist, kann sie zum Beispiel stärkere Effekte haben oder sich verbreiten."
+					"Pflanzen wachsen in der Übergangsphase weiter.\n\n" +
+					"Ausgewachsene Pflanzen können sich später verbreiten."
 				);
 
 				HighlightMossInGrowthResult();
@@ -311,9 +346,8 @@ public partial class TutorialManager : Node
 
 				SetTitle("Verbreitung");
 				SetText(
-					"Eine Pflanze hat sich gerade von selbst verbreitet.\n\n" +
-					"Nach jeder Runde besteht die Chance, dass sich ausgewachsene Pflanzen auf passende benachbarte Felder ausbreiten. " +
-					"Das passiert nicht garantiert, sondern hängt von der Pflanze und der Spielsituation ab."
+					"Ausgewachsene Pflanzen können sich auf benachbarte Felder ausbreiten.\n\n" +
+					"Ursprung und Ziel sind hervorgehoben. Fahre mit der Maus darüber, um die Pflanzeninfos zu sehen."
 				);
 
 				if (_pendingSpreadResult != null)
@@ -331,17 +365,13 @@ public partial class TutorialManager : Node
 
 				SetTitle("Ereignis");
 				SetText(
-					"Gerade wurde das erste Ereignis ausgelöst: Regen.\n\n" +
-					"Ein Ereignis verändert dein Ökosystem für die nächste Runde. " +
-					"Ab jetzt können am Ende jeder Runde zufällig Ereignisse auftreten — oder auch keines."
+					"Regen wurde ausgelöst.\n\n" +
+					"Ereignisse können dein Ökosystem für die nächste Runde verändern."
 				);
 
-				// EventDisplay hat grundsätzlich die richtige Position und Breite.
-				// Wir lassen deshalb X-Position und Breite unverändert und reduzieren nur die Höhe.
-				// Die Y-Position bleibt oben am EventDisplay ausgerichtet, damit der Kasten nicht darunter rutscht.
 				HighlightNodeWithHeightOverride(
 					"UI/CanvasLayer/GameHub/EventDisplay",
-					163.0f
+					340.0f
 				);
 				break;
 
@@ -350,8 +380,8 @@ public partial class TutorialManager : Node
 
 				SetTitle("Pflanze stirbt");
 				SetText(
-					"Eine Pflanze konnte gerade nicht überleben und ist gestorben.\n\n" +
-					"Das Feld bleibt danach für 2 Runden gesperrt. Du kannst dort also nicht sofort wieder eine neue Pflanze setzen."
+					"Kann eine Pflanze nicht überleben, stirbt sie.\n\n" +
+					"Das Feld bleibt danach 2 Runden gesperrt."
 				);
 
 				if (_pendingEventResult != null)
@@ -363,7 +393,143 @@ public partial class TutorialManager : Node
 		}
 	}
 
-	private void OnPlantPlaced(PlantType plantType, HexCoord coord)
+	private void ShowCardExplanationPage()
+	{
+		PlantDefinition moss = PlantDatabase.Get(PlantType.Moss);
+
+		if (moss == null || moss.CardImage == null)
+		{
+			GD.PrintErr("TutorialManager: Moos-Kartendaten oder Kartenbild fehlen.");
+			GoToStep(TutorialStepId.WaitForMossPlacement);
+			return;
+		}
+
+		_cardHand?.SetCardInteractionFilter(IsMossCard);
+		_overlay.ShowCardExplanation(moss.CardImage);
+
+		bool isLastPage =
+			_cardExplanationPage == CardExplanationPage.Description;
+
+		_overlay.SetCardNavigation(
+			canGoBack: _cardExplanationPage != CardExplanationPage.Light,
+			isLastPage: isLastPage
+		);
+
+		switch (_cardExplanationPage)
+		{
+			case CardExplanationPage.Light:
+				_overlay.SetCardExplanation(
+					"Lichtbedarf",
+					$"Hier siehst du, unter welchen Lichtbedingungen die Pflanze wachsen kann.\n\n" +
+					$"Moos: {FormatLightLevels(moss)}",
+					new Rect2(
+						0.075f,
+						0.06f,
+						0.17f,
+						0.10f
+					)
+				);
+				break;
+
+			case CardExplanationPage.Growth:
+				_overlay.SetCardExplanation(
+					"Wachstumsdauer",
+					$"So viele Wachstumsschritte braucht die Pflanze bis zur Reife.\n\n" +
+					$"Moos: {moss.GrowthRounds} Schritte",
+					new Rect2(
+						0.78f,
+						0.06f,
+						0.14f,
+						0.10f
+					)
+				);
+				break;
+
+			case CardExplanationPage.WaterConsumption:
+				_overlay.SetCardExplanation(
+					"Wasserverbrauch",
+					$"So viel Wasser verbraucht die Pflanze pro Runde.\n\n" +
+					$"Moos: {moss.WaterConsumption}",
+					new Rect2(
+						0.075f,
+						0.245f,
+						0.17f,
+						0.10f
+					)
+				);
+				break;
+
+			case CardExplanationPage.WaterProduction:
+				_overlay.SetCardExplanation(
+					"Wasserproduktion",
+					$"So viel Wasser produziert die Pflanze pro Runde.\n\n" +
+					$"Moos: +{moss.WaterProduction}",
+					new Rect2(
+						0.075f,
+						0.355f,
+						0.17f,
+						0.10f
+					)
+				);
+				break;
+
+			case CardExplanationPage.Description:
+				string description =
+					string.IsNullOrWhiteSpace(moss.Description)
+						? "Hier steht die besondere Stärke der Pflanze."
+						: moss.Description;
+
+				_overlay.SetCardExplanation(
+					"Kartentext",
+					"Hier findest du die wichtigste Besonderheit der Pflanze.\n\n" +
+					description,
+					new Rect2(
+						0.10f,
+						0.80f,
+						0.80f,
+						0.152f
+					)
+				);
+				break;
+		}
+	}
+
+	private string FormatLightLevels(PlantDefinition plant)
+	{
+		if (plant?.AllowedLightLevels == null ||
+			plant.AllowedLightLevels.Count == 0)
+		{
+			return "keine Angabe";
+		}
+
+		List<string> names = new();
+
+		foreach (LightLevel lightLevel in plant.AllowedLightLevels)
+		{
+			string name = lightLevel switch
+			{
+				LightLevel.Sun => "Sonne",
+				LightLevel.PartialShade => "Halbschatten",
+				LightLevel.Shade => "Schatten",
+				_ => lightLevel.ToString()
+			};
+
+			names.Add(name);
+		}
+
+		return string.Join(", ", names);
+	}
+
+	private bool IsMossCard(CardData card)
+	{
+		return card != null &&
+			card.CardType == CardType.Plant &&
+			card.PlantType == PlantType.Moss;
+	}
+
+	private void OnPlantPlaced(
+		PlantType plantType,
+		HexCoord coord)
 	{
 		if (_currentStep != TutorialStepId.WaitForMossPlacement)
 			return;
@@ -379,9 +545,7 @@ public partial class TutorialManager : Node
 		if (_currentStep != TutorialStepId.OptionalCardPlay)
 			return;
 
-		// Wir wechseln hier noch nicht direkt weiter.
-		// Grund: Der Wasserwert wurde zu diesem Zeitpunkt noch nicht berechnet.
-		// Die Erklärung zum Wasserhaushalt kommt deshalb erst in OnWaterPhaseResolved.
+		_cardHand?.ClearCardInteractionFilter();
 	}
 
 	private void OnWaterPhaseResolved(WaterPhaseResult result)
@@ -403,16 +567,18 @@ public partial class TutorialManager : Node
 		if (!_hasShownWater)
 			return;
 
-		if (result == null || result.Plants == null || result.Plants.Count == 0)
+		if (result == null ||
+			result.Plants == null ||
+			result.Plants.Count == 0)
+		{
 			return;
+		}
 
 		if (!GrowthResultContainsMoss(result))
 			return;
 
 		_pendingGrowthResult = result;
 
-		// Wenn gerade schon ein Tutorialfenster offen ist, speichern wir das Ergebnis nur.
-		// Es wird dann beim Klick auf "Weiter" angezeigt.
 		if (_isTutorialVisible)
 			return;
 
@@ -427,13 +593,15 @@ public partial class TutorialManager : Node
 		if (!_hasShownGrowth)
 			return;
 
-		if (result == null || result.Spreads == null || result.Spreads.Count == 0)
+		if (result == null ||
+			result.Spreads == null ||
+			result.Spreads.Count == 0)
+		{
 			return;
+		}
 
 		_pendingSpreadResult = result;
 
-		// Wenn gerade noch Growth oder ein anderes Tutorialfenster offen ist,
-		// zeigen wir Spread erst nach dem Klick auf "Weiter".
 		if (_isTutorialVisible)
 			return;
 
@@ -497,10 +665,14 @@ public partial class TutorialManager : Node
 			_turnManager.Config.EventsUnlocked = true;
 	}
 
-	private bool GrowthResultContainsMoss(GrowthPhaseResult result)
+	private bool GrowthResultContainsMoss(
+		GrowthPhaseResult result)
 	{
-		if (result == null || result.Plants == null)
+		if (result == null ||
+			result.Plants == null)
+		{
 			return false;
+		}
 
 		foreach (PlantGrowthResult plant in result.Plants)
 		{
@@ -513,15 +685,20 @@ public partial class TutorialManager : Node
 
 	private void HighlightMossInGrowthResult()
 	{
-		if (_pendingGrowthResult == null || _pendingGrowthResult.Plants == null)
+		if (_pendingGrowthResult == null ||
+			_pendingGrowthResult.Plants == null)
+		{
 			return;
+		}
 
 		foreach (PlantGrowthResult plant in _pendingGrowthResult.Plants)
 		{
 			if (plant.PlantType != PlantType.Moss)
 				continue;
 
-			_boardManager.GetTileView(plant.Coord)?.SetTutorialHighlight(true);
+			_boardManager
+				.GetTileView(plant.Coord)?
+				.SetTutorialHighlight(true);
 		}
 	}
 
@@ -537,7 +714,10 @@ public partial class TutorialManager : Node
 
 	private void HighlightNode(string path)
 	{
-		Node node = GetTree().CurrentScene.GetNodeOrNull<Node>(path);
+		Node node =
+			GetTree()
+				.CurrentScene
+				.GetNodeOrNull<Node>(path);
 
 		if (node is not Control targetControl)
 			return;
@@ -547,7 +727,8 @@ public partial class TutorialManager : Node
 
 		ClearHighlightedNode(path);
 
-		Rect2 targetRect = targetControl.GetGlobalRect();
+		Rect2 targetRect =
+			targetControl.GetGlobalRect();
 
 		CreateHighlightFrame(
 			path,
@@ -556,9 +737,14 @@ public partial class TutorialManager : Node
 		);
 	}
 
-	private void HighlightNodeWithHeightOverride(string path, float height)
+	private void HighlightNodeWithHeightOverride(
+		string path,
+		float height)
 	{
-		Node node = GetTree().CurrentScene.GetNodeOrNull<Node>(path);
+		Node node =
+			GetTree()
+				.CurrentScene
+				.GetNodeOrNull<Node>(path);
 
 		if (node is not Control targetControl)
 			return;
@@ -568,7 +754,8 @@ public partial class TutorialManager : Node
 
 		ClearHighlightedNode(path);
 
-		Rect2 targetRect = targetControl.GetGlobalRect();
+		Rect2 targetRect =
+			targetControl.GetGlobalRect();
 
 		Vector2 finalPosition = new Vector2(
 			targetRect.Position.X - 8.0f,
@@ -580,22 +767,32 @@ public partial class TutorialManager : Node
 			height
 		);
 
-		CreateHighlightFrame(path, finalPosition, finalSize);
+		CreateHighlightFrame(
+			path,
+			finalPosition,
+			finalSize
+		);
 	}
 
-	private void CreateHighlightFrame(string path, Vector2 position, Vector2 size)
+	private void CreateHighlightFrame(
+		string path,
+		Vector2 position,
+		Vector2 size)
 	{
 		Panel highlightFrame = new Panel();
 		highlightFrame.Name = "TutorialHighlightFrame";
-		highlightFrame.MouseFilter = Control.MouseFilterEnum.Ignore;
+		highlightFrame.MouseFilter =
+			Control.MouseFilterEnum.Ignore;
 		highlightFrame.ZIndex = 100;
 		highlightFrame.Position = position;
 		highlightFrame.Size = size;
 		highlightFrame.Modulate = Colors.White;
 
 		StyleBoxFlat style = new StyleBoxFlat();
-		style.BgColor = new Color(1, 1, 1, 0.0f);
-		style.BorderColor = new Color(1, 1, 1, 0.55f);
+		style.BgColor =
+			new Color(1, 1, 1, 0.0f);
+		style.BorderColor =
+			new Color(1, 1, 1, 0.55f);
 		style.BorderWidthLeft = 3;
 		style.BorderWidthTop = 3;
 		style.BorderWidthRight = 3;
@@ -604,10 +801,14 @@ public partial class TutorialManager : Node
 		style.CornerRadiusTopRight = 12;
 		style.CornerRadiusBottomRight = 12;
 		style.CornerRadiusBottomLeft = 12;
-		style.ShadowColor = new Color(1, 1, 1, 0.18f);
+		style.ShadowColor =
+			new Color(1, 1, 1, 0.18f);
 		style.ShadowSize = 8;
 
-		highlightFrame.AddThemeStyleboxOverride("panel", style);
+		highlightFrame.AddThemeStyleboxOverride(
+			"panel",
+			style
+		);
 
 		_overlay.AddChild(highlightFrame);
 		_highlightFrames[path] = highlightFrame;
@@ -615,12 +816,21 @@ public partial class TutorialManager : Node
 
 	private void HighlightCenterTile()
 	{
-		BoardManager board = _boardManager ?? GetTree().CurrentScene.GetNodeOrNull<BoardManager>("BoardManager");
+		BoardManager board =
+			_boardManager ??
+			GetTree()
+				.CurrentScene
+				.GetNodeOrNull<BoardManager>(
+					"BoardManager"
+				);
 
 		if (board == null)
 			return;
 
-		HexTile tileView = board.GetTileView(new HexCoord(0, 0));
+		HexTile tileView =
+			board.GetTileView(
+				new HexCoord(0, 0)
+			);
 
 		if (tileView == null)
 			return;
@@ -628,36 +838,63 @@ public partial class TutorialManager : Node
 		tileView.SetTutorialHighlight(true);
 	}
 
-	private void HighlightFirstPlayableTileFor(PlantType plantType)
+	private void HighlightFirstPlayableTileFor(
+		PlantType plantType)
 	{
-		BoardManager board = _boardManager ?? GetTree().CurrentScene.GetNodeOrNull<BoardManager>("BoardManager");
+		BoardManager board =
+			_boardManager ??
+			GetTree()
+				.CurrentScene
+				.GetNodeOrNull<BoardManager>(
+					"BoardManager"
+				);
 
 		if (board == null)
 			return;
 
-		PlantDefinition plant = PlantDatabase.Get(plantType);
+		PlantDefinition plant =
+			PlantDatabase.Get(plantType);
 
 		if (plant == null)
 			return;
 
-		HexCoord preferredCoord = new HexCoord(1, 0);
-		HexTileData preferredTileData = board.BoardData.GetTile(preferredCoord);
+		HexCoord preferredCoord =
+			new HexCoord(1, 0);
 
-		if (preferredTileData != null && preferredTileData.CanPlacePlant(plant))
+		HexTileData preferredTileData =
+			board.BoardData.GetTile(
+				preferredCoord
+			);
+
+		if (preferredTileData != null &&
+			preferredTileData.CanPlacePlant(plant))
 		{
-			_requiredMossPlacementCoord = preferredCoord;
-			board.GetTileView(preferredCoord)?.SetTutorialHighlight(true);
+			_requiredMossPlacementCoord =
+				preferredCoord;
+
+			board.GetTileView(
+				preferredCoord
+			)?.SetTutorialHighlight(true);
+
 			return;
 		}
 
-		foreach (HexCoord coord in board.BoardData.Tiles.Keys)
+		foreach (HexCoord coord in
+			board.BoardData.Tiles.Keys)
 		{
-			HexTileData tileData = board.BoardData.GetTile(coord);
+			HexTileData tileData =
+				board.BoardData.GetTile(coord);
 
-			if (tileData != null && tileData.CanPlacePlant(plant))
+			if (tileData != null &&
+				tileData.CanPlacePlant(plant))
 			{
-				_requiredMossPlacementCoord = coord;
-				board.GetTileView(coord)?.SetTutorialHighlight(true);
+				_requiredMossPlacementCoord =
+					coord;
+
+				board.GetTileView(
+					coord
+				)?.SetTutorialHighlight(true);
+
 				return;
 			}
 		}
@@ -665,7 +902,8 @@ public partial class TutorialManager : Node
 
 	private void ClearAllHighlightFrames()
 	{
-		foreach (Panel highlightFrame in _highlightFrames.Values)
+		foreach (Panel highlightFrame in
+			_highlightFrames.Values)
 		{
 			if (IsInstanceValid(highlightFrame))
 				highlightFrame.QueueFree();
@@ -676,13 +914,21 @@ public partial class TutorialManager : Node
 
 	private void ClearHighlights()
 	{
-		BoardManager board = _boardManager ?? GetTree().CurrentScene.GetNodeOrNull<BoardManager>("BoardManager");
+		BoardManager board =
+			_boardManager ??
+			GetTree()
+				.CurrentScene
+				.GetNodeOrNull<BoardManager>(
+					"BoardManager"
+				);
 
 		if (board != null)
 		{
-			foreach (HexCoord coord in board.BoardData.Tiles.Keys)
+			foreach (HexCoord coord in
+				board.BoardData.Tiles.Keys)
 			{
-				HexTile tileView = board.GetTileView(coord);
+				HexTile tileView =
+					board.GetTileView(coord);
 
 				if (tileView == null)
 					continue;
@@ -692,18 +938,34 @@ public partial class TutorialManager : Node
 			}
 		}
 
-		ClearHighlightedNode("UI/CanvasLayer/GameHub/WaterLabel");
-		ClearHighlightedNode("UI/CanvasLayer/GameHub/EndTurnButton");
-		ClearHighlightedNode("UI/CanvasLayer/CardHand");
-		ClearHighlightedNode("UI/CanvasLayer/GameHub/EventDisplay");
+		ClearHighlightedNode(
+			"UI/CanvasLayer/GameHub/WaterLabel"
+		);
+
+		ClearHighlightedNode(
+			"UI/CanvasLayer/GameHub/EndTurnButton"
+		);
+
+		ClearHighlightedNode(
+			"UI/CanvasLayer/CardHand"
+		);
+
+		ClearHighlightedNode(
+			"UI/CanvasLayer/GameHub/EventDisplay"
+		);
 
 		ClearAllHighlightFrames();
 	}
 
-	private void ClearHighlightedNode(string path)
+	private void ClearHighlightedNode(
+		string path)
 	{
-		if (!_highlightFrames.TryGetValue(path, out Panel highlightFrame))
+		if (!_highlightFrames.TryGetValue(
+			path,
+			out Panel highlightFrame))
+		{
 			return;
+		}
 
 		if (IsInstanceValid(highlightFrame))
 			highlightFrame.QueueFree();
@@ -713,10 +975,16 @@ public partial class TutorialManager : Node
 
 	private void EndTutorial()
 	{
+		_cardHand?.ClearCardInteractionFilter();
+
 		_isFinished = true;
+
 		ClearHighlights();
+
 		_overlay?.HideOverlay();
+
 		_isTutorialVisible = false;
+
 		QueueFree();
 	}
 
@@ -725,7 +993,5 @@ public partial class TutorialManager : Node
 		ClearHighlights();
 		_overlay?.HideOverlay();
 		_isTutorialVisible = false;
-
-		// Der TutorialManager bleibt aktiv und hört weiter auf TurnManager-Events.
 	}
 }

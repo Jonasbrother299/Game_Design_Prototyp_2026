@@ -14,6 +14,20 @@ public partial class TutorialOverlay : Control
 	private Button _nextButton;
 	private Button _backButton;
 
+	private Control _cardExplanationRoot;
+	private Control _cardArea;
+	private TextureRect _cardImage;
+	private Panel _cardHighlight;
+	private Label _cardExplanationTitle;
+	private Label _cardExplanationText;
+	private Button _cardNextButton;
+	private Button _cardBackButton;
+
+	private Rect2 _currentCardHighlightNormalized = new Rect2(
+		new Vector2(0.0f, 0.0f),
+		new Vector2(1.0f, 1.0f)
+	);
+
 	private readonly Vector2 _modalWindowMinSize = new Vector2(780, 470);
 	private readonly Vector2 _hintWindowMinSize = new Vector2(540, 450);
 
@@ -25,18 +39,53 @@ public partial class TutorialOverlay : Control
 		_backdrop = GetNodeOrNull<ColorRect>("Backdrop");
 		_window = GetNodeOrNull<PanelContainer>(
 			"CenterContainer/TutorialWindow");
-		_titleLabel = GetNodeOrNull<Label>("CenterContainer/TutorialWindow/TutorialLayoutVBox/TutorialTitle");
+		_titleLabel = GetNodeOrNull<Label>(
+			"CenterContainer/TutorialWindow/TutorialLayoutVBox/TutorialTitle");
 		_textLabel = GetNodeOrNull<Label>(
 			"CenterContainer/TutorialWindow/TutorialLayoutVBox/" +
 			"BodyPanel/TutorialText");
-		_backButton = GetNodeOrNull<Button>("CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation/TutorialBackButton");
-		_nextButton = GetNodeOrNull<Button>("CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation/TutorialNextButton");
+		_backButton = GetNodeOrNull<Button>(
+			"CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation/TutorialBackButton");
+		_nextButton = GetNodeOrNull<Button>(
+			"CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation/TutorialNextButton");
+
+		_cardExplanationRoot = GetNodeOrNull<Control>("CardExplanationRoot");
+		_cardArea = GetNodeOrNull<Control>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/CardArea");
+		_cardImage = GetNodeOrNull<TextureRect>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/CardArea/CardImage");
+		_cardHighlight = GetNodeOrNull<Panel>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/CardArea/CardHighlight");
+		_cardExplanationTitle = GetNodeOrNull<Label>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/ExplanationArea/ExplanationTitle");
+		_cardExplanationText = GetNodeOrNull<Label>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/ExplanationArea/ExplanationBody/ExplanationText");
+		_cardBackButton = GetNodeOrNull<Button>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/ExplanationArea/CardNavigation/CardBackButton");
+		_cardNextButton = GetNodeOrNull<Button>(
+			"CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/" +
+			"CardExplanationLayout/ExplanationArea/CardNavigation/CardNextButton");
 
 		if (_nextButton != null)
 			_nextButton.Pressed += OnNextPressed;
 
 		if (_backButton != null)
 			_backButton.Pressed += OnBackPressed;
+
+		if (_cardNextButton != null)
+			_cardNextButton.Pressed += OnNextPressed;
+
+		if (_cardBackButton != null)
+			_cardBackButton.Pressed += OnBackPressed;
+
+		if (_cardArea != null)
+			_cardArea.Resized += UpdateCardHighlight;
 
 		HideOverlay();
 	}
@@ -48,11 +97,22 @@ public partial class TutorialOverlay : Control
 
 		if (_backButton != null)
 			_backButton.Pressed -= OnBackPressed;
+
+		if (_cardNextButton != null)
+			_cardNextButton.Pressed -= OnNextPressed;
+
+		if (_cardBackButton != null)
+			_cardBackButton.Pressed -= OnBackPressed;
+
+		if (_cardArea != null)
+			_cardArea.Resized -= UpdateCardHighlight;
 	}
 
 	public void ShowModal()
 	{
 		Show();
+		HideCardExplanationView();
+		ShowNormalWindow();
 
 		MoveWindowToModalContainer();
 		SetBackdropColor(new Color(0.005f, 0.012f, 0.007f, 0.68f));
@@ -77,12 +137,13 @@ public partial class TutorialOverlay : Control
 	public void ShowHint()
 	{
 		Show();
+		HideCardExplanationView();
+		ShowNormalWindow();
 
 		MoveWindowToOverlayRoot();
 		SetBackdropColor(new Color(0.0f, 0.0f, 0.0f, 0.10f));
 
-		// Wichtig:
-		// Der große TutorialOverlay-Control darf im Hint-Modus keine Klicks blockieren.
+		// Im Hint-Modus darf die große Overlay-Fläche keine Klicks blockieren.
 		MouseFilter = MouseFilterEnum.Ignore;
 
 		if (_centerContainer != null)
@@ -92,10 +153,6 @@ public partial class TutorialOverlay : Control
 		{
 			_window.CustomMinimumSize = _hintWindowMinSize;
 			_window.Size = _hintWindowMinSize;
-
-			// Wichtig:
-			// Auch das Panel selbst ignoriert Mausinput.
-			// Nur sichtbare Buttons dürfen Input annehmen.
 			_window.MouseFilter = MouseFilterEnum.Ignore;
 		}
 
@@ -106,6 +163,67 @@ public partial class TutorialOverlay : Control
 		AnimateWindowIn();
 	}
 
+	public void ShowCardExplanation(Texture2D cardTexture)
+	{
+		Show();
+		HideNormalWindow();
+
+		if (_cardExplanationRoot != null)
+		{
+			_cardExplanationRoot.Visible = true;
+			_cardExplanationRoot.MouseFilter = MouseFilterEnum.Stop;
+		}
+
+		if (_cardImage != null)
+			_cardImage.Texture = cardTexture;
+
+		SetBackdropColor(new Color(0.005f, 0.012f, 0.007f, 0.82f));
+
+		// Während der Karten-Erklärung ist das Spiel vollständig gesperrt.
+		MouseFilter = MouseFilterEnum.Stop;
+
+		if (_centerContainer != null)
+			_centerContainer.MouseFilter = MouseFilterEnum.Ignore;
+
+		SetChildMouseFilters(_cardExplanationRoot, MouseFilterEnum.Ignore);
+		SetCardButtonMouseFilters();
+
+		Callable.From(UpdateCardHighlight).CallDeferred();
+		AnimateCardExplanationIn();
+	}
+
+	public void HideCardExplanation()
+	{
+		HideCardExplanationView();
+	}
+
+	public void SetCardExplanation(
+		string title,
+		string text,
+		Rect2 normalizedHighlight)
+	{
+		if (_cardExplanationTitle != null)
+			_cardExplanationTitle.Text = title ?? "";
+
+		if (_cardExplanationText != null)
+			_cardExplanationText.Text = text ?? "";
+
+		_currentCardHighlightNormalized = normalizedHighlight;
+		UpdateCardHighlight();
+		AnimateCardHighlight();
+	}
+
+	public void SetCardNavigation(bool canGoBack, bool isLastPage)
+	{
+		if (_cardBackButton != null)
+			_cardBackButton.Disabled = !canGoBack;
+
+		if (_cardNextButton != null)
+			_cardNextButton.Text = isLastPage ? "Karte spielen" : "Weiter";
+
+		SetCardButtonMouseFilters();
+	}
+
 	public void ShowOverlay()
 	{
 		ShowModal();
@@ -113,6 +231,8 @@ public partial class TutorialOverlay : Control
 
 	public void HideOverlay()
 	{
+		HideCardExplanationView();
+		ShowNormalWindow();
 		Hide();
 	}
 
@@ -185,6 +305,24 @@ public partial class TutorialOverlay : Control
 		_window.Position = new Vector2(32, 140);
 	}
 
+	private void ShowNormalWindow()
+	{
+		if (_window != null)
+			_window.Visible = true;
+	}
+
+	private void HideNormalWindow()
+	{
+		if (_window != null)
+			_window.Visible = false;
+	}
+
+	private void HideCardExplanationView()
+	{
+		if (_cardExplanationRoot != null)
+			_cardExplanationRoot.Visible = false;
+	}
+
 	private void SetBackdropColor(Color color)
 	{
 		if (_backdrop != null)
@@ -222,6 +360,39 @@ public partial class TutorialOverlay : Control
 		}
 	}
 
+	private void SetCardButtonMouseFilters()
+	{
+		if (_cardNextButton != null)
+			_cardNextButton.MouseFilter = MouseFilterEnum.Stop;
+
+		if (_cardBackButton != null)
+			_cardBackButton.MouseFilter = MouseFilterEnum.Stop;
+	}
+
+	private void UpdateCardHighlight()
+	{
+		if (_cardArea == null || _cardHighlight == null)
+			return;
+
+		Vector2 areaSize = _cardArea.Size;
+		if (areaSize.X <= 0.0f || areaSize.Y <= 0.0f)
+			return;
+
+		Vector2 position = new Vector2(
+			_currentCardHighlightNormalized.Position.X * areaSize.X,
+			_currentCardHighlightNormalized.Position.Y * areaSize.Y
+		);
+
+		Vector2 size = new Vector2(
+			_currentCardHighlightNormalized.Size.X * areaSize.X,
+			_currentCardHighlightNormalized.Size.Y * areaSize.Y
+		);
+
+		_cardHighlight.Position = position;
+		_cardHighlight.Size = size;
+		_cardHighlight.PivotOffset = size * 0.5f;
+	}
+
 	private void AnimateWindowIn()
 	{
 		if (_window == null)
@@ -237,6 +408,42 @@ public partial class TutorialOverlay : Control
 			.SetEase(Tween.EaseType.Out);
 		tween.Parallel().TweenProperty(
 			_window,
+			"modulate",
+			Colors.White,
+			0.16f);
+	}
+
+	private void AnimateCardExplanationIn()
+	{
+		if (_cardExplanationRoot == null)
+			return;
+
+		_cardExplanationRoot.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+
+		Tween tween = CreateTween();
+		tween.TweenProperty(
+			_cardExplanationRoot,
+			"modulate",
+			Colors.White,
+			0.18f
+		).SetTrans(Tween.TransitionType.Sine)
+		 .SetEase(Tween.EaseType.Out);
+	}
+
+	private void AnimateCardHighlight()
+	{
+		if (_cardHighlight == null)
+			return;
+
+		_cardHighlight.Scale = new Vector2(1.06f, 1.06f);
+		_cardHighlight.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.45f);
+
+		Tween tween = CreateTween();
+		tween.TweenProperty(_cardHighlight, "scale", Vector2.One, 0.16f)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.Out);
+		tween.Parallel().TweenProperty(
+			_cardHighlight,
 			"modulate",
 			Colors.White,
 			0.16f);

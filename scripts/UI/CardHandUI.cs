@@ -36,7 +36,7 @@ public partial class CardHandUI : Control
 	[Export(PropertyHint.Range, "0.5,1.0,0.01")]
 	public float DealStartScale = 0.82f;
 
-    private const float DragScale = 0.20f;
+	private const float DragScale = 0.20f;
 
 	private const int HoverZIndex = 100;
 	private const int DragZIndex = 200;
@@ -60,6 +60,7 @@ public partial class CardHandUI : Control
 	private bool _interactionEnabled = true;
 	private bool _isDragging = false;
 	private bool _removeDraggedCardAfterRelease = false;
+	private Func<CardData, bool> _cardInteractionFilter;
 
 
 	public override void _Ready()
@@ -115,6 +116,9 @@ public partial class CardHandUI : Control
 				return;
 
 			if (!_cardDataByCard.TryGetValue(_hoveredCard, out CardData cardData))
+				return;
+
+			if (!CanInteractWithCard(cardData))
 				return;
 
 			SelectCard(_hoveredCard, cardData);
@@ -199,6 +203,7 @@ public partial class CardHandUI : Control
 		_cards.AddRange(orderedCards);
 
 		LayoutRefreshedHand(addedCards);
+		UpdateCardAvailabilityVisuals();
 	}
 
 	private bool MatchesCurrentCards(IReadOnlyList<CardData> cards)
@@ -244,6 +249,57 @@ public partial class CardHandUI : Control
 
 		if (!isEnabled)
 			CancelDrag();
+	}
+
+	public void SetCardInteractionFilter(Func<CardData, bool> filter)
+	{
+		_cardInteractionFilter = filter;
+
+		if (_isDragging &&
+			_draggedCard != null &&
+			_cardDataByCard.TryGetValue(_draggedCard, out CardData draggedData) &&
+			!CanInteractWithCard(draggedData))
+		{
+			CancelDrag();
+		}
+
+		UpdateCardAvailabilityVisuals();
+	}
+
+	public void ClearCardInteractionFilter()
+	{
+		_cardInteractionFilter = null;
+		UpdateCardAvailabilityVisuals();
+	}
+
+	private bool CanInteractWithCard(CardData cardData)
+	{
+		return cardData != null &&
+			(_cardInteractionFilter == null || _cardInteractionFilter(cardData));
+	}
+
+	private void UpdateCardAvailabilityVisuals()
+	{
+		if (_hoveredCard != null &&
+			_cardDataByCard.TryGetValue(_hoveredCard, out CardData hoveredData) &&
+			!CanInteractWithCard(hoveredData))
+		{
+			AnimateCard(_hoveredCard, false);
+			_hoveredCard = null;
+		}
+
+		foreach (TextureRect card in _cards)
+		{
+			if (card == null || !IsInstanceValid(card))
+				continue;
+
+			if (!_cardDataByCard.TryGetValue(card, out CardData cardData))
+				continue;
+
+			card.Modulate = CanInteractWithCard(cardData)
+				? Colors.White
+				: new Color(0.45f, 0.45f, 0.45f, 0.55f);
+		}
 	}
 
 	private TextureRect FindExistingCard(
@@ -426,6 +482,12 @@ public partial class CardHandUI : Control
 		{
 			if (card == null || !IsInstanceValid(card))
 				continue;
+
+			if (!_cardDataByCard.TryGetValue(card, out CardData cardData) ||
+				!CanInteractWithCard(cardData))
+			{
+				continue;
+			}
 
 			if (card == _draggedCard)
 				continue;
