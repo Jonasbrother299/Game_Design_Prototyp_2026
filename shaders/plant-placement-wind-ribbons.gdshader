@@ -7,10 +7,17 @@ uniform float emission_strength : hint_range(0.0, 3.0) = 1.0;
 uniform float base_radius : hint_range(0.2, 1.5) = 1.074;
 uniform float base_height : hint_range(-0.3, 0.5) = 0.07;
 uniform float rise_height : hint_range(0.1, 1.8) = 0.62;
-uniform float rise_speed : hint_range(0.05, 1.0) = 0.11;
+uniform float rise_speed : hint_range(0.01, 1.0) = 0.055;
 uniform float spin_speed : hint_range(0.0, 2.0) = 0.24;
+uniform float start_delay_span : hint_range(0.0, 8.0) = 3.5;
+uniform float growth_duration : hint_range(0.1, 8.0) = 2.8;
+uniform float appearance_cycle_duration : hint_range(1.0, 12.0) = 6.2;
+uniform float visible_fraction : hint_range(0.1, 0.9) = 0.50;
+uniform float appearance_chance : hint_range(0.0, 1.0) = 0.62;
+uniform float animation_time = 0.0;
 
 varying float ribbon_visibility;
+varying float ribbon_cycle_elapsed;
 varying float ribbon_detail;
 varying float ribbon_shape;
 varying float ribbon_width_profile;
@@ -25,7 +32,32 @@ void vertex() {
 	float shape_seed = INSTANCE_CUSTOM.b;
 	float detail_seed = INSTANCE_CUSTOM.a;
 	float speed_variation = mix(0.78, 1.24, speed_seed);
-	float cycle = TIME * rise_speed * speed_variation + phase_seed;
+	float start_delay = phase_seed * start_delay_span;
+	float active_time = max(animation_time - start_delay, 0.0);
+	float appearance_duration = max(
+		appearance_cycle_duration * mix(0.84, 1.18, speed_seed),
+		0.1);
+	float appearance_cycle = active_time / appearance_duration;
+	float appearance_life = fract(appearance_cycle);
+	float appearance_index = floor(appearance_cycle);
+	float appearance_random = hash11(
+		appearance_index * 41.73 +
+		phase_seed * 113.27 +
+		shape_seed * 71.19);
+	float appears_this_cycle = step(
+		appearance_random,
+		clamp(appearance_chance, 0.0, 1.0));
+	float visible_end = clamp(
+		visible_fraction * mix(0.85, 1.15, detail_seed),
+		0.12,
+		0.92);
+	float appearance_fade = smoothstep(0.0, 0.07, appearance_life) *
+		(1.0 - smoothstep(
+			max(visible_end - 0.12, 0.08),
+			visible_end,
+			appearance_life));
+	float cycle_speed = max(rise_speed * speed_variation, 0.0001);
+	float cycle = active_time * cycle_speed;
 	float life = fract(cycle);
 	float cycle_index = floor(cycle);
 	float cycle_random = hash11(cycle_index + shape_seed * 79.31);
@@ -87,14 +119,27 @@ void vertex() {
 		0.5 + 0.5 * sin(
 			TIME * mix(1.2, 2.1, detail_seed) +
 			shape_seed * 17.0));
-	ribbon_visibility = rise_fade * flicker;
+	float has_started = step(start_delay, animation_time);
+	ribbon_visibility = has_started * rise_fade * flicker *
+		appearance_fade * appears_this_cycle;
+	ribbon_cycle_elapsed = appearance_life * appearance_duration;
 	ribbon_detail = detail_seed;
 	ribbon_shape = shape_seed;
 	ribbon_width_profile = width_profile;
 }
 
 void fragment() {
-	float tail_length = mix(0.07, 0.15, ribbon_detail);
+	float grown_length = smoothstep(
+		0.0,
+		growth_duration,
+		ribbon_cycle_elapsed);
+	float growth_softness = mix(0.025, 0.06, ribbon_detail);
+	float growth_mask = 1.0 - smoothstep(
+		grown_length,
+		grown_length + growth_softness,
+		UV.x);
+	float mature_tail_length = mix(0.07, 0.15, ribbon_detail);
+	float tail_length = mix(0.025, mature_tail_length, grown_length);
 	float head_length = mix(0.82, 0.94, ribbon_shape);
 	float end_fade = smoothstep(0.0, tail_length, UV.x) *
 		(1.0 - smoothstep(head_length, 1.0, UV.x));
@@ -129,7 +174,7 @@ void fragment() {
 			UV.x * mix(7.0, 13.0, ribbon_shape) -
 			TIME * mix(0.45, 0.80, ribbon_detail) +
 			ribbon_shape * 21.0));
-	float alpha = ribbon_visibility * end_fade *
+	float alpha = ribbon_visibility * growth_mask * end_fade *
 		(soft_glow * 0.22 + soft_body * 0.38 +
 			bright_core * 0.68 + white_core * 0.28) *
 		wispy_breakup * mix(0.58, 1.0, drifting_gap) *

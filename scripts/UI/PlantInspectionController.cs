@@ -4,10 +4,7 @@ public partial class PlantInspectionController : CanvasLayer
 {
 	private const string OverlayShaderPath =
 		"res://shaders/plant_inspection_overlay.gdshader";
-	private const string TitleFontPath =
-		"res://assets/ui/fonts/OhnoBlazefaceDemo-36Point.otf";
-	private const string BodyFontPath =
-		"res://assets/ui/fonts/OhnoBlazefaceDemo-18Point.otf";
+	private const string InspectionIconPath = "res://assets/ui/inspection/";
 	private const int PlantForegroundRenderLayer = 19;
 	private static readonly string[] HexPointShaderParameters =
 	{
@@ -46,16 +43,16 @@ public partial class PlantInspectionController : CanvasLayer
 	private ColorRect _darkOverlay;
 	private SubViewport _plantForegroundViewport;
 	private Camera3D _plantForegroundCamera;
-	private PanelContainer _informationCard;
+	private Control _badgeGroup;
+	private readonly Panel[] _badges = new Panel[3];
+	private readonly Line2D[] _badgePointers = new Line2D[3];
+	private Rect2 _badgeBounds;
 	private ShaderMaterial _overlayMaterial;
-	private Label _plantNameLabel;
-	private Label _growthLabel;
-	private Label _waterLabel;
-	private Label _effectLabel;
-	private Label _descriptionLabel;
-	private Font _titleFont;
-	private Font _bodyFont;
-	private float _interfaceScale = 1.0f;
+	private ShaderMaterial _inactiveWaterMaterial;
+	private Texture2D _consumptionIcon;
+	private Texture2D _productionIcon;
+	private Texture2D _growthIcon;
+	private Texture2D _inactiveGrowthIcon;
 	private HexTile _selectedTile;
 	private PlantInstance _selectedPlant;
 	private float _selectedHexRadius = 1.0f;
@@ -69,8 +66,10 @@ public partial class PlantInspectionController : CanvasLayer
 		_cameraRig = GetNodeOrNull<CameraRigController>(CameraRigPath);
 		_camera = _cameraRig?.Camera;
 		_gameUi = GetNodeOrNull<CanvasLayer>(GameUiPath);
-		_titleFont = GD.Load<Font>(TitleFontPath);
-		_bodyFont = GD.Load<Font>(BodyFontPath);
+		_consumptionIcon = GD.Load<Texture2D>(InspectionIconPath + "water_consumption.png");
+		_productionIcon = GD.Load<Texture2D>(InspectionIconPath + "water_production.png");
+		_growthIcon = GD.Load<Texture2D>(InspectionIconPath + "growth_active.png");
+		_inactiveGrowthIcon = GD.Load<Texture2D>(InspectionIconPath + "growth_inactive.png");
 
 		BuildInterface();
 		SetProcess(false);
@@ -111,6 +110,7 @@ public partial class PlantInspectionController : CanvasLayer
 
 		SyncPlantForegroundView();
 		UpdateHexMask();
+		UpdateBadgePositions();
 	}
 
 	public override void _Input(InputEvent inputEvent)
@@ -122,11 +122,12 @@ public partial class PlantInspectionController : CanvasLayer
 			keyEvent.Keycode == Key.Escape &&
 			keyEvent.Pressed &&
 			!keyEvent.Echo;
-		bool closeWithRightClick = inputEvent is InputEventMouseButton mouseButton &&
-			mouseButton.ButtonIndex == MouseButton.Right &&
+		bool closeWithClick = inputEvent is InputEventMouseButton mouseButton &&
+			(mouseButton.ButtonIndex == MouseButton.Left ||
+				mouseButton.ButtonIndex == MouseButton.Right) &&
 			mouseButton.Pressed;
 
-		if (!closeWithEscape && !closeWithRightClick)
+		if (!closeWithEscape && !closeWithClick)
 			return;
 
 		CloseInspection();
@@ -163,7 +164,7 @@ public partial class PlantInspectionController : CanvasLayer
 		}
 
 		_transitionTween.TweenProperty(
-			_informationCard,
+			_badgeGroup,
 			"modulate:a",
 			0.0f,
 			FadeDuration * 0.7f);
@@ -206,11 +207,12 @@ public partial class PlantInspectionController : CanvasLayer
 		_root.Visible = true;
 		_plantForegroundViewport.RenderTargetUpdateMode =
 			SubViewport.UpdateMode.Always;
-		_informationCard.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+		_badgeGroup.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.0f);
 		SetProcess(true);
 		SetProcessInput(true);
 		SyncPlantForegroundView();
 		UpdateHexMask();
+		UpdateBadgePositions();
 
 		_transitionTween?.Kill();
 		_transitionTween = CreateTween();
@@ -227,7 +229,7 @@ public partial class PlantInspectionController : CanvasLayer
 		}
 
 		_transitionTween.TweenProperty(
-			_informationCard,
+			_badgeGroup,
 			"modulate:a",
 			1.0f,
 			FadeDuration * 0.8f);
@@ -345,66 +347,144 @@ public partial class PlantInspectionController : CanvasLayer
 	private void RefreshInformation(PlantInstance plant)
 	{
 		PlantDefinition definition = plant.Definition;
-		int stageCount = Mathf.Max(definition.GrowthStageCount, 2);
-		int consumption = plant.GetWaterConsumption();
 		int production = plant.GetWaterProduction();
-		int balance = production - consumption;
-		string remainingRounds = plant.RemainingGrowthRounds == 1
-			? "noch 1 Runde"
-			: $"noch {plant.RemainingGrowthRounds} Runden";
-
-		_plantNameLabel.Text = definition.DisplayName;
-		_growthLabel.Text = plant.IsMature
-			? $"Ausgewachsen · Stufe {plant.VisualGrowthStage} von {stageCount}"
-			: $"Stufe {plant.VisualGrowthStage} von {stageCount} · " +
-				remainingRounds;
-		_waterLabel.Text =
-			$"Verbrauch: {consumption}\n" +
-			$"Produktion: {production}\n" +
-			$"Bilanz: {FormatSignedNumber(balance)}";
-		_effectLabel.Text = FormatEffect(plant);
-		_descriptionLabel.Text = definition.Description;
-		_descriptionLabel.Visible =
-			!string.IsNullOrWhiteSpace(definition.Description);
-	}
-
-	private static string FormatSignedNumber(int value)
-	{
-		return value > 0 ? $"+{value}" : value.ToString();
-	}
-
-	private static string FormatEffect(PlantInstance plant)
-	{
-		PlantDefinition definition = plant.Definition;
-		bool isActive = plant.IsMature ||
-			(definition.EffectType == PlantEffectType.TreeShade &&
-				!definition.ShadeRequiresMaturity);
-		string status = definition.EffectType == PlantEffectType.None
-			? "Kein zusätzlicher Effekt."
-			: isActive ? "Aktiv" : "Aktiv nach dem Auswachsen";
-
-		string effect = definition.EffectType switch
+		if (_selectedTile.GetParent() is BoardManager boardManager)
 		{
-			PlantEffectType.TreeShade => "Erzeugt Schatten auf umliegenden Feldern.",
-			PlantEffectType.AdjacentPlantsProducePlusOne =>
-				$"Benachbarte Pflanzen außer Eichen und Birken produzieren " +
-				$"+{Mathf.Max(definition.AdjacentWaterProductionBonus, 0)} Wasser.",
-			PlantEffectType.SpreadChancePlusOneForNeighbors =>
-				"Benachbarte Pflanzen außer Blumen verbreiten sich leichter.",
-			_ => ""
-		};
+			WaterBalanceCalculation balance = WaterBalanceCalculator.Calculate(
+				boardManager, activeEvents: null);
+			foreach (PlantWaterResult result in balance.Plants)
+			{
+				if (!result.Coord.Equals(_selectedTile.Data.Coord))
+					continue;
 
-		return string.IsNullOrEmpty(effect) ? status : $"{status}\n{effect}";
+				production = result.Production + result.AdjacentProductionBonus;
+				break;
+			}
+		}
+
+		int consumption = plant.GetWaterConsumption();
+		SetBadgeIcons(
+			_badges[0], definition.WaterConsumption, consumption,
+			_consumptionIcon, _productionIcon, false);
+		bool showConsumption = consumption > 0;
+		_badges[0].Visible = showConsumption;
+		_badgePointers[0].Visible = showConsumption;
+		SetBadgeIcons(
+			_badges[1], definition.WaterProduction, production,
+			_productionIcon, _productionIcon, false);
+		bool showProduction = definition.WaterProduction > 0 || production > 0;
+		_badges[1].Visible = showProduction;
+		_badgePointers[1].Visible = showProduction;
+		SetBadgeIcons(
+			_badges[2], Mathf.Max(definition.GrowthStageCount, 2),
+			plant.VisualGrowthStage, _growthIcon, _inactiveGrowthIcon, true);
+
+		Vector2[] centers =
+		{
+			new Vector2(-240.0f, -110.0f),
+			new Vector2(0.0f, -188.0f),
+			new Vector2(252.0f, -38.0f)
+		};
+		bool hasBadgeBounds = false;
+		for (int index = 0; index < _badges.Length; index++)
+		{
+			Panel badge = _badges[index];
+			if (!badge.Visible)
+				continue;
+
+			badge.Position = centers[index] - badge.Size * 0.5f;
+			Rect2 bounds = new Rect2(badge.Position, badge.Size);
+			_badgeBounds = hasBadgeBounds ? _badgeBounds.Merge(bounds) : bounds;
+			hasBadgeBounds = true;
+
+			Vector2 direction = -centers[index].Normalized();
+			Vector2 halfSize = badge.Size * 0.5f;
+			float edgeDistance = Mathf.Min(
+				halfSize.X / Mathf.Max(Mathf.Abs(direction.X), 0.001f),
+				halfSize.Y / Mathf.Max(Mathf.Abs(direction.Y), 0.001f));
+			Vector2 start = centers[index] + direction * edgeDistance;
+			_badgePointers[index].Points = new[]
+			{
+				start,
+				start + direction * 54.0f
+			};
+		}
+	}
+
+	private void SetBadgeIcons(
+		Panel badge,
+		int total,
+		int active,
+		Texture2D activeIcon,
+		Texture2D inactiveIcon,
+		bool isGrowth)
+	{
+		foreach (Node child in badge.GetChildren())
+		{
+			badge.RemoveChild(child);
+			child.QueueFree();
+		}
+
+		int count = Mathf.Max(Mathf.Max(total, active), 0);
+		float iconHeight = isGrowth ? 96.0f : 112.0f;
+		Texture2D texture = activeIcon ?? inactiveIcon;
+		float aspect = texture == null
+			? 0.625f
+			: (float)texture.GetWidth() / Mathf.Max(texture.GetHeight(), 1);
+		float iconWidth = iconHeight * aspect;
+		float advance = isGrowth ? 40.0f : 44.0f;
+		float contentWidth = count > 0 ? iconWidth + (count - 1) * advance : 0.0f;
+		float width = Mathf.Max(contentWidth + 32.0f, 144.0f);
+		badge.Size = new Vector2(width, 144.0f);
+
+		for (int index = 0; index < count; index++)
+		{
+			bool isActive = index < active;
+			TextureRect icon = new TextureRect
+			{
+				Texture = isActive ? activeIcon : inactiveIcon,
+				ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+				StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+				MouseFilter = Control.MouseFilterEnum.Ignore,
+				TextureFilter = CanvasItem.TextureFilterEnum.Linear,
+				Size = new Vector2(iconWidth, iconHeight),
+				Position = new Vector2(
+					(width - contentWidth) * 0.5f + index * advance,
+					(144.0f - iconHeight) * 0.5f)
+			};
+			if (!isActive && !isGrowth)
+				icon.Material = _inactiveWaterMaterial;
+			badge.AddChild(icon);
+		}
+	}
+
+	private void UpdateBadgePositions()
+	{
+		Vector2 viewportSize = GetViewport().GetVisibleRect().Size;
+		if (viewportSize.X <= 0.0f || viewportSize.Y <= 0.0f)
+			return;
+
+		Vector3 anchor = _selectedTile.ToGlobal(
+			new Vector3(0.0f, HexMaskWorldHeight, 0.0f));
+		_badgeGroup.Visible = !_camera.IsPositionBehind(anchor);
+		float scale = Mathf.Min(viewportSize.Y / 720.0f, 1.5f);
+		float margin = Mathf.Min(18.0f, Mathf.Min(viewportSize.X, viewportSize.Y) * 0.05f);
+		scale = Mathf.Min(scale,
+			(viewportSize.X - margin * 2.0f) / _badgeBounds.Size.X);
+		scale = Mathf.Min(scale,
+			(viewportSize.Y - margin * 2.0f) / _badgeBounds.Size.Y);
+		_badgeGroup.Scale = Vector2.One * scale;
+
+		Vector2 position = _camera.UnprojectPosition(anchor);
+		Vector2 minPosition = Vector2.One * margin - _badgeBounds.Position * scale;
+		Vector2 maxPosition = viewportSize - Vector2.One * margin - _badgeBounds.End * scale;
+		_badgeGroup.Position = new Vector2(
+			Mathf.Clamp(position.X, minPosition.X, maxPosition.X),
+			Mathf.Clamp(position.Y, minPosition.Y, maxPosition.Y));
 	}
 
 	private void BuildInterface()
 	{
-		Vector2 viewportSize = GetViewport().GetVisibleRect().Size;
-		_interfaceScale = Mathf.Clamp(
-			viewportSize.Y / 1080.0f,
-			1.0f,
-			1.5f);
-
 		_root = new Control
 		{
 			Name = "InspectionRoot",
@@ -466,167 +546,63 @@ public partial class PlantInspectionController : CanvasLayer
 			"plant_foreground_mask",
 			_plantForegroundViewport.GetTexture());
 
-		_informationCard = new PanelContainer
+		_inactiveWaterMaterial = new ShaderMaterial
 		{
-			Name = "PlantInformationCard",
-			MouseFilter = Control.MouseFilterEnum.Stop
+			Shader = new Shader
+			{
+				Code = @"shader_type canvas_item;
+void fragment() {
+	float gray = dot(COLOR.rgb, vec3(0.299, 0.587, 0.114));
+	float blue_fill = smoothstep(0.0, 0.12, COLOR.b - COLOR.r);
+	COLOR.rgb = mix(COLOR.rgb, vec3(gray), blue_fill);
+}"
+			}
 		};
-		_root.AddChild(_informationCard);
-		_informationCard.AnchorLeft = 0.67f;
-		_informationCard.AnchorTop = 0.08f;
-		_informationCard.AnchorRight = 0.985f;
-		_informationCard.AnchorBottom = 0.92f;
-		_informationCard.OffsetLeft = 0.0f;
-		_informationCard.OffsetTop = 0.0f;
-		_informationCard.OffsetRight = 0.0f;
-		_informationCard.OffsetBottom = 0.0f;
-		_informationCard.AddThemeStyleboxOverride(
-			"panel",
-			CreateInformationCardStyle());
-
-		MarginContainer margin = new MarginContainer();
-		margin.AddThemeConstantOverride("margin_left", ScaleUi(38));
-		margin.AddThemeConstantOverride("margin_top", ScaleUi(30));
-		margin.AddThemeConstantOverride("margin_right", ScaleUi(38));
-		margin.AddThemeConstantOverride("margin_bottom", ScaleUi(30));
-		_informationCard.AddChild(margin);
-
-		VBoxContainer content = new VBoxContainer();
-		content.AddThemeConstantOverride("separation", ScaleUi(17));
-		margin.AddChild(content);
-
-		HBoxContainer header = new HBoxContainer();
-		header.AddThemeConstantOverride("separation", ScaleUi(16));
-		content.AddChild(header);
-
-		_plantNameLabel = CreateLabel(40, new Color("4b2718"), true);
-		_plantNameLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		header.AddChild(_plantNameLabel);
-
-		Button closeButton = new Button
+		_badgeGroup = new Control
 		{
-			Text = "×",
-			TooltipText = "Inspektion schließen",
-			CustomMinimumSize = new Vector2(ScaleUi(62), ScaleUi(56)),
-			FocusMode = Control.FocusModeEnum.None
-		};
-		ApplyCloseButtonStyle(closeButton);
-		closeButton.Pressed += CloseInspection;
-		header.AddChild(closeButton);
-
-		Label category = CreateLabel(18, new Color("77752f"));
-		category.Text = "PFLANZEN-INSPEKTION";
-		content.AddChild(category);
-		content.AddChild(new HSeparator());
-
-		content.AddChild(CreateSectionLabel("WACHSTUM"));
-		_growthLabel = CreateLabel(24, new Color("573422"));
-		content.AddChild(_growthLabel);
-
-		content.AddChild(CreateSectionLabel("WASSER PRO RUNDE"));
-		_waterLabel = CreateLabel(24, new Color("315f65"));
-		content.AddChild(_waterLabel);
-
-		content.AddChild(CreateSectionLabel("EFFEKT"));
-		_effectLabel = CreateLabel(23, new Color("573422"));
-		content.AddChild(_effectLabel);
-
-		_descriptionLabel = CreateLabel(20, new Color("6d4a35"));
-		content.AddChild(_descriptionLabel);
-
-		Control spacer = new Control
-		{
-			SizeFlagsVertical = Control.SizeFlags.ExpandFill
-		};
-		content.AddChild(spacer);
-
-		Label closeHint = CreateLabel(16, new Color("7a634d"));
-		closeHint.Text = "Schließen: ×, Esc oder Rechtsklick";
-		closeHint.HorizontalAlignment = HorizontalAlignment.Center;
-		content.AddChild(closeHint);
-	}
-
-	private Label CreateSectionLabel(string text)
-	{
-		Label label = CreateLabel(18, new Color("8b3f34"));
-		label.Text = text;
-		label.AddThemeConstantOverride("outline_size", 1);
-		return label;
-	}
-
-	private Label CreateLabel(int fontSize, Color color, bool useTitleFont = false)
-	{
-		Label label = new Label
-		{
-			AutowrapMode = TextServer.AutowrapMode.WordSmart,
+			Name = "PlantStatusBadges",
 			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
-		Font font = useTitleFont ? _titleFont : _bodyFont;
-		if (font != null)
-			label.AddThemeFontOverride("font", font);
-		label.AddThemeFontSizeOverride("font_size", ScaleUi(fontSize));
-		label.AddThemeColorOverride("font_color", color);
-		label.AddThemeConstantOverride("line_spacing", ScaleUi(3));
-		return label;
+		_root.AddChild(_badgeGroup);
+
+		for (int index = 0; index < _badgePointers.Length; index++)
+		{
+			_badgePointers[index] = new Line2D
+			{
+				Width = 4.0f,
+				DefaultColor = new Color("775139"),
+				Antialiased = true
+			};
+			_badgeGroup.AddChild(_badgePointers[index]);
+		}
+
+		string[] names = { "WaterConsumption", "WaterProduction", "Growth" };
+		for (int index = 0; index < _badges.Length; index++)
+		{
+			_badges[index] = new Panel
+			{
+				Name = names[index],
+				MouseFilter = Control.MouseFilterEnum.Ignore
+			};
+			_badges[index].AddThemeStyleboxOverride("panel", CreateBadgeStyle());
+			_badgeGroup.AddChild(_badges[index]);
+		}
 	}
 
-	private StyleBoxFlat CreateInformationCardStyle()
+	private static StyleBoxFlat CreateBadgeStyle()
 	{
 		return new StyleBoxFlat
 		{
-			BgColor = new Color("ead6aa"),
-			BorderColor = new Color("6a3823"),
-			BorderWidthLeft = ScaleUi(4),
-			BorderWidthTop = ScaleUi(4),
-			BorderWidthRight = ScaleUi(4),
-			BorderWidthBottom = ScaleUi(4),
-			CornerRadiusTopLeft = ScaleUi(22),
-			CornerRadiusTopRight = ScaleUi(22),
-			CornerRadiusBottomRight = ScaleUi(22),
-			CornerRadiusBottomLeft = ScaleUi(22),
-			ShadowColor = new Color(0.08f, 0.04f, 0.02f, 0.55f),
-			ShadowSize = ScaleUi(12),
-			ShadowOffset = new Vector2(0.0f, ScaleUi(7))
+			BgColor = new Color("d8bc94"),
+			BorderColor = new Color("775139"),
+			BorderWidthLeft = 5,
+			BorderWidthTop = 5,
+			BorderWidthRight = 5,
+			BorderWidthBottom = 5,
+			CornerRadiusTopLeft = 18,
+			CornerRadiusTopRight = 18,
+			CornerRadiusBottomRight = 18,
+			CornerRadiusBottomLeft = 18
 		};
-	}
-
-	private void ApplyCloseButtonStyle(Button button)
-	{
-		if (_bodyFont != null)
-			button.AddThemeFontOverride("font", _bodyFont);
-		button.AddThemeFontSizeOverride("font_size", ScaleUi(26));
-		button.AddThemeColorOverride("font_color", new Color("5a2f20"));
-		button.AddThemeColorOverride("font_hover_color", new Color("fff1ce"));
-		button.AddThemeStyleboxOverride(
-			"normal",
-			CreateButtonStyle(new Color("d5b77e")));
-		button.AddThemeStyleboxOverride(
-			"hover",
-			CreateButtonStyle(new Color("a34d3c")));
-		button.AddThemeStyleboxOverride(
-			"pressed",
-			CreateButtonStyle(new Color("7e352c")));
-	}
-
-	private StyleBoxFlat CreateButtonStyle(Color color)
-	{
-		return new StyleBoxFlat
-		{
-			BgColor = color,
-			BorderColor = new Color("6a3823"),
-			BorderWidthLeft = ScaleUi(2),
-			BorderWidthTop = ScaleUi(2),
-			BorderWidthRight = ScaleUi(2),
-			BorderWidthBottom = ScaleUi(2),
-			CornerRadiusTopLeft = ScaleUi(12),
-			CornerRadiusTopRight = ScaleUi(12),
-			CornerRadiusBottomRight = ScaleUi(12),
-			CornerRadiusBottomLeft = ScaleUi(12)
-		};
-	}
-
-	private int ScaleUi(int value)
-	{
-		return Mathf.RoundToInt(value * _interfaceScale);
 	}
 }

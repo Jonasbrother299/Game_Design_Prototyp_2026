@@ -9,6 +9,17 @@ public static class TreeCanopyShadowBuilder
 
 	private static Texture2D _leafTexture;
 
+	internal static float GetGrowthShadowStrength(
+		int growthStage,
+		float youngStrength = 0.25f)
+	{
+		if (growthStage <= 0)
+			return 0.0f;
+
+		float progress = Mathf.Clamp((growthStage - 1) / 3.0f, 0.0f, 1.0f);
+		return Mathf.Lerp(Mathf.Clamp(youngStrength, 0.0f, 1.0f), 1.0f, progress);
+	}
+
 	public static Node3D Create(
 		Color shadowColor,
 		float canopySize,

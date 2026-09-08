@@ -8,6 +8,7 @@ uniform sampler2D WindNoise : repeat_enable, filter_linear;
 uniform sampler2D LeaveTexture;
 uniform vec3 foliage_colour1 : source_color = vec3(0.13, 0.33, 0.25) ;
 uniform vec3 foliage_colour2 : source_color = vec3(0.13, 0.33, 0.25) ;
+uniform float backlight_strength : hint_range(0.0, 1.0, 0.01) = 0.20;
 instance uniform float birch_proximity_fade : hint_range(0.0, 1.0) = 0.0;
 
 uniform float fade_start : hint_range(-1.0, 1.0) = 0.0;
@@ -126,6 +127,7 @@ void fragment() {
 
 // Output:0
 	ALBEDO = n_out7p0;
+	BACKLIGHT = vec3(backlight_strength);
 	ALPHA = n_out3p4;
 	ALPHA_SCISSOR_THRESHOLD = 0.1;
 

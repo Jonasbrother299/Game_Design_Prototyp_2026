@@ -17,7 +17,8 @@ internal enum OuterRingVisualGroup
 	Other = 1 << 9
 }
 
-public partial class BoardManager : Node3D
+[Tool]
+public partial class BoardManager : Node3D, ISerializationListener
 {
 	private static readonly string[] DefaultHexTileVariantPaths =
 	{
@@ -40,10 +41,7 @@ public partial class BoardManager : Node3D
 	};
 	private static readonly string[] DefaultOuterTreeScenePaths =
 	{
-		"res://assets/models/stylized_nature/CommonTree_1.gltf",
-		"res://assets/models/stylized_nature/Pine_1.gltf",
-		"res://assets/models/stylized_nature/Pine_2.gltf",
-		"res://assets/models/stylized_nature/Pine_3.gltf"
+		"res://assets/models/decoration/trees/tree_1.tscn"
 	};
 	private static readonly string[] DefaultOuterDetailScenePaths =
 	{
@@ -52,6 +50,21 @@ public partial class BoardManager : Node3D
 		"res://assets/models/stylized_nature/Flower_3_Group.gltf",
 		"res://assets/models/stylized_nature/Mushroom_Common.gltf"
 	};
+
+	[ExportGroup("Editor Preview")]
+	[Export]
+	public bool ShowEditorPreview
+	{
+		get => _showEditorPreview;
+		set
+		{
+			if (_showEditorPreview == value)
+				return;
+
+			_showEditorPreview = value;
+			QueueEditorPreviewRefresh();
+		}
+	}
 
 	[ExportGroup("Balance")]
 	[Export] public GameConfig Balance;
@@ -68,6 +81,10 @@ public partial class BoardManager : Node3D
 
 	[Export(PropertyHint.Range, "64,4096,16")]
 	public int GrassInstancesPerTile = 320;
+
+	/// <summary>Höhenfaktor für Spielfeld und Außenring. 1 behält die bisherige Grashöhe bei.</summary>
+	[Export(PropertyHint.Range, "0.1,5.0,0.05")]
+	public float GrassHeightMultiplier = 1.0f;
 
 	[Export(PropertyHint.Range, "0.0,1.0,0.005")]
 	public float GrassWindWaveSpeed = 0.035f;
@@ -95,6 +112,14 @@ public partial class BoardManager : Node3D
 	public float GrassMushroomMargin = 0.14f;
 	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
 	public float GrassMossMargin = 0.30f;
+
+	[ExportGroup("Grass Root Shadow")]
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float GrassRootShadowStrength = 0.58f;
+	[Export(PropertyHint.Range, "0.05,1.0,0.01")]
+	public float GrassRootShadowHeight = 0.72f;
+	[Export(PropertyHint.Range, "0.0,0.5,0.01")]
+	public float GrassRootShadowVariation = 0.16f;
 
 	[ExportGroup("Stone Border")]
 	[Export] public bool ShowStoneBorder = true;
@@ -181,6 +206,19 @@ public partial class BoardManager : Node3D
 
 	[Export] public bool ShowDecorativeShoreStones = true;
 
+	[ExportGroup("Decorative Water Inlet")]
+	[Export] public bool ShowDecorativeWaterInlet = true;
+
+	[Export(PropertyHint.Enum,
+		"Right,Lower Right,Lower Left,Left,Upper Left,Upper Right")]
+	public int DecorativeWaterInletSide = 4;
+
+	[Export(PropertyHint.Range, "1,4,1")]
+	public int DecorativeWaterInletWidth = 3;
+
+	[Export(PropertyHint.Range, "1,4,1")]
+	public int DecorativeWaterInletOuterMarginRows = 2;
+
 	[ExportGroup("Decorative Cliff")]
 	[Export] public bool ShowDecorativeCliff = true;
 
@@ -205,20 +243,35 @@ public partial class BoardManager : Node3D
 	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
 	public float OuterDetailChance = 0.42f;
 
+	[Export(PropertyHint.Range, "-1,512,1")]
+	public int OuterTreeCountLimit = -1;
+
+	[Export(PropertyHint.Range, "-1,512,1")]
+	public int OuterDetailCountLimit = -1;
+
 	[Export(PropertyHint.Range, "0,4,1")]
 	public int OuterVegetationShoreClearRows = 1;
 
+	[Export(PropertyHint.Range, "0,8,1")]
+	public int OuterVegetationOuterClearRows = 0;
+
 	[Export(PropertyHint.Range, "0.0,0.8,0.01")]
 	public float OuterVegetationPositionRadius = 0.52f;
+
+	[Export(PropertyHint.Range, "0.0,8.0,0.05")]
+	public float OuterVegetationMinimumSpacing = 0.0f;
+
+	[Export(PropertyHint.Range, "0.0,8.0,0.05")]
+	public float OuterVegetationStoneClearance = 0.75f;
 
 	[Export(PropertyHint.Range, "-0.5,0.5,0.01")]
 	public float OuterVegetationHeightOffset = 0.02f;
 
 	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
-	public float OuterTreeMinimumScale = 0.50f;
+	public float OuterTreeMinimumScale = 0.24f;
 
 	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
-	public float OuterTreeMaximumScale = 0.68f;
+	public float OuterTreeMaximumScale = 0.40f;
 
 	[Export(PropertyHint.Range, "0.05,1.5,0.01")]
 	public float OuterDetailMinimumScale = 0.55f;
@@ -404,7 +457,12 @@ public partial class BoardManager : Node3D
 		_decorativeGrassBatches = new();
 	private readonly Dictionary<(PackedScene Scene, int Sector), OuterVegetationBatch>
 		_outerVegetationBatches = new();
+	private readonly List<(HexCoord Coord, Transform3D TileTransform,
+		int Distance, int InnerRadius, int OuterRadius)> _outerVegetationTiles = new();
+	private readonly List<Node3D> _outerVegetationNodes = new();
 	private readonly List<MultiMeshInstance3D> _decorativeGrassInstances = new();
+	private readonly List<Vector3> _outerVegetationPositions = new();
+	private readonly List<Vector3> _generatedStonePositions = new();
 	private readonly Dictionary<Node3D, OuterRingVisualGroup>
 		_outerRingVisualNodes = new();
 	private readonly List<PackedScene> _activeHexTileVariants = new();
@@ -414,11 +472,72 @@ public partial class BoardManager : Node3D
 	private StylizedBridgeController _stylizedBridge;
 	private Vector3 _boardWorldCenter = Vector3.Zero;
 	private float _decorativeGrassDryAmount;
+	private Vector4 _appliedGrassAppearance;
+	private int _outerTreeInstanceCount;
+	private int _outerDetailInstanceCount;
+	private int _outerVegetationSettingsHash;
+	private double _outerVegetationRefreshDelay = -1.0;
+	private bool _outerRingVisible = true;
+	private OuterRingVisualGroup _outerRingVisibleGroups = (OuterRingVisualGroup)(-1);
+	private bool _hasAppliedGrassAppearance;
+	private bool _showEditorPreview;
+	private bool _editorPreviewRefreshQueued;
 
 	public override void _Ready()
 	{
+		if (Engine.IsEditorHint() && !ShowEditorPreview)
+		{
+			SetProcess(false);
+			return;
+		}
+
+		InitializeBoardVisuals();
+		SetProcess(true);
+	}
+
+	void ISerializationListener.OnBeforeSerialize()
+	{
+	}
+
+	void ISerializationListener.OnAfterDeserialize()
+	{
+		// C#-Neuladen erhält die Nodes, aber nicht die temporären Verteilungsdaten.
+		_editorPreviewRefreshQueued = false;
+		QueueEditorPreviewRefresh();
+	}
+
+	private void QueueEditorPreviewRefresh()
+	{
+		if (!Engine.IsEditorHint() || !IsInsideTree() ||
+			_editorPreviewRefreshQueued)
+		{
+			return;
+		}
+
+		_editorPreviewRefreshQueued = true;
+		Callable.From(RefreshEditorPreview).CallDeferred();
+	}
+
+	private void RefreshEditorPreview()
+	{
+		if (!_editorPreviewRefreshQueued)
+			return;
+
+		_editorPreviewRefreshQueued = false;
+		if (!Engine.IsEditorHint() || !IsInsideTree() || !IsNodeReady())
+			return;
+
+		SetProcess(ShowEditorPreview);
+		if (ShowEditorPreview)
+			InitializeBoardVisuals();
+		else
+			ClearBoard();
+	}
+
+	private void InitializeBoardVisuals()
+	{
 		ulong totalStartedUsec = LoadProfiler.BeginPhase(
-			"BoardManager._Ready gesamt");
+			"Board-Darstellung aufbauen");
 		ulong phaseStartedUsec = LoadProfiler.BeginPhase(
 			"Board-Konfiguration laden");
 		Balance ??= GameConfig.LoadDefault();
@@ -442,7 +561,116 @@ public partial class BoardManager : Node3D
 			phaseStartedUsec);
 
 		GenerateBoard();
-		LoadProfiler.EndPhase("BoardManager._Ready gesamt", totalStartedUsec);
+		LoadProfiler.EndPhase("Board-Darstellung aufbauen", totalStartedUsec);
+	}
+
+	public override void _Process(double delta)
+	{
+		if (Engine.IsEditorHint() && !ShowEditorPreview)
+			return;
+
+		ApplyGrassAppearanceIfChanged();
+		RefreshOuterVegetationIfChanged(delta);
+	}
+
+	private void RefreshOuterVegetationIfChanged(double delta)
+	{
+		if (_outerVegetationTiles.Count == 0)
+			return;
+
+		int settingsHash = GetOuterVegetationSettingsHash();
+		if (settingsHash != _outerVegetationSettingsHash)
+		{
+			_outerVegetationSettingsHash = settingsHash;
+			_outerVegetationRefreshDelay = 0.2;
+			return;
+		}
+
+		if (_outerVegetationRefreshDelay < 0.0)
+			return;
+
+		_outerVegetationRefreshDelay -= delta;
+		if (_outerVegetationRefreshDelay <= 0.0)
+			RebuildOuterVegetation();
+	}
+
+	private int GetOuterVegetationSettingsHash()
+	{
+		System.HashCode settings = new();
+		settings.Add(ShowDecorativeOuterVegetation);
+		settings.Add(OuterTreeChance);
+		settings.Add(OuterDetailChance);
+		settings.Add(OuterTreeCountLimit);
+		settings.Add(OuterDetailCountLimit);
+		settings.Add(OuterVegetationShoreClearRows);
+		settings.Add(OuterVegetationOuterClearRows);
+		settings.Add(OuterVegetationPositionRadius);
+		settings.Add(OuterVegetationMinimumSpacing);
+		settings.Add(OuterVegetationStoneClearance);
+		settings.Add(OuterVegetationHeightOffset);
+		settings.Add(OuterTreeMinimumScale);
+		settings.Add(OuterTreeMaximumScale);
+		settings.Add(OuterDetailMinimumScale);
+		settings.Add(OuterDetailMaximumScale);
+		settings.Add(OuterFlowerScaleMultiplier);
+		settings.Add(OuterVegetationRandomSeed);
+		settings.Add(EnableVisibilityRanges);
+		settings.Add(VegetationVisibilityRange);
+		settings.Add(VisibilityRangeMargin);
+		settings.Add(FrustumCullMargin);
+		settings.Add(OuterTreeScenes?.Count ?? 0);
+		if (OuterTreeScenes != null)
+		{
+			foreach (PackedScene scene in OuterTreeScenes)
+				settings.Add(scene?.GetInstanceId() ?? 0UL);
+		}
+		settings.Add(OuterDetailScenes?.Count ?? 0);
+		if (OuterDetailScenes != null)
+		{
+			foreach (PackedScene scene in OuterDetailScenes)
+				settings.Add(scene?.GetInstanceId() ?? 0UL);
+		}
+		return settings.ToHashCode();
+	}
+
+	private void ApplyGrassAppearanceIfChanged()
+	{
+		Vector4 settings = GetGrassAppearanceSettings();
+		if (_hasAppliedGrassAppearance &&
+			Mathf.IsEqualApprox(settings.X, _appliedGrassAppearance.X) &&
+			Mathf.IsEqualApprox(settings.Y, _appliedGrassAppearance.Y) &&
+			Mathf.IsEqualApprox(settings.Z, _appliedGrassAppearance.Z) &&
+			Mathf.IsEqualApprox(settings.W, _appliedGrassAppearance.W))
+		{
+			return;
+		}
+
+		foreach (HexTile tileView in _tileViews.Values)
+			tileView.SetGrassAppearance(settings);
+
+		foreach (MultiMeshInstance3D grassInstance in _decorativeGrassInstances)
+			ApplyGrassAppearanceTo(grassInstance, settings);
+
+		_appliedGrassAppearance = settings;
+		_hasAppliedGrassAppearance = true;
+	}
+
+	private Vector4 GetGrassAppearanceSettings()
+	{
+		return new Vector4(
+			Mathf.Clamp(GrassRootShadowStrength, 0.0f, 1.0f),
+			Mathf.Clamp(GrassRootShadowHeight, 0.05f, 1.0f),
+			Mathf.Clamp(GrassRootShadowVariation, 0.0f, 0.5f),
+			Mathf.Clamp(GrassHeightMultiplier, 0.1f, 5.0f));
+	}
+
+	private static void ApplyGrassAppearanceTo(
+		MultiMeshInstance3D grassInstance,
+		Vector4 settings)
+	{
+		grassInstance?.SetInstanceShaderParameter(
+			"grass_appearance",
+			settings);
 	}
 
 	private void SetupHexTileVariants()
@@ -609,13 +837,6 @@ public partial class BoardManager : Node3D
 			phaseStartedUsec);
 
 		phaseStartedUsec = LoadProfiler.BeginPhase(
-			"Außenring-Vegetations-MultiMeshes bauen");
-		BuildOuterVegetationMultiMeshes();
-		LoadProfiler.EndPhase(
-			"Außenring-Vegetations-MultiMeshes bauen",
-			phaseStartedUsec);
-
-		phaseStartedUsec = LoadProfiler.BeginPhase(
 			"Ufersteine verteilen");
 		CreateStoneBorder(balance);
 		LoadProfiler.EndPhase("Ufersteine verteilen", phaseStartedUsec);
@@ -625,6 +846,13 @@ public partial class BoardManager : Node3D
 		BuildStoneBorderMultiMeshes();
 		LoadProfiler.EndPhase(
 			"Uferstein-MultiMeshes bauen",
+			phaseStartedUsec);
+
+		phaseStartedUsec = LoadProfiler.BeginPhase(
+			"Außenring-Vegetation aufbauen");
+		RebuildOuterVegetation();
+		LoadProfiler.EndPhase(
+			"Außenring-Vegetation aufbauen",
 			phaseStartedUsec);
 
 		GD.Print($"Board generated with {BoardData.Tiles.Count} tiles.");
@@ -976,19 +1204,11 @@ public partial class BoardManager : Node3D
 				plant.Definition.Type == PlantType.Oak &&
 				tile.Coord.Q == 0 &&
 				tile.Coord.R == 0;
-			float growthProgress = Mathf.Clamp(
-				plant.GrowthProgress,
-				0.0f,
-				1.0f);
 			float centerAmount = isStartingOak
 				? 1.0f
-				: Mathf.Lerp(
-					Mathf.Clamp(YoungTreeCanopyShadowStrength, 0.0f, 1.0f),
-					1.0f,
-					growthProgress);
-			float neighborAmount = isStartingOak
-				? 1.0f
-				: growthProgress * growthProgress;
+				: TreeCanopyShadowBuilder.GetGrowthShadowStrength(
+					plant.VisualGrowthStage,
+					YoungTreeCanopyShadowStrength);
 
 			SetMaximumCanopyShadowAmount(
 				receiverAmounts,
@@ -1000,7 +1220,7 @@ public partial class BoardManager : Node3D
 				SetMaximumCanopyShadowAmount(
 					receiverAmounts,
 					neighbor.Coord,
-					neighborAmount);
+					centerAmount);
 			}
 		}
 
@@ -1060,6 +1280,8 @@ public partial class BoardManager : Node3D
 		bool stoneBorderVisible,
 		bool outerRingVisible)
 	{
+		_outerRingVisible = outerRingVisible;
+		_outerRingVisibleGroups = (OuterRingVisualGroup)(-1);
 		foreach (HexTile tileView in _tileViews.Values)
 		{
 			tileView.SetRenderGroupVisibility(
@@ -1096,6 +1318,8 @@ public partial class BoardManager : Node3D
 		bool outerRingVisible,
 		OuterRingVisualGroup visibleGroups)
 	{
+		_outerRingVisible = outerRingVisible;
+		_outerRingVisibleGroups = visibleGroups;
 		foreach (KeyValuePair<Node3D, OuterRingVisualGroup> entry in
 			_outerRingVisualNodes)
 		{
@@ -1190,6 +1414,7 @@ public partial class BoardManager : Node3D
 			GetGrassOuterEdges(tileData.Coord));
 		AddChild(tileView);
 		tileView.Setup(tileData);
+		tileView.SetGrassAppearance(GetGrassAppearanceSettings());
 
 		_tileViews.Add(tileData.Coord, tileView);
 	}
@@ -1411,6 +1636,7 @@ public partial class BoardManager : Node3D
 				outwardDirection * StoneBorderOutwardOffset * HexSize +
 				tangentDirection *
 				(centeredIndex * rockSpacing + tangentJitter);
+			_generatedStonePositions.Add(rockPosition);
 
 			CreateStoneBorderPiece(
 				rockScene,
@@ -1505,22 +1731,31 @@ public partial class BoardManager : Node3D
 				HexCoord coord = new HexCoord(q, r);
 				int distance = GetHexDistance(coord);
 
-				if (distance < innerRadius)
+				if (distance < innerRadius ||
+					IsDecorativeWaterInlet(
+						coord,
+						innerRadius,
+						outerRadius))
 					continue;
 
 				Node3D decorativeTile = CreateDecorativeTile(
 					coord,
 					innerRadius,
+					outerRadius,
 					tileTemplates);
 
 				if (decorativeTile != null &&
 					ShowDecorativeShoreStones &&
-					distance == innerRadius)
+					HasDecorativeWaterNeighbor(
+						coord,
+						innerRadius,
+						outerRadius))
 				{
 					CreateDecorativeShoreStones(
 						coord,
 						decorativeTile,
-						innerRadius);
+						innerRadius,
+						outerRadius);
 				}
 
 				if (decorativeTile != null && ShowDecorativeCliff)
@@ -1534,11 +1769,12 @@ public partial class BoardManager : Node3D
 
 				if (decorativeTile != null)
 				{
-					CreateOuterVegetation(
+					_outerVegetationTiles.Add((
 						coord,
-						decorativeTile,
+						decorativeTile.Transform,
 						distance,
-						innerRadius);
+						innerRadius,
+						outerRadius));
 				}
 			}
 		}
@@ -1553,6 +1789,7 @@ public partial class BoardManager : Node3D
 	private Node3D CreateDecorativeTile(
 		HexCoord coord,
 		int innerRadius,
+		int outerRadius,
 		Dictionary<PackedScene, DecorativeTileTemplate> tileTemplates)
 	{
 		if (_activeHexTileVariants.Count == 0)
@@ -1588,7 +1825,10 @@ public partial class BoardManager : Node3D
 		int rotationStep = (int)(
 			(visualHash / (uint)_activeHexTileVariants.Count) % 6u);
 		decorativeTile.Name = $"DecorativeTile_{coord.Q}_{coord.R}";
-		float cliffHeight = GetDecorativeCliffHeight(coord, innerRadius);
+		float cliffHeight = GetDecorativeCliffHeight(
+			coord,
+			innerRadius,
+			outerRadius);
 		decorativeTile.Position = HexToWorld(coord, HexSize) +
 			Vector3.Up * (DecorativeGroundHeight + cliffHeight);
 		decorativeTile.Rotation = new Vector3(
@@ -1635,10 +1875,30 @@ public partial class BoardManager : Node3D
 			visualHash,
 			template.UsesGeneratedGrass,
 			coord,
-			innerRadius);
+			innerRadius,
+			outerRadius);
 		QueueDecorativeDetails(tileScene, decorativeTile);
+		RegisterDecorativeTileStonePositions(decorativeTile);
 
 		return decorativeTile;
+	}
+
+	private void RegisterDecorativeTileStonePositions(Node3D decorativeTile)
+	{
+		foreach (Node child in decorativeTile.GetChildren())
+		{
+			if (child is not Node3D stoneNode ||
+				!child.Name.ToString().StartsWith(
+					"Rock_",
+					System.StringComparison.OrdinalIgnoreCase))
+			{
+				continue;
+			}
+
+			Transform3D stoneTransform = decorativeTile.Transform *
+				stoneNode.Transform;
+			_generatedStonePositions.Add(stoneTransform.Origin);
+		}
 	}
 
 	private void QueueDecorativeDetails(
@@ -1804,7 +2064,8 @@ public partial class BoardManager : Node3D
 		uint visualHash,
 		bool usesGeneratedGrass,
 		HexCoord coord,
-		int innerRadius)
+		int innerRadius,
+		int outerRadius)
 	{
 		if (OuterGrassDensity <= 0.0f ||
 			!TryFindDecorativeGrassMultiMesh(
@@ -1894,6 +2155,7 @@ public partial class BoardManager : Node3D
 			if (IsInsideDecorativeShoreGrassMargin(
 				coord,
 				innerRadius,
+				outerRadius,
 				instanceTransform.Origin))
 			{
 				continue;
@@ -1909,10 +2171,11 @@ public partial class BoardManager : Node3D
 	private bool IsInsideDecorativeShoreGrassMargin(
 		HexCoord coord,
 		int innerRadius,
+		int outerRadius,
 		Vector3 grassPosition)
 	{
 		float shoreMargin = Mathf.Max(OuterGrassShoreMargin, 0.0f);
-		if (shoreMargin <= 0.0f || GetHexDistance(coord) != innerRadius)
+		if (shoreMargin <= 0.0f)
 			return false;
 
 		Vector3 tilePosition = HexToWorld(coord, HexSize);
@@ -1926,7 +2189,10 @@ public partial class BoardManager : Node3D
 			HexCoord neighborCoord = HexDirections.GetNeighbor(
 				coord,
 				directionIndex);
-			if (GetHexDistance(neighborCoord) >= innerRadius)
+			if (!IsDecorativeWaterCell(
+				neighborCoord,
+				innerRadius,
+				outerRadius))
 				continue;
 
 			Vector3 shoreDirection =
@@ -2025,6 +2291,9 @@ public partial class BoardManager : Node3D
 					GrassWindWaveStrength,
 					GrassWindDetailSpeed,
 					GrassWindDetailStrength));
+			ApplyGrassAppearanceTo(
+				multiMeshInstance,
+				GetGrassAppearanceSettings());
 			AddChild(multiMeshInstance);
 			_decorativeGrassInstances.Add(multiMeshInstance);
 			_outerRingVisualNodes[multiMeshInstance] =
@@ -2069,18 +2338,61 @@ public partial class BoardManager : Node3D
 				batchIndex + 1.0f));
 	}
 
+	private void RebuildOuterVegetation()
+	{
+		foreach (Node3D vegetation in _outerVegetationNodes)
+		{
+			_outerRingVisualNodes.Remove(vegetation);
+			if (!GodotObject.IsInstanceValid(vegetation))
+				continue;
+
+			RemoveChild(vegetation);
+			vegetation.QueueFree();
+		}
+		_outerVegetationNodes.Clear();
+		_outerVegetationBatches.Clear();
+		_outerVegetationPositions.Clear();
+		_outerTreeInstanceCount = 0;
+		_outerDetailInstanceCount = 0;
+		SetupOuterVegetationScenes();
+
+		// Die gespeicherten Feldtransformationen erhalten das laufende Spielfeld.
+		// Alle Steinpositionen liegen vor, auch die der Nachbarfelder.
+		foreach (var tile in _outerVegetationTiles)
+		{
+			CreateOuterVegetation(tile.Coord, tile.TileTransform,
+				tile.Distance, tile.InnerRadius, tile.OuterRadius);
+		}
+		BuildOuterVegetationMultiMeshes();
+		_outerVegetationSettingsHash = GetOuterVegetationSettingsHash();
+		_outerVegetationRefreshDelay = -1.0;
+	}
+
+	private void RegisterOuterVegetationNode(
+		Node3D vegetation,
+		OuterRingVisualGroup visualGroup)
+	{
+		_outerVegetationNodes.Add(vegetation);
+		_outerRingVisualNodes[vegetation] = visualGroup;
+		vegetation.Visible = _outerRingVisible &&
+			(_outerRingVisibleGroups & visualGroup) != OuterRingVisualGroup.None;
+	}
+
 	private void CreateOuterVegetation(
 		HexCoord coord,
-		Node3D decorativeTile,
+		Transform3D decorativeTileTransform,
 		int distance,
-		int innerRadius)
+		int innerRadius,
+		int outerRadius)
 	{
 		if (!ShowDecorativeOuterVegetation)
 			return;
 
 		int firstVegetationRadius =
 			innerRadius + System.Math.Max(OuterVegetationShoreClearRows, 0);
-		if (distance < firstVegetationRadius)
+		int lastVegetationRadius =
+			outerRadius - System.Math.Max(OuterVegetationOuterClearRows, 0);
+		if (distance < firstVegetationRadius || distance > lastVegetationRadius)
 			return;
 
 		float treeChance = _activeOuterTreeScenes.Count > 0
@@ -2094,7 +2406,7 @@ public partial class BoardManager : Node3D
 			return;
 
 		uint visualHash = GetTileVisualHash(coord);
-		RandomNumberGenerator random = new RandomNumberGenerator
+		using RandomNumberGenerator random = new RandomNumberGenerator
 		{
 			Seed = visualHash ^ (uint)System.Math.Max(OuterVegetationRandomSeed, 1)
 		};
@@ -2103,12 +2415,17 @@ public partial class BoardManager : Node3D
 
 		if (!createTree && selection >= treeChance + detailChance)
 			return;
+		if (createTree && OuterTreeCountLimit >= 0 &&
+			_outerTreeInstanceCount >= OuterTreeCountLimit)
+			return;
+		if (!createTree && OuterDetailCountLimit >= 0 &&
+			_outerDetailInstanceCount >= OuterDetailCountLimit)
+			return;
 
 		List<PackedScene> scenes = createTree
 			? _activeOuterTreeScenes
 			: _activeOuterDetailScenes;
 		PackedScene scene = scenes[random.RandiRange(0, scenes.Count - 1)];
-
 		float positionRadius =
 			Mathf.Max(OuterVegetationPositionRadius, 0.0f);
 		float offsetDistance = Mathf.Sqrt(random.Randf()) * positionRadius;
@@ -2137,7 +2454,8 @@ public partial class BoardManager : Node3D
 			Mathf.Cos(offsetAngle) * offsetDistance,
 			OuterVegetationHeightOffset,
 			Mathf.Sin(offsetAngle) * offsetDistance);
-		float inverseTileScale = 1.0f / Mathf.Max(HexSize, 0.1f);
+		float inverseTileScale =
+			1.0f / Mathf.Max(decorativeTileTransform.Basis.Scale.X, 0.1f);
 		Vector3 vegetationScale = new Vector3(
 			uniformScale * inverseTileScale,
 			uniformScale,
@@ -2147,8 +2465,11 @@ public partial class BoardManager : Node3D
 				Vector3.Up,
 				random.RandfRange(0.0f, Mathf.Tau))
 			.Scaled(vegetationScale);
-		Transform3D vegetationTransform = decorativeTile.Transform *
+		Transform3D vegetationTransform = decorativeTileTransform *
 			new Transform3D(vegetationBasis, localPosition);
+		if (!IsOuterVegetationPositionAllowed(vegetationTransform.Origin))
+			return;
+
 		Vector3 sectorPosition = vegetationTransform.Origin - _boardWorldCenter;
 		float sectorAngle = Mathf.PosMod(
 			Mathf.Atan2(sectorPosition.Z, sectorPosition.X),
@@ -2167,6 +2488,7 @@ public partial class BoardManager : Node3D
 		if (batch.CanBatch)
 		{
 			batch.Instances.Add(vegetationTransform);
+			RegisterOuterVegetation(createTree, vegetationTransform.Origin);
 			return;
 		}
 
@@ -2182,13 +2504,53 @@ public partial class BoardManager : Node3D
 		vegetation.Transform = vegetationTransform;
 		vegetation.ProcessMode = ProcessModeEnum.Disabled;
 		AddChild(vegetation);
-		_outerRingVisualNodes[vegetation] = visualGroup;
+		RegisterOuterVegetation(createTree, vegetationTransform.Origin);
+		RegisterOuterVegetationNode(vegetation, visualGroup);
 		VisibilityRangeUtility.Configure(
 			vegetation,
 			EnableVisibilityRanges,
 			VegetationVisibilityRange,
 			VisibilityRangeMargin,
 			FrustumCullMargin);
+	}
+
+	private bool IsOuterVegetationPositionAllowed(Vector3 position)
+	{
+		float minimumSpacing = Mathf.Max(OuterVegetationMinimumSpacing, 0.0f);
+		float minimumSpacingSquared = minimumSpacing * minimumSpacing;
+		foreach (Vector3 existingPosition in _outerVegetationPositions)
+		{
+			if (PlanarDistanceSquared(position, existingPosition) <
+				minimumSpacingSquared)
+				return false;
+		}
+
+		float stoneClearance = Mathf.Max(OuterVegetationStoneClearance, 0.0f);
+		float stoneClearanceSquared = stoneClearance * stoneClearance;
+		foreach (Vector3 stonePosition in _generatedStonePositions)
+		{
+			if (PlanarDistanceSquared(position, stonePosition) <
+				stoneClearanceSquared)
+				return false;
+		}
+
+		return true;
+	}
+
+	private void RegisterOuterVegetation(bool isTree, Vector3 position)
+	{
+		_outerVegetationPositions.Add(position);
+		if (isTree)
+			_outerTreeInstanceCount++;
+		else
+			_outerDetailInstanceCount++;
+	}
+
+	private static float PlanarDistanceSquared(Vector3 first, Vector3 second)
+	{
+		float deltaX = first.X - second.X;
+		float deltaZ = first.Z - second.Z;
+		return deltaX * deltaX + deltaZ * deltaZ;
 	}
 
 	private OuterVegetationBatch GetOrCreateOuterVegetationBatch(
@@ -2236,6 +2598,13 @@ public partial class BoardManager : Node3D
 		PackedScene scene)
 	{
 		string resourcePath = scene?.ResourcePath ?? "";
+
+		if (resourcePath.EndsWith(
+			"/tree_1.tscn",
+			System.StringComparison.OrdinalIgnoreCase))
+		{
+			return OuterRingVisualGroup.CommonTree;
+		}
 
 		if (resourcePath.EndsWith(
 			"/CommonTree_1.gltf",
@@ -2392,7 +2761,7 @@ public partial class BoardManager : Node3D
 					MaterialOverlay = meshTemplate.MaterialOverlay
 				};
 				AddChild(multiMeshInstance);
-				_outerRingVisualNodes[multiMeshInstance] = batch.VisualGroup;
+				RegisterOuterVegetationNode(multiMeshInstance, batch.VisualGroup);
 				VisibilityRangeUtility.Configure(
 					multiMeshInstance,
 					EnableVisibilityRanges,
@@ -2408,7 +2777,8 @@ public partial class BoardManager : Node3D
 	private void CreateDecorativeShoreStones(
 		HexCoord coord,
 		Node3D decorativeTile,
-		int innerRadius)
+		int innerRadius,
+		int outerRadius)
 	{
 		Vector3 tilePosition = GetRawHexPosition(coord, HexSize);
 
@@ -2420,7 +2790,10 @@ public partial class BoardManager : Node3D
 				coord,
 				directionIndex);
 
-			if (GetHexDistance(neighborCoord) >= innerRadius)
+			if (!IsDecorativeWaterCell(
+				neighborCoord,
+				innerRadius,
+				outerRadius))
 				continue;
 
 			Vector3 neighborPosition = GetRawHexPosition(
@@ -2442,7 +2815,10 @@ public partial class BoardManager : Node3D
 		int innerRadius,
 		int outerRadius)
 	{
-		float cliffHeight = GetDecorativeCliffHeight(coord, innerRadius);
+		float cliffHeight = GetDecorativeCliffHeight(
+			coord,
+			innerRadius,
+			outerRadius);
 		if (cliffHeight <= 0.0f)
 			return;
 
@@ -2457,7 +2833,10 @@ public partial class BoardManager : Node3D
 				directionIndex);
 			int neighborDistance = GetHexDistance(neighborCoord);
 			float neighborCliffHeight = neighborDistance <= outerRadius
-				? GetDecorativeCliffHeight(neighborCoord, innerRadius)
+				? GetDecorativeCliffHeight(
+					neighborCoord,
+					innerRadius,
+					outerRadius)
 				: cliffHeight;
 			float heightDifference = cliffHeight - neighborCliffHeight;
 
@@ -2491,8 +2870,12 @@ public partial class BoardManager : Node3D
 
 	private float GetDecorativeCliffHeight(
 		HexCoord coord,
-		int innerRadius)
+		int innerRadius,
+		int outerRadius)
 	{
+		if (IsDecorativeWaterInlet(coord, innerRadius, outerRadius))
+			return 0.0f;
+
 		int cliffStep = GetDecorativeCliffStep(coord, innerRadius);
 		if (cliffStep < 0)
 			return 0.0f;
@@ -2507,10 +2890,93 @@ public partial class BoardManager : Node3D
 		if (!ShowDecorativeCliff)
 			return -1;
 
-		int forward;
-		float tangent;
+		GetHexSideCoordinates(
+			coord,
+			DecorativeCliffSide,
+			out int forward,
+			out float tangent);
 
-		switch (Mathf.PosMod(DecorativeCliffSide, 6))
+		float halfWidth = System.Math.Max(DecorativeCliffWidth, 10) * 0.5f;
+		if (forward < innerRadius + 2 ||
+			tangent < -halfWidth ||
+			tangent >= halfWidth)
+		{
+			return -1;
+		}
+
+		return 0;
+	}
+
+	private bool IsDecorativeWaterInlet(
+		HexCoord coord,
+		int innerRadius,
+		int outerRadius)
+	{
+		if (!ShowDecorativeWaterInlet)
+			return false;
+
+		int outerMargin = System.Math.Max(
+			DecorativeWaterInletOuterMarginRows,
+			1);
+		int finalWaterRow = outerRadius - outerMargin;
+		if (finalWaterRow < innerRadius)
+			return false;
+
+		GetHexSideCoordinates(
+			coord,
+			DecorativeWaterInletSide,
+			out int forward,
+			out float tangent);
+		float halfWidth = System.Math.Max(
+			DecorativeWaterInletWidth,
+			1) * 0.5f;
+
+		return forward >= innerRadius &&
+			forward <= finalWaterRow &&
+			tangent >= -halfWidth &&
+			tangent < halfWidth;
+	}
+
+	private bool IsDecorativeWaterCell(
+		HexCoord coord,
+		int innerRadius,
+		int outerRadius)
+	{
+		return GetHexDistance(coord) < innerRadius ||
+			IsDecorativeWaterInlet(coord, innerRadius, outerRadius);
+	}
+
+	private bool HasDecorativeWaterNeighbor(
+		HexCoord coord,
+		int innerRadius,
+		int outerRadius)
+	{
+		for (int directionIndex = 0;
+			directionIndex < HexDirections.Directions.Length;
+			directionIndex++)
+		{
+			HexCoord neighborCoord = HexDirections.GetNeighbor(
+				coord,
+				directionIndex);
+			if (IsDecorativeWaterCell(
+				neighborCoord,
+				innerRadius,
+				outerRadius))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static void GetHexSideCoordinates(
+		HexCoord coord,
+		int side,
+		out int forward,
+		out float tangent)
+	{
+		switch (Mathf.PosMod(side, 6))
 		{
 			case 0:
 				forward = coord.Q;
@@ -2537,16 +3003,6 @@ public partial class BoardManager : Node3D
 				tangent = coord.Q + coord.R * 0.5f;
 				break;
 		}
-
-		float halfWidth = System.Math.Max(DecorativeCliffWidth, 10) * 0.5f;
-		if (forward < innerRadius + 2 ||
-			tangent < -halfWidth ||
-			tangent >= halfWidth)
-		{
-			return -1;
-		}
-
-		return 0;
 	}
 
 	private float GetCornerStoneRotation(bool isLeftSide, bool isFront)
@@ -2890,8 +3346,15 @@ public partial class BoardManager : Node3D
 		_decorativeGroundBatches.Clear();
 		_decorativeGrassBatches.Clear();
 		_decorativeGrassInstances.Clear();
+		_outerVegetationTiles.Clear();
+		_outerVegetationNodes.Clear();
+		_outerVegetationRefreshDelay = -1.0;
+		_outerVegetationPositions.Clear();
+		_generatedStonePositions.Clear();
 		_outerRingVisualNodes.Clear();
 		_outerVegetationBatches.Clear();
 		_stoneSceneBatches.Clear();
+		_outerTreeInstanceCount = 0;
+		_outerDetailInstanceCount = 0;
 	}
 }

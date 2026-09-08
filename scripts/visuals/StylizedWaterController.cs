@@ -26,6 +26,9 @@ public partial class StylizedWaterController : MeshInstance3D
 	[Export] public Color LineColor = new(0.32f, 0.72f, 0.76f, 1.0f);
 	[Export] public Color FoamColor = Colors.White;
 
+	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
+	public float NightBrightness = 0.50f;
+
 	[Export(PropertyHint.Range, "0.2,8.0,0.01")]
 	public float SurfaceCellScale = 2.30f;
 
@@ -198,6 +201,7 @@ public partial class StylizedWaterController : MeshInstance3D
 	private int _riverRockConfigurationHash = int.MinValue;
 	private float _rainIntensity;
 	private float _targetRainIntensity;
+	private float _nightAmount;
 
 	public override void _Ready()
 	{
@@ -235,6 +239,12 @@ public partial class StylizedWaterController : MeshInstance3D
 			_targetRainIntensity,
 			(float)delta / duration);
 		ApplyRainIntensity();
+	}
+
+	public void SetNightAmount(float amount)
+	{
+		_nightAmount = Mathf.Clamp(amount, 0.0f, 1.0f);
+		ApplyNightAppearance();
 	}
 
 	public void SetRainState(
@@ -327,7 +337,7 @@ public partial class StylizedWaterController : MeshInstance3D
 			_underlayMaterial.SetShaderParameter("water_center", WaterCenter);
 			_underlayMaterial.SetShaderParameter(
 				"underlay_radius",
-				WaterRadius + 3.0f);
+				WaterRadius);
 			_underlayMaterial.SetShaderParameter(
 				"basin_center_depth",
 				UnderwaterBasinCenterDepth);
@@ -354,11 +364,10 @@ public partial class StylizedWaterController : MeshInstance3D
 
 	private void ApplyAppearance()
 	{
+		ApplyNightAppearance();
+
 		if (_waterMaterial != null)
 		{
-			_waterMaterial.SetShaderParameter("surface_color", SurfaceColor);
-			_waterMaterial.SetShaderParameter("line_color", LineColor);
-			_waterMaterial.SetShaderParameter("foam_color", FoamColor);
 			_waterMaterial.SetShaderParameter("cell_scale", SurfaceCellScale);
 			_waterMaterial.SetShaderParameter("animation_speed", PatternSpeed);
 			_waterMaterial.SetShaderParameter("wave_height", WaveHeight);
@@ -408,9 +417,6 @@ public partial class StylizedWaterController : MeshInstance3D
 				"shore_ripple_speed",
 				ShoreRippleSpeed);
 			_waterMaterial.SetShaderParameter(
-				"rain_ripple_color",
-				RainRippleColor);
-			_waterMaterial.SetShaderParameter(
 				"rain_ripple_density",
 				RainRippleDensity);
 			_waterMaterial.SetShaderParameter(
@@ -427,8 +433,6 @@ public partial class StylizedWaterController : MeshInstance3D
 
 		if (_underlayMaterial != null)
 		{
-			_underlayMaterial.SetShaderParameter("underlay_color", UnderlayColor);
-			_underlayMaterial.SetShaderParameter("caustic_color", LineColor);
 			_underlayMaterial.SetShaderParameter("cell_scale", UnderlayCellScale);
 			_underlayMaterial.SetShaderParameter("animation_speed", PatternSpeed);
 			_underlayMaterial.SetShaderParameter(
@@ -450,7 +454,6 @@ public partial class StylizedWaterController : MeshInstance3D
 
 		if (_riverRockCausticMaterial != null)
 		{
-			_riverRockCausticMaterial.SetShaderParameter("caustic_color", LineColor);
 			_riverRockCausticMaterial.SetShaderParameter(
 				"caustic_strength",
 				RiverRockCausticStrength);
@@ -477,6 +480,22 @@ public partial class StylizedWaterController : MeshInstance3D
 				LineDistortionScale);
 		}
 
+	}
+
+	private void ApplyNightAppearance()
+	{
+		float brightness = Mathf.Lerp(
+			1.0f,
+			Mathf.Clamp(NightBrightness, 0.0f, 1.0f),
+			_nightAmount);
+		Color modulation = new(brightness, brightness, brightness, 1.0f);
+		_waterMaterial?.SetShaderParameter("surface_color", SurfaceColor * modulation);
+		_waterMaterial?.SetShaderParameter("line_color", LineColor * modulation);
+		_waterMaterial?.SetShaderParameter("foam_color", FoamColor * modulation);
+		_waterMaterial?.SetShaderParameter("rain_ripple_color", RainRippleColor * modulation);
+		_underlayMaterial?.SetShaderParameter("underlay_color", UnderlayColor * modulation);
+		_underlayMaterial?.SetShaderParameter("caustic_color", LineColor * modulation);
+		_riverRockCausticMaterial?.SetShaderParameter("caustic_color", LineColor * modulation);
 	}
 
 	private void RebuildRiverRocksIfNeeded(bool force = false)

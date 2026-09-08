@@ -1,0 +1,203 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/UI/EndTurnButtonUI.cs" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_title_font"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="3_number_font"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleButtonEmpty"]
+
+[sub_resource type="StyleBoxFlat" id="StyleCalendarFrame"]
+bg_color = Color(0.82, 0.68, 0.48, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.38, 0.19, 0.105, 1)
+corner_radius_top_left = 17
+corner_radius_top_right = 17
+corner_radius_bottom_right = 17
+corner_radius_bottom_left = 17
+shadow_color = Color(0.08, 0.035, 0.015, 0.38)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleCalendarPage"]
+bg_color = Color(0.91, 0.835, 0.665, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleFlipPage"]
+bg_color = Color(0.94, 0.87, 0.71, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 6
+shadow_color = Color(0.21, 0.09, 0.035, 0.32)
+shadow_size = 4
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StylePageDivider"]
+bg_color = Color(0.57, 0.42, 0.25, 0.28)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleCalendarRing"]
+bg_color = Color(0.52, 0.43, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="RoundCalendarButton" type="Button"]
+custom_minimum_size = Vector2(400, 112)
+offset_right = 400.0
+offset_bottom = 112.0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+tooltip_text = "Tag 1: Runde beenden"
+theme_override_styles/normal = SubResource("StyleButtonEmpty")
+theme_override_styles/hover = SubResource("StyleButtonEmpty")
+theme_override_styles/pressed = SubResource("StyleButtonEmpty")
+theme_override_styles/disabled = SubResource("StyleButtonEmpty")
+theme_override_styles/focus = SubResource("StyleButtonEmpty")
+flat = true
+script = ExtResource("1_script")
+
+[node name="Frame" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 400.0
+offset_bottom = 112.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleCalendarFrame")
+
+[node name="Title" type="Label" parent="."]
+z_index = 2
+layout_mode = 0
+offset_left = 18.0
+offset_top = 8.0
+offset_right = 202.0
+offset_bottom = 104.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.38, 0.19, 0.105, 1)
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 48
+text = "Tag"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CurrentPage" type="Panel" parent="."]
+z_index = 1
+layout_mode = 0
+offset_left = 204.0
+offset_top = 10.0
+offset_right = 390.0
+offset_bottom = 102.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleCalendarPage")
+
+[node name="Divider" type="Panel" parent="CurrentPage"]
+layout_mode = 0
+offset_left = 91.0
+offset_top = 0.0
+offset_right = 95.0
+offset_bottom = 92.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StylePageDivider")
+
+[node name="DayLeft" type="Label" parent="CurrentPage"]
+z_index = 1
+layout_mode = 0
+offset_right = 91.0
+offset_bottom = 92.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.38, 0.19, 0.105, 1)
+theme_override_fonts/font = ExtResource("3_number_font")
+theme_override_font_sizes/font_size = 64
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DayRight" type="Label" parent="CurrentPage"]
+z_index = 1
+layout_mode = 0
+offset_left = 95.0
+offset_right = 186.0
+offset_bottom = 92.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.38, 0.19, 0.105, 1)
+theme_override_fonts/font = ExtResource("3_number_font")
+theme_override_font_sizes/font_size = 64
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FlipPage" type="Panel" parent="."]
+visible = false
+z_index = 3
+layout_mode = 0
+offset_left = 204.0
+offset_top = 10.0
+offset_right = 390.0
+offset_bottom = 102.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleFlipPage")
+
+[node name="Divider" type="Panel" parent="FlipPage"]
+layout_mode = 0
+offset_left = 91.0
+offset_top = 0.0
+offset_right = 95.0
+offset_bottom = 92.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StylePageDivider")
+
+[node name="DayLeft" type="Label" parent="FlipPage"]
+z_index = 1
+layout_mode = 0
+offset_right = 91.0
+offset_bottom = 92.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.38, 0.19, 0.105, 1)
+theme_override_fonts/font = ExtResource("3_number_font")
+theme_override_font_sizes/font_size = 64
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DayRight" type="Label" parent="FlipPage"]
+z_index = 1
+layout_mode = 0
+offset_left = 95.0
+offset_right = 186.0
+offset_bottom = 92.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.38, 0.19, 0.105, 1)
+theme_override_fonts/font = ExtResource("3_number_font")
+theme_override_font_sizes/font_size = 64
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LeftRing" type="Panel" parent="."]
+z_index = 5
+layout_mode = 0
+offset_left = 249.0
+offset_top = -4.0
+offset_right = 259.0
+offset_bottom = 22.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleCalendarRing")
+
+[node name="RightRing" type="Panel" parent="."]
+z_index = 5
+layout_mode = 0
+offset_left = 330.0
+offset_top = -4.0
+offset_right = 340.0
+offset_bottom = 22.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleCalendarRing")

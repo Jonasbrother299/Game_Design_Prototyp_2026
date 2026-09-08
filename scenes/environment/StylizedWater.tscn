@@ -87,7 +87,7 @@ shader_parameter/edge_fade = 1.2
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_water"]
 material = SubResource("ShaderMaterial_water")
-size = Vector2(48, 48)
+size = Vector2(60, 60)
 subdivide_width = 64
 subdivide_depth = 64
 

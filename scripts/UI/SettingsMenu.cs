@@ -13,6 +13,13 @@ public partial class SettingsMenu : Control
 	[Signal]
 	public delegate void ClosedEventHandler();
 
+	[ExportGroup("Audio Icons")]
+	[Export] public Texture2D SoundOnIcon;
+	[Export] public Texture2D SoundOffIcon;
+	[Export] public Texture2D SoundMutedIcon;
+	[Export] public Texture2D MusicOnIcon;
+	[Export] public Texture2D MusicMutedIcon;
+
 	private const string SettingsPath = "user://settings.cfg";
 	private const string DeveloperSection = "developer";
 	private const string DayNightCycleEnabledKey = "day_night_cycle_enabled";
@@ -61,6 +68,9 @@ public partial class SettingsMenu : Control
 	private Label _musicVolumeValue;
 	private HSlider _effectsVolumeSlider;
 	private Label _effectsVolumeValue;
+	private TextureRect _masterVolumeIcon;
+	private TextureRect _musicVolumeIcon;
+	private TextureRect _effectsVolumeIcon;
 	private HSlider _plantingVolumeSlider;
 	private Label _plantingVolumeValue;
 	private HSlider _forestAmbienceVolumeSlider;
@@ -107,10 +117,11 @@ public partial class SettingsMenu : Control
 	private Label _zoomSensitivityValue;
 	private HSlider _tileFocusDistanceSlider;
 	private Label _tileFocusDistanceValue;
-	private HSlider _boardOverviewDistanceSlider;
-	private Label _boardOverviewDistanceValue;
+	private float _boardOverviewDistance = 0.875f;
 	private CheckButton _invertVerticalToggle;
 	private Button _backButton;
+	private CenterContainer _settingsCenter;
+	private PanelContainer _settingsPanel;
 	private CameraRigController _cameraRig;
 	private float _cameraStartPitchDegrees;
 
@@ -139,6 +150,9 @@ public partial class SettingsMenu : Control
 		_musicVolumeValue = GetNode<Label>("%MusicVolumeValue");
 		_effectsVolumeSlider = GetNode<HSlider>("%EffectsVolumeSlider");
 		_effectsVolumeValue = GetNode<Label>("%EffectsVolumeValue");
+		_masterVolumeIcon = GetNode<TextureRect>("%MasterVolumeIcon");
+		_musicVolumeIcon = GetNode<TextureRect>("%MusicVolumeIcon");
+		_effectsVolumeIcon = GetNode<TextureRect>("%EffectsVolumeIcon");
 		_plantingVolumeSlider = GetNode<HSlider>("%PlantingVolumeSlider");
 		_plantingVolumeValue = GetNode<Label>("%PlantingVolumeValue");
 		_forestAmbienceVolumeSlider = GetNode<HSlider>("%ForestAmbienceVolumeSlider");
@@ -194,10 +208,12 @@ public partial class SettingsMenu : Control
 		_zoomSensitivityValue = GetNode<Label>("%ZoomSensitivityValue");
 		_tileFocusDistanceSlider = GetNode<HSlider>("%TileFocusDistanceSlider");
 		_tileFocusDistanceValue = GetNode<Label>("%TileFocusDistanceValue");
-		_boardOverviewDistanceSlider = GetNode<HSlider>("%BoardOverviewDistanceSlider");
-		_boardOverviewDistanceValue = GetNode<Label>("%BoardOverviewDistanceValue");
 		_invertVerticalToggle = GetNode<CheckButton>("%InvertVerticalToggle");
 		_backButton = GetNode<Button>("%BackButton");
+		_settingsCenter = GetNode<CenterContainer>("CenterContainer");
+		_settingsPanel = GetNode<PanelContainer>("CenterContainer/SettingsPanel");
+		Resized += UpdateSettingsLayout;
+		UpdateSettingsLayout();
 
 		PopulateResolutionOptions();
 		UpdateCameraPitchAvailability();
@@ -246,7 +262,6 @@ public partial class SettingsMenu : Control
 		_cameraSensitivitySlider.ValueChanged += OnControlSettingChanged;
 		_zoomSensitivitySlider.ValueChanged += OnControlSettingChanged;
 		_tileFocusDistanceSlider.ValueChanged += OnControlSettingChanged;
-		_boardOverviewDistanceSlider.ValueChanged += OnControlSettingChanged;
 		_invertVerticalToggle.Toggled += OnInvertVerticalToggled;
 		_cameraPitchSlider.ValueChanged += OnCameraPitchChanged;
 		_grassVisibilityToggle.Toggled += OnRenderDiagnosticToggled;
@@ -274,6 +289,24 @@ public partial class SettingsMenu : Control
 		UpdateCameraPitchAvailability();
 	}
 
+	public override void _ExitTree()
+	{
+		Resized -= UpdateSettingsLayout;
+	}
+
+	private void UpdateSettingsLayout()
+	{
+		if (Size.X <= 0.0f || Size.Y <= 0.0f)
+			return;
+
+		float scale = Mathf.Min(Size.X / 1920.0f, Size.Y / 1080.0f);
+		Vector2 layoutSize = Size / scale;
+		_settingsPanel.CustomMinimumSize = layoutSize;
+		_settingsCenter.SetAnchorsAndOffsetsPreset(LayoutPreset.TopLeft);
+		_settingsCenter.Size = layoutSize;
+		_settingsCenter.Scale = Vector2.One * scale;
+	}
+
 	public override void _Process(double delta)
 	{
 		if (!Visible || !_developerPage.Visible)
@@ -295,7 +328,9 @@ public partial class SettingsMenu : Control
 
 	public void Open()
 	{
+		UpdateSettingsLayout();
 		SetSection(SettingsSection.Audio);
+		UpdateVolumeIcons();
 		UpdateRenderDiagnosticsAvailability();
 		UpdateCameraPitchAvailability();
 		Show();
@@ -476,6 +511,7 @@ public partial class SettingsMenu : Control
 		ApplyFullscreen(fullscreen);
 		ApplyVsync(vsyncEnabled);
 		ApplyRenderScale(renderScale);
+		_boardOverviewDistance = Mathf.Clamp(boardOverviewDistance, 0.5f, 1.5f);
 		ApplyControlSettings(
 			cameraSensitivity,
 			zoomSensitivity,
@@ -510,8 +546,6 @@ public partial class SettingsMenu : Control
 		_cameraSensitivitySlider.Value = ToSensitivityPercent(cameraSensitivity);
 		_zoomSensitivitySlider.Value = ToSensitivityPercent(zoomSensitivity);
 		_tileFocusDistanceSlider.Value = Mathf.Clamp(tileFocusDistance, 8.0f, 24.0f);
-		_boardOverviewDistanceSlider.Value =
-			ToOverviewDistancePercent(boardOverviewDistance);
 		_invertVerticalToggle.ButtonPressed = invertVertical;
 		_dayNightCycleToggle.ButtonPressed = dayNightCycleEnabled;
 		_fishVisibilityToggle.ButtonPressed = fishEnabled;
@@ -585,7 +619,7 @@ public partial class SettingsMenu : Control
 		config.SetValue(
 			"controls",
 			"board_overview_distance",
-			(float)(_boardOverviewDistanceSlider.Value / 100.0));
+			_boardOverviewDistance);
 		config.SetValue(
 			"controls",
 			"invert_vertical",
@@ -661,17 +695,26 @@ public partial class SettingsMenu : Control
 		valueLabel.Text = FormatPercent(value);
 	}
 
+	public void SetMasterMuted(bool enabled)
+	{
+		_muteToggle.SetPressedNoSignal(enabled);
+		OnMuteToggled(enabled);
+		SaveSettings();
+	}
+
 	private void OnMuteToggled(bool enabled)
 	{
 		if (enabled)
 		{
 			ApplyMasterMute(true);
+			UpdateVolumeIcons();
 			return;
 		}
 
 		ApplyBusVolume(
 			"Master",
 			(float)(_masterVolumeSlider.Value / 100.0));
+		UpdateVolumeIcons();
 	}
 
 	private void OnFullscreenToggled(bool enabled)
@@ -845,7 +888,7 @@ public partial class SettingsMenu : Control
 			(float)(_cameraSensitivitySlider.Value / 100.0),
 			(float)(_zoomSensitivitySlider.Value / 100.0),
 			(float)_tileFocusDistanceSlider.Value,
-			(float)(_boardOverviewDistanceSlider.Value / 100.0),
+			_boardOverviewDistance,
 			_invertVerticalToggle.ButtonPressed);
 	}
 
@@ -862,6 +905,25 @@ public partial class SettingsMenu : Control
 		_masterVolumeValue.Text = FormatPercent(_masterVolumeSlider.Value);
 		_musicVolumeValue.Text = FormatPercent(_musicVolumeSlider.Value);
 		_effectsVolumeValue.Text = FormatPercent(_effectsVolumeSlider.Value);
+		UpdateVolumeIcons();
+	}
+
+	private void UpdateVolumeIcons()
+	{
+		bool muted = _muteToggle.ButtonPressed;
+		bool masterSilent = muted || _masterVolumeSlider.Value <= 0.0 ||
+			IsBusMuted("Master");
+		_masterVolumeIcon.Texture = muted
+			? SoundMutedIcon
+			: masterSilent ? SoundOffIcon : SoundOnIcon;
+		_musicVolumeIcon.Texture = masterSilent || _musicVolumeSlider.Value <= 0.0 ||
+			IsBusMuted(MusicBusName)
+			? MusicMutedIcon
+			: MusicOnIcon;
+		_effectsVolumeIcon.Texture = masterSilent || _effectsVolumeSlider.Value <= 0.0 ||
+			IsBusMuted(EffectsBusName)
+			? SoundOffIcon
+			: SoundOnIcon;
 	}
 
 	private void UpdateDeveloperVolumeLabels()
@@ -884,7 +946,6 @@ public partial class SettingsMenu : Control
 		_cameraSensitivityValue.Text = FormatPercent(_cameraSensitivitySlider.Value);
 		_zoomSensitivityValue.Text = FormatPercent(_zoomSensitivitySlider.Value);
 		_tileFocusDistanceValue.Text = FormatDistance(_tileFocusDistanceSlider.Value);
-		_boardOverviewDistanceValue.Text = FormatPercent(_boardOverviewDistanceSlider.Value);
 	}
 
 	private Vector2I GetSelectedResolution()
@@ -1048,11 +1109,6 @@ public partial class SettingsMenu : Control
 	private static float ToSensitivityPercent(float sensitivity)
 	{
 		return Mathf.Clamp(sensitivity, 0.5f, 2.0f) * 100.0f;
-	}
-
-	private static float ToOverviewDistancePercent(float distanceMultiplier)
-	{
-		return Mathf.Clamp(distanceMultiplier, 0.5f, 1.5f) * 100.0f;
 	}
 
 	private static string FormatPercent(double value)

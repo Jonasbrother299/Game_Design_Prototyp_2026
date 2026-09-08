@@ -1,0 +1,173 @@
+[gd_resource type="Theme" format=3 uid="uid://dgo4vmljnkx58"]
+
+[ext_resource type="FontFile" uid="uid://d0802gmut0pbo" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="1_regular"]
+[ext_resource type="FontFile" uid="uid://qmljn6vjen7a" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_bold"]
+
+[sub_resource type="StyleBoxFlat" id="ButtonDisabled"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.78, 0.71, 0.59, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.57, 0.45, 0.33, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="ControlFocus"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.36, 0.43, 0.22, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.91, 0.815, 0.66, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressed"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.72, 0.76, 0.52, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxLine" id="Separator"]
+color = Color(0.459, 0.263, 0.176, 0.35)
+
+[sub_resource type="StyleBoxFlat" id="InputNormal"]
+content_margin_left = 20.0
+content_margin_top = 8.0
+content_margin_right = 20.0
+content_margin_bottom = 8.0
+bg_color = Color(0.94, 0.866, 0.718, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="ScrollGrabber"]
+content_margin_left = 5.0
+content_margin_top = 0.0
+content_margin_right = 5.0
+content_margin_bottom = 0.0
+bg_color = Color(0.588, 0.745, 0.443, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ScrollTrack"]
+content_margin_left = 5.0
+content_margin_top = 0.0
+content_margin_right = 5.0
+content_margin_bottom = 0.0
+bg_color = Color(0.78, 0.67, 0.52, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[resource]
+default_font = ExtResource("1_regular")
+default_font_size = 26
+Button/colors/font_color = Color(0.459, 0.263, 0.176, 1)
+Button/colors/font_disabled_color = Color(0.48, 0.39, 0.29, 0.8)
+Button/colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+Button/colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+Button/colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+Button/font_sizes/font_size = 30
+Button/fonts/font = ExtResource("2_bold")
+Button/styles/disabled = SubResource("ButtonDisabled")
+Button/styles/focus = SubResource("ControlFocus")
+Button/styles/hover = SubResource("ButtonHover")
+Button/styles/hover_pressed = SubResource("ButtonPressed")
+Button/styles/normal = SubResource("ButtonNormal")
+Button/styles/pressed = SubResource("ButtonPressed")
+HSeparator/styles/separator = SubResource("Separator")
+Label/colors/font_color = Color(0.459, 0.263, 0.176, 1)
+LineEdit/colors/caret_color = Color(0.459, 0.263, 0.176, 1)
+LineEdit/colors/font_color = Color(0.459, 0.263, 0.176, 1)
+LineEdit/colors/font_disabled_color = Color(0.48, 0.39, 0.29, 0.8)
+LineEdit/colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+LineEdit/colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+LineEdit/colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+LineEdit/styles/focus = SubResource("ControlFocus")
+LineEdit/styles/normal = SubResource("InputNormal")
+LineEdit/styles/read_only = SubResource("ButtonDisabled")
+RichTextLabel/colors/default_color = Color(0.459, 0.263, 0.176, 1)
+RichTextLabel/font_sizes/bold_font_size = 26
+RichTextLabel/font_sizes/normal_font_size = 26
+RichTextLabel/fonts/bold_font = ExtResource("2_bold")
+RichTextLabel/fonts/normal_font = ExtResource("1_regular")
+VScrollBar/styles/grabber = SubResource("ScrollGrabber")
+VScrollBar/styles/grabber_highlight = SubResource("ScrollGrabber")
+VScrollBar/styles/grabber_pressed = SubResource("ScrollGrabber")
+VScrollBar/styles/scroll = SubResource("ScrollTrack")

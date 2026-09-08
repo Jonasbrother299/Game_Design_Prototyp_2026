@@ -1,6 +1,6 @@
 using Godot;
 
-[GlobalClass]
+[GlobalClass, Tool]
 public partial class EventDefinition : Resource
 {
 	[ExportGroup("Allgemein")]

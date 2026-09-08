@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="1120" viewBox="0 0 920 1120">
+  <defs>
+    <g id="corner" fill="#9c8152" stroke="#75432d" stroke-width="2" stroke-linejoin="round">
+      <path d="M4 45 C18 25 28 12 48 5" fill="none" stroke-width="4"/>
+      <path d="M18 29 C4 30 2 18 4 12 C16 15 21 19 18 29Z"/>
+      <path d="M24 20 C23 5 32 0 38 1 C37 12 33 19 24 20Z"/>
+      <path d="M31 14 C43 14 49 20 50 26 C39 28 33 24 31 14Z"/>
+    </g>
+  </defs>
+  <rect x="4" y="4" width="912" height="1112" rx="30" fill="#d8bc95" stroke="#75432d" stroke-width="7"/>
+  <g fill="none" stroke="#75432d" stroke-width="7" stroke-linecap="round">
+    <path d="M22 9 C5 152 14 192 42 268 C68 340 75 424 52 560 C20 750 30 998 22 1111"/>
+    <path d="M898 9 C915 152 906 192 878 268 C852 340 845 424 868 560 C900 750 890 998 898 1111"/>
+  </g>
+  <use href="#corner" transform="translate(24 18)"/>
+  <use href="#corner" transform="translate(896 18) scale(-1 1)"/>
+  <use href="#corner" transform="translate(24 1102) scale(1 -1)"/>
+  <use href="#corner" transform="translate(896 1102) scale(-1 -1)"/>
+</svg>

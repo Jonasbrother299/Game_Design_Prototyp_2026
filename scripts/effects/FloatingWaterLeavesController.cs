@@ -226,6 +226,16 @@ public partial class FloatingWaterLeavesController : Node3D
 				new Vector3(-aabbRadius, -0.5f, -aabbRadius),
 				new Vector3(aabbRadius * 2f, 1f, aabbRadius * 2f))
 		};
+		if (LeafMesh.GetSurfaceCount() > 0 &&
+			LeafMesh.SurfaceGetMaterial(0) is BaseMaterial3D sourceMaterial)
+		{
+			BaseMaterial3D leafMaterial = (BaseMaterial3D)sourceMaterial.Duplicate();
+			// Blätter nach dem Wasser zeichnen, ohne dessen Kontaktkanten auszulösen.
+			leafMaterial.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+			leafMaterial.DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled;
+			leafMaterial.RenderPriority = 1;
+			_leafInstance.MaterialOverride = leafMaterial;
+		}
 		AddChild(_leafInstance);
 		VisibilityRangeUtility.Configure(
 			_leafInstance,

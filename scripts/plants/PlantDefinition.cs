@@ -1,6 +1,6 @@
 using Godot;
 
-[GlobalClass]
+[GlobalClass, Tool]
 public partial class PlantDefinition : Resource
 {
 	[ExportGroup("Allgemein")]

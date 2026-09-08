@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://df5vbxos8q2ug"]
+
+[sub_resource type="Shader" id="TreeTintShader"]
+code = "shader_type canvas_item;
+render_mode unshaded;
+
+uniform vec4 tree_color : source_color = vec4(1.0);
+
+void fragment() {
+	COLOR.rgb = tree_color.rgb;
+	COLOR.a *= tree_color.a;
+}
+"
+
+[resource]
+resource_name = "Baumfarbe"
+shader = SubResource("TreeTintShader")
+shader_parameter/tree_color = Color(0.81960785, 0.6784314, 0.47843137, 1)
