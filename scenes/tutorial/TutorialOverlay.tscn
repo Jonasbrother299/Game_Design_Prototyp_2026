@@ -1,176 +1,130 @@
 [gd_scene format=3 uid="uid://ccsqc8nj81y5c"]
 
 [ext_resource type="Script" uid="uid://dery827hnol51" path="res://scripts/tutorial/TutorialOverlay.cs" id="1_overlay"]
-[ext_resource type="FontFile" path="res://assets/ui/fonts/OhnoBlazefaceDemo-48Point.otf" id="2_title_font"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_title_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="3_ivy"]
+[ext_resource type="Texture2D" path="res://assets/ui/decor/pause_menu_frame.svg" id="4_frame"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="5_body_font"]
 
-[sub_resource type="StyleBoxFlat" id="StyleTutorialPanel"]
-content_margin_left = 38.0
-content_margin_top = 30.0
-content_margin_right = 38.0
-content_margin_bottom = 32.0
-bg_color = Color(0.87, 0.74, 0.55, 0.99)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.29, 0.125, 0.07, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0.008, 0.018, 0.009, 0.75)
-shadow_size = 16
-shadow_offset = Vector2(4, 8)
+[sub_resource type="StyleBoxTexture" id="StyleTutorialPanel"]
+content_margin_left = 64.0
+content_margin_top = 58.0
+content_margin_right = 64.0
+content_margin_bottom = 48.0
+texture = ExtResource("4_frame")
+texture_margin_left = 96.0
+texture_margin_top = 96.0
+texture_margin_right = 96.0
+texture_margin_bottom = 96.0
 
 [sub_resource type="StyleBoxLine" id="StyleSeparator"]
-color = Color(0.35, 0.24, 0.13, 0.52)
-grow_begin = 4.0
-grow_end = 4.0
+color = Color(0.459, 0.263, 0.176, 0.24)
+thickness = 1
+grow_begin = 2.0
+grow_end = 2.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBodyPanel"]
-content_margin_left = 26.0
-content_margin_top = 18.0
-content_margin_right = 26.0
-content_margin_bottom = 18.0
-bg_color = Color(0.985, 0.91, 0.76, 0.98)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.22, 0.33, 0.12, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0.22, 0.105, 0.055, 0.22)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
-content_margin_left = 24.0
-content_margin_top = 12.0
-content_margin_right = 24.0
-content_margin_bottom = 12.0
-bg_color = Color(0.24, 0.32, 0.16, 1)
+content_margin_left = 18.0
+content_margin_top = 0.0
+content_margin_right = 18.0
+content_margin_bottom = 0.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.12, 0.18, 0.075, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0.09, 0.055, 0.025, 0.62)
-shadow_size = 5
-shadow_offset = Vector2(0, 3)
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-content_margin_left = 24.0
-content_margin_top = 13.0
-content_margin_right = 24.0
-content_margin_bottom = 11.0
-bg_color = Color(0.17, 0.24, 0.11, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.95, 0.81, 0.54, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0.12, 0.055, 0.025, 0.36)
-shadow_size = 3
-shadow_offset = Vector2(0, 2)
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
-content_margin_left = 24.0
-content_margin_top = 12.0
-content_margin_right = 24.0
-content_margin_bottom = 12.0
-bg_color = Color(0.39, 0.5, 0.24, 1)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.93, 0.79, 0.5, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0.09, 0.055, 0.025, 0.68)
-shadow_size = 8
-shadow_offset = Vector2(0, 4)
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.97, 0.86, 0.62, 1)
-corner_radius_top_left = 13
-corner_radius_top_right = 13
-corner_radius_bottom_right = 13
-corner_radius_bottom_left = 13
-expand_margin_left = 3.0
-expand_margin_top = 3.0
-expand_margin_right = 3.0
-expand_margin_bottom = 3.0
-
-[sub_resource type="StyleBoxFlat" id="StyleCardExplanationPanel"]
-content_margin_left = 40.0
-content_margin_top = 32.0
-content_margin_right = 40.0
-content_margin_bottom = 32.0
-bg_color = Color(0.87, 0.74, 0.55, 0.99)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.29, 0.125, 0.07, 1)
-corner_radius_top_left = 26
-corner_radius_top_right = 26
-corner_radius_bottom_right = 26
-corner_radius_bottom_left = 26
-shadow_color = Color(0.008, 0.018, 0.009, 0.78)
-shadow_size = 18
-shadow_offset = Vector2(4, 9)
-
-[sub_resource type="StyleBoxFlat" id="StyleCardInfoPanel"]
-content_margin_left = 26.0
-content_margin_top = 22.0
-content_margin_right = 26.0
-content_margin_bottom = 22.0
-bg_color = Color(0.985, 0.91, 0.76, 0.98)
+content_margin_left = 18.0
+content_margin_top = 0.0
+content_margin_right = 18.0
+content_margin_bottom = 0.0
+bg_color = Color(0.9, 0.8, 0.66, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.22, 0.33, 0.12, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0.22, 0.105, 0.055, 0.22)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 18.0
+content_margin_top = 0.0
+content_margin_right = 18.0
+content_margin_bottom = 0.0
+bg_color = Color(0.78, 0.64, 0.48, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.55, 0.58, 0.32, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxTexture" id="StyleCardExplanationPanel"]
+content_margin_left = 76.0
+content_margin_top = 64.0
+content_margin_right = 76.0
+content_margin_bottom = 58.0
+texture = ExtResource("4_frame")
+texture_margin_left = 96.0
+texture_margin_top = 96.0
+texture_margin_right = 96.0
+texture_margin_bottom = 96.0
+
+[sub_resource type="StyleBoxFlat" id="StyleCardInfoPanel"]
+content_margin_left = 8.0
+content_margin_top = 12.0
+content_margin_right = 8.0
+content_margin_bottom = 12.0
+bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleCardHighlight"]
-bg_color = Color(1, 1, 1, 0.06)
+bg_color = Color(1, 0.95, 0.78, 0.08)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(1, 1, 1, 0.92)
+border_color = Color(1, 0.94, 0.74, 0.98)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-shadow_color = Color(1, 1, 1, 0.32)
-shadow_size = 10
+shadow_color = Color(1, 0.92, 0.65, 0.34)
+shadow_size = 12
 
 [node name="TutorialOverlay" type="Control" unique_id=225137712]
 visible = false
@@ -203,7 +157,7 @@ grow_vertical = 2
 
 [node name="TutorialWindow" type="PanelContainer" parent="CenterContainer" unique_id=231017051]
 clip_contents = true
-custom_minimum_size = Vector2(820, 500)
+custom_minimum_size = Vector2(780, 470)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleTutorialPanel")
 
@@ -212,25 +166,26 @@ z_index = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 16
 
 [node name="TutorialTitle" type="Label" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=323704727]
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
 theme_override_fonts/font = ExtResource("2_title_font")
 theme_override_font_sizes/font_size = 40
 text = "Tutorial"
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 2
 
 [node name="TitleSeparator" type="HSeparator" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=1653185417]
 layout_mode = 2
 theme_override_styles/separator = SubResource("StyleSeparator")
 
 [node name="BodyPanel" type="PanelContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=206662467]
-custom_minimum_size = Vector2(0, 195)
+custom_minimum_size = Vector2(0, 185)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -240,10 +195,12 @@ theme_override_styles/panel = SubResource("StyleBodyPanel")
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_constants/line_spacing = 4
-theme_override_font_sizes/font_size = 23
+theme_override_colors/font_color = Color(0.39, 0.205, 0.13, 1)
+theme_override_constants/line_spacing = 5
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 25
 text = "Tutorialtext"
+horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
@@ -254,7 +211,8 @@ theme_override_styles/separator = SubResource("StyleSeparator")
 [node name="Navigation" type="HBoxContainer" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox" unique_id=2128024124]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
+alignment = 2
 
 [node name="FooterSpacer" type="Control" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1957570797]
 layout_mode = 2
@@ -262,14 +220,15 @@ size_flags_horizontal = 3
 mouse_filter = 2
 
 [node name="TutorialBackButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1386900530]
-custom_minimum_size = Vector2(150, 56)
+custom_minimum_size = Vector2(180, 60)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_colors/font_hover_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_focus_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_colors/font_disabled_color = Color(0.48, 0.5, 0.42, 1)
-theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_disabled_color = Color(0.459, 0.263, 0.176, 0.42)
+theme_override_fonts/font = ExtResource("5_body_font")
+theme_override_font_sizes/font_size = 26
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/pressed = SubResource("StyleButtonPressed")
 theme_override_styles/hover = SubResource("StyleButtonHover")
@@ -277,13 +236,14 @@ theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Zurück"
 
 [node name="TutorialNextButton" type="Button" parent="CenterContainer/TutorialWindow/TutorialLayoutVBox/Navigation" unique_id=1359908772]
-custom_minimum_size = Vector2(170, 56)
+custom_minimum_size = Vector2(190, 60)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_colors/font_hover_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_focus_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("5_body_font")
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/pressed = SubResource("StyleButtonPressed")
 theme_override_styles/hover = SubResource("StyleButtonHover")
@@ -291,6 +251,7 @@ theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Weiter"
 
 [node name="IvyDecoration" type="Control" parent="CenterContainer/TutorialWindow"]
+visible = false
 layout_mode = 2
 mouse_filter = 2
 
@@ -356,10 +317,10 @@ z_index = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 42
+theme_override_constants/separation = 52
 
 [node name="CardArea" type="Control" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout"]
-custom_minimum_size = Vector2(368, 600)
+custom_minimum_size = Vector2(350, 570)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
@@ -383,25 +344,27 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleCardHighlight")
 
 [node name="ExplanationArea" type="VBoxContainer" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout"]
-custom_minimum_size = Vector2(560, 0)
+custom_minimum_size = Vector2(520, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 18
+theme_override_constants/separation = 16
 
 [node name="Eyebrow" type="Label" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout/ExplanationArea"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.19, 0.29, 0.1, 1)
+theme_override_colors/font_color = Color(0.55, 0.58, 0.32, 1)
+theme_override_fonts/font = ExtResource("2_title_font")
 theme_override_font_sizes/font_size = 17
 text = "PFLANZENKARTE VERSTEHEN"
+horizontal_alignment = 0
 
 [node name="ExplanationTitle" type="Label" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout/ExplanationArea"]
-custom_minimum_size = Vector2(0, 58)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
 theme_override_fonts/font = ExtResource("2_title_font")
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 38
 text = "Kartenelement"
 vertical_alignment = 1
 autowrap_mode = 2
@@ -420,9 +383,10 @@ theme_override_styles/panel = SubResource("StyleCardInfoPanel")
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_constants/line_spacing = 5
-theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.39, 0.205, 0.13, 1)
+theme_override_constants/line_spacing = 6
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 23
 text = "Erklärung"
 vertical_alignment = 1
 autowrap_mode = 2
@@ -434,7 +398,8 @@ theme_override_styles/separator = SubResource("StyleSeparator")
 [node name="CardNavigation" type="HBoxContainer" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout/ExplanationArea"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
+alignment = 2
 
 [node name="CardNavigationSpacer" type="Control" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout/ExplanationArea/CardNavigation"]
 layout_mode = 2
@@ -442,14 +407,15 @@ size_flags_horizontal = 3
 mouse_filter = 2
 
 [node name="CardBackButton" type="Button" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout/ExplanationArea/CardNavigation"]
-custom_minimum_size = Vector2(150, 56)
+custom_minimum_size = Vector2(170, 60)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_colors/font_hover_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_focus_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_colors/font_disabled_color = Color(0.48, 0.5, 0.42, 1)
-theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_disabled_color = Color(0.459, 0.263, 0.176, 0.42)
+theme_override_fonts/font = ExtResource("5_body_font")
+theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/pressed = SubResource("StyleButtonPressed")
 theme_override_styles/hover = SubResource("StyleButtonHover")
@@ -457,13 +423,14 @@ theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Zurück"
 
 [node name="CardNextButton" type="Button" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel/CardExplanationLayout/ExplanationArea/CardNavigation"]
-custom_minimum_size = Vector2(180, 56)
+custom_minimum_size = Vector2(205, 60)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_colors/font_hover_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.94, 0.76, 1)
-theme_override_colors/font_focus_color = Color(0.98, 0.91, 0.72, 1)
-theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("5_body_font")
+theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/pressed = SubResource("StyleButtonPressed")
 theme_override_styles/hover = SubResource("StyleButtonHover")
@@ -471,6 +438,7 @@ theme_override_styles/focus = SubResource("StyleButtonFocus")
 text = "Weiter"
 
 [node name="IvyDecoration" type="Control" parent="CardExplanationRoot/CardExplanationCenter/CardExplanationPanel"]
+visible = false
 layout_mode = 2
 mouse_filter = 2
 

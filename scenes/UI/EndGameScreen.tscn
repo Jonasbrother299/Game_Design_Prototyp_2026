@@ -1,101 +1,102 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/EndGameScreen.cs" id="1_script"]
-[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_font"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_bold_font"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="3_regular_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/decor/pause_menu_frame.svg" id="4_frame"]
 
-[sub_resource type="StyleBoxFlat" id="StyleResultPanel"]
-content_margin_left = 54.0
-content_margin_top = 42.0
-content_margin_right = 54.0
-content_margin_bottom = 44.0
-bg_color = Color(0.025, 0.032, 0.025, 0.98)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.78, 0.86, 0.47, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0, 0, 0, 0.55)
-shadow_size = 18
+[sub_resource type="StyleBoxTexture" id="StyleResultPanel"]
+content_margin_left = 74.0
+content_margin_top = 64.0
+content_margin_right = 74.0
+content_margin_bottom = 60.0
+texture = ExtResource("4_frame")
+texture_margin_left = 96.0
+texture_margin_top = 96.0
+texture_margin_right = 96.0
+texture_margin_bottom = 96.0
 
 [sub_resource type="StyleBoxFlat" id="StyleStatsPanel"]
 content_margin_left = 28.0
-content_margin_top = 18.0
+content_margin_top = 20.0
 content_margin_right = 28.0
-content_margin_bottom = 18.0
-bg_color = Color(0.055, 0.07, 0.05, 0.94)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.42, 0.49, 0.3, 0.72)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
-content_margin_left = 22.0
-content_margin_top = 12.0
-content_margin_right = 22.0
-content_margin_bottom = 12.0
-bg_color = Color(0.07, 0.12, 0.07, 1)
-border_width_left = 3
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.56, 0.67, 0.36, 0.78)
-corner_radius_top_left = 9
-corner_radius_top_right = 9
-corner_radius_bottom_right = 9
-corner_radius_bottom_left = 9
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
-content_margin_left = 22.0
-content_margin_top = 12.0
-content_margin_right = 22.0
-content_margin_bottom = 12.0
-bg_color = Color(0.16, 0.24, 0.12, 1)
-border_width_left = 5
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.82, 0.87, 0.53, 0.96)
-corner_radius_top_left = 9
-corner_radius_top_right = 9
-corner_radius_bottom_right = 9
-corner_radius_bottom_left = 9
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
-content_margin_left = 22.0
-content_margin_top = 12.0
-content_margin_right = 22.0
-content_margin_bottom = 12.0
-bg_color = Color(0.035, 0.07, 0.035, 1)
-border_width_left = 5
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.82, 0.87, 0.53, 1)
-corner_radius_top_left = 9
-corner_radius_top_right = 9
-corner_radius_bottom_right = 9
-corner_radius_bottom_left = 9
-
-[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
-bg_color = Color(0, 0, 0, 0)
+content_margin_bottom = 20.0
+bg_color = Color(0.89, 0.79, 0.65, 0.58)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.94, 0.94, 0.72, 0.96)
-corner_radius_top_left = 9
-corner_radius_top_right = 9
-corner_radius_bottom_right = 9
-corner_radius_bottom_left = 9
+border_color = Color(0.459, 0.263, 0.176, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonNormal"]
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonHover"]
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+bg_color = Color(0.9, 0.8, 0.66, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonPressed"]
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+bg_color = Color(0.78, 0.64, 0.48, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleButtonFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.55, 0.58, 0.32, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxLine" id="StyleSeparator"]
+color = Color(0.459, 0.263, 0.176, 0.32)
+thickness = 1
+grow_begin = 4.0
+grow_end = 4.0
 
 [node name="EndGameScreen" type="Control"]
 process_mode = 3
@@ -107,7 +108,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 z_index = 200
-theme_override_fonts/font = ExtResource("2_font")
+theme_override_fonts/font = ExtResource("3_regular_font")
 script = ExtResource("1_script")
 
 [node name="Dimmer" type="ColorRect" parent="."]
@@ -118,7 +119,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0.01, 0.015, 0.01, 0.82)
+color = Color(0.008, 0.02, 0.01, 0.82)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -130,40 +131,47 @@ grow_vertical = 2
 
 [node name="ResultPanel" type="PanelContainer" parent="CenterContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(790, 540)
+custom_minimum_size = Vector2(850, 610)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleResultPanel")
 
 [node name="Content" type="VBoxContainer" parent="CenterContainer/ResultPanel"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 16
 
 [node name="OutcomeLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.86, 0.47, 1)
+theme_override_colors/font_color = Color(0.36, 0.46, 0.18, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 18
 text = "SIEG"
 horizontal_alignment = 1
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.78, 0.86, 0.47, 1)
-theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.36, 0.46, 0.18, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
+theme_override_font_sizes/font_size = 44
 text = "Ökosystem gerettet"
 horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
 
-[node name="Separator" type="ColorRect" parent="CenterContainer/ResultPanel/Content"]
-custom_minimum_size = Vector2(0, 2)
+[node name="Separator" type="HSeparator" parent="CenterContainer/ResultPanel/Content"]
 layout_mode = 2
-color = Color(0.5, 0.57, 0.34, 0.7)
+theme_override_styles/separator = SubResource("StyleSeparator")
 
 [node name="MessageLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 95)
+custom_minimum_size = Vector2(0, 92)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.94, 0.86, 1)
+theme_override_colors/font_color = Color(0.39, 0.205, 0.13, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 23
 text = "Der Wasserstand hat 50 erreicht. Die alte Eiche kann weiterleben."
 horizontal_alignment = 1
@@ -176,42 +184,46 @@ theme_override_styles/panel = SubResource("StyleStatsPanel")
 
 [node name="StatsGrid" type="GridContainer" parent="CenterContainer/ResultPanel/Content/StatsPanel"]
 layout_mode = 2
-theme_override_constants/h_separation = 40
-theme_override_constants/v_separation = 10
+theme_override_constants/h_separation = 42
+theme_override_constants/v_separation = 12
 columns = 2
 
 [node name="RoundTitle" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.78, 0.62, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 20
 text = "Erreichte Runde"
 
 [node name="RoundValue" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.96, 0.84, 1)
+theme_override_colors/font_color = Color(0.39, 0.205, 0.13, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 23
 text = "1"
 horizontal_alignment = 2
 
 [node name="WaterTitle" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
-custom_minimum_size = Vector2(250, 0)
+custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.78, 0.62, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 20
 text = "Wasserstand"
 
 [node name="WaterValue" type="Label" parent="CenterContainer/ResultPanel/Content/StatsPanel/StatsGrid"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.96, 0.84, 1)
+theme_override_colors/font_color = Color(0.39, 0.205, 0.13, 1)
+theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 23
 text = "50 / 50"
 horizontal_alignment = 2
 
 [node name="ButtonSpacer" type="Control" parent="CenterContainer/ResultPanel/Content"]
-custom_minimum_size = Vector2(0, 8)
+custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -219,13 +231,17 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("3_regular_font")
+theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
 theme_override_styles/pressed = SubResource("StyleButtonPressed")
 theme_override_styles/focus = SubResource("StyleButtonFocus")
-tooltip_text = "Verlustfenster ausblenden und Spielfeld betrachten"
+tooltip_text = "Ergebnisfenster ausblenden und Spielfeld betrachten"
 text = "Spielfeld ansehen"
 
 [node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/ResultPanel/Content"]
@@ -235,9 +251,13 @@ alignment = 1
 
 [node name="RestartButton" type="Button" parent="CenterContainer/ResultPanel/Content/ButtonRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(290, 62)
+custom_minimum_size = Vector2(310, 62)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("3_regular_font")
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
@@ -247,9 +267,13 @@ text = "Partie neu starten"
 
 [node name="MainMenuButton" type="Button" parent="CenterContainer/ResultPanel/Content/ButtonRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(290, 62)
+custom_minimum_size = Vector2(310, 62)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("3_regular_font")
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
@@ -270,7 +294,11 @@ offset_top = 24.0
 offset_right = 150.0
 offset_bottom = 82.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0.96, 0.96, 0.84, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("3_regular_font")
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleButtonNormal")
 theme_override_styles/hover = SubResource("StyleButtonHover")
