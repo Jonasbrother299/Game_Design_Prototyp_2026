@@ -303,7 +303,9 @@ public partial class GameManager : Node
 			return;
 
 		HexTile clickedTile = GetHexTileUnderMouse(mouseButton.Position);
-		if (clickedTile == null)
+		if (clickedTile == null ||
+			clickedTile == _mainTreeTile ||
+			clickedTile.Data?.Plant?.Definition?.Type == PlantType.Oak)
 			return;
 
 		TileInformationRequested?.Invoke(clickedTile);
@@ -319,16 +321,13 @@ public partial class GameManager : Node
 	private void HandleTileDoubleClick(Vector2 mousePosition)
 	{
 		HexTile clickedTile = GetHexTileUnderMouse(mousePosition);
-		if (clickedTile == null)
+		if (clickedTile == null ||
+			clickedTile == _mainTreeTile ||
+			clickedTile.Data?.Plant == null ||
+			clickedTile.Data.Plant.Definition.Type == PlantType.Oak)
 			return;
 
-		bool isMainTree = clickedTile == _mainTreeTile;
-		if (!isMainTree && clickedTile.Data?.Plant == null)
-			return;
-
-		bool cameraChanged = isMainTree
-			? _cameraRig.ShowBoardOverview()
-			: _cameraRig.FocusTile(clickedTile);
+		bool cameraChanged = _cameraRig.FocusTile(clickedTile);
 
 		if (!cameraChanged)
 			return;

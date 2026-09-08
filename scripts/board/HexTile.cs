@@ -1,6 +1,7 @@
 using Godot;
 using System.Collections.Generic;
 
+[Tool]
 public partial class HexTile : Node3D
 {
 	public HexTileData Data { get; private set; }
@@ -444,6 +445,13 @@ public partial class HexTile : Node3D
 
 		if (outerEdges != null && outerEdges.Length == 6)
 			_grassOuterEdges = outerEdges;
+	}
+
+	public void SetGrassAppearance(Vector4 settings)
+	{
+		_grassMultiMesh?.SetInstanceShaderParameter(
+			"grass_appearance",
+			settings);
 	}
 
 	public void Setup(HexTileData data)
@@ -1314,18 +1322,18 @@ public partial class HexTile : Node3D
 			? BlockedPreviewTint
 			: isValid
 				? new Color(0.72f, 1.00f, 0.24f, 1.0f)
-				: new Color(0.82f, 0.40f, 0.32f, 0.90f);
+				: new Color(1.00f, 0.08f, 0.04f, 1.0f);
 		Color fillColor = isBlocked
 			? BlockedPreviewTint
 			: isValid
 				? new Color(0.52f, 0.92f, 0.18f, 1.0f)
-				: new Color(0.72f, 0.34f, 0.26f, 1.0f);
+				: new Color(0.80f, 0.03f, 0.02f, 1.0f);
 
 		_placementWindIndicator.Display(
 			effectColor,
-			opacity: isBlocked ? 0.78f : isValid ? 0.96f : 0.90f,
-			emissionStrength: isBlocked ? 0.72f : isValid ? 1.08f : 0.92f,
-			fillOpacity: isBlocked ? 0.05f : isValid ? 0.14f : 0.055f,
+			opacity: isBlocked ? 0.78f : isValid ? 0.96f : 1.15f,
+			emissionStrength: isBlocked ? 0.72f : isValid ? 1.08f : 1.30f,
+			fillOpacity: isBlocked ? 0.05f : isValid ? 0.14f : 0.12f,
 			fillColor: fillColor);
 	}
 
@@ -2409,7 +2417,8 @@ public partial class HexTile : Node3D
 		PlantInstance previousRenderedPlant = _renderedPlant;
 		int previousRenderedGrowthStage = _renderedGrowthStage;
 		bool previousRenderedAsDead = _renderedAsDead;
-		Vector3 previousVisualScale = _plantVisualRoot?.Scale ?? Vector3.One;
+		Vector3 previousVisualScale =
+			GetTreeGrowthRoot(_plantVisualRoot)?.Scale ?? Vector3.One;
 		bool animatePlantDeath =
 			renderAsDead &&
 			!previousRenderedAsDead &&
@@ -2565,7 +2574,12 @@ public partial class HexTile : Node3D
 				treeAnimationDuration);
 		}
 
-		FadeInMatureTreeShadow(visualPlant, animatePlantGrowth);
+		FadeInTreeShadow(
+			visualPlant,
+			animatePlantGrowth,
+			ReferenceEquals(previousRenderedPlant, visualPlant)
+				? previousRenderedGrowthStage
+				: 0);
 		VisibilityRangeUtility.Configure(
 			_plantVisualRoot,
 			_visibilityRangesEnabled,
@@ -2617,19 +2631,25 @@ public partial class HexTile : Node3D
 		};
 	}
 
+	private static Node3D GetTreeGrowthRoot(Node3D visualRoot)
+	{
+		return visualRoot?.GetNodeOrNull<Node3D>("TreeGrowth") ?? visualRoot;
+	}
+
 	private void AnimateTreeGrowth(
 		Node3D visualRoot,
 		float horizontalStartScale,
 		float verticalStartScale,
 		float duration)
 	{
-		Vector3 targetScale = visualRoot.Scale;
-		Vector3 targetPosition = visualRoot.Position;
-		visualRoot.Scale = new Vector3(
+		Node3D growthRoot = GetTreeGrowthRoot(visualRoot);
+		Vector3 targetScale = growthRoot.Scale;
+		Vector3 targetPosition = growthRoot.Position;
+		growthRoot.Scale = new Vector3(
 			targetScale.X * horizontalStartScale,
 			targetScale.Y * verticalStartScale,
 			targetScale.Z * horizontalStartScale);
-		visualRoot.Position = targetPosition -
+		growthRoot.Position = targetPosition -
 			Vector3.Up * 0.08f * (1.0f - verticalStartScale);
 
 		_treeGrowthTween?.Kill();
@@ -2638,12 +2658,12 @@ public partial class HexTile : Node3D
 			.SetTrans(Tween.TransitionType.Sine)
 			.SetEase(Tween.EaseType.Out);
 		_treeGrowthTween.TweenProperty(
-			visualRoot,
+			growthRoot,
 			"scale",
 			targetScale,
 			duration);
 		_treeGrowthTween.TweenProperty(
-			visualRoot,
+			growthRoot,
 			"position",
 			targetPosition,
 			duration);
@@ -2674,14 +2694,14 @@ public partial class HexTile : Node3D
 			Callable.From(RefreshGrassBlockers));
 	}
 
-	private void FadeInMatureTreeShadow(
+	private void FadeInTreeShadow(
 		PlantInstance plant,
-		bool animateGrowth)
+		bool animateGrowth,
+		int previousGrowthStage)
 	{
 		if (!animateGrowth ||
 			TreeShadowFadeDuration <= 0.0f ||
-			plant == null ||
-			!plant.IsMature)
+			plant == null)
 		{
 			return;
 		}
@@ -2707,20 +2727,42 @@ public partial class HexTile : Node3D
 			return;
 
 		Color shadowColor = canopyShadow.Modulate;
+		float currentStrength = TreeCanopyShadowBuilder.GetGrowthShadowStrength(
+			plant.VisualGrowthStage);
+		float previousStrength = TreeCanopyShadowBuilder.GetGrowthShadowStrength(
+			previousGrowthStage);
+		float startAlpha = shadowColor.A * previousStrength / currentStrength;
+		if (Mathf.IsEqualApprox(startAlpha, shadowColor.A))
+			return;
+
+		Vector3 targetSize = canopyShadow.Size;
+		float startSizeRatio = previousGrowthStage > 0
+			? Mathf.Sqrt(previousStrength / currentStrength)
+			: 1.0f;
+		canopyShadow.Size = new Vector3(
+			targetSize.X * startSizeRatio,
+			targetSize.Y,
+			targetSize.Z * startSizeRatio);
 		canopyShadow.Modulate = new Color(
 			shadowColor.R,
 			shadowColor.G,
 			shadowColor.B,
-			0.0f);
+			startAlpha);
 
-		Tween tween = CreateTween();
+		Tween tween = CreateTween()
+			.SetParallel()
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.Out);
 		tween.TweenProperty(
 			canopyShadow,
 			"modulate:a",
 			shadowColor.A,
-			TreeShadowFadeDuration)
-			.SetTrans(Tween.TransitionType.Sine)
-			.SetEase(Tween.EaseType.Out);
+			TreeShadowFadeDuration);
+		tween.TweenProperty(
+			canopyShadow,
+			"size",
+			targetSize,
+			TreeShadowFadeDuration);
 	}
 
 	private void ApplyDeadPlantStyle(

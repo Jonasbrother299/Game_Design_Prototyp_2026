@@ -33,6 +33,7 @@ public partial class AchievementMenu : Control
 	private VBoxContainer _leaderboardList;
 	private Label _leaderboardStatusLabel;
 	private Button _backButton;
+	private MarginContainer _menuLayout;
 	private GlobalStatisticsData _statisticsData = new();
 	private bool _hasLoadedStatistics;
 	private bool _isLeaderboardRequestRunning;
@@ -55,6 +56,8 @@ public partial class AchievementMenu : Control
 		_leaderboardList = GetNode<VBoxContainer>("%LeaderboardList");
 		_leaderboardStatusLabel = GetNode<Label>("%LeaderboardStatusLabel");
 		_backButton = GetNode<Button>("%BackButton");
+		_menuLayout = GetNode<MarginContainer>("MenuMargin");
+		Resized += UpdateMenuLayout;
 
 		_backButton.Pressed += Close;
 		_achievementsTabButton.Pressed += OnAchievementsTabPressed;
@@ -62,10 +65,12 @@ public partial class AchievementMenu : Control
 		_synchronizeButton.Pressed += OnSynchronizeButtonPressed;
 		_refreshLeaderboardButton.Pressed += OnRefreshLeaderboardButtonPressed;
 		SetPage(AchievementMenuPage.Achievements);
+		UpdateMenuLayout();
 	}
 
 	public override void _ExitTree()
 	{
+		Resized -= UpdateMenuLayout;
 		if (_backButton != null)
 			_backButton.Pressed -= Close;
 		if (_achievementsTabButton != null)
@@ -76,6 +81,17 @@ public partial class AchievementMenu : Control
 			_synchronizeButton.Pressed -= OnSynchronizeButtonPressed;
 		if (_refreshLeaderboardButton != null)
 			_refreshLeaderboardButton.Pressed -= OnRefreshLeaderboardButtonPressed;
+	}
+
+	private void UpdateMenuLayout()
+	{
+		if (Size.X <= 0.0f || Size.Y <= 0.0f)
+			return;
+
+		float scale = Mathf.Min(Size.X / 1920.0f, Size.Y / 1080.0f);
+		_menuLayout.SetAnchorsAndOffsetsPreset(LayoutPreset.TopLeft);
+		_menuLayout.Size = Size / scale;
+		_menuLayout.Scale = Vector2.One * scale;
 	}
 
 	public override void _UnhandledInput(InputEvent inputEvent)
@@ -93,6 +109,7 @@ public partial class AchievementMenu : Control
 		RefreshDeveloperProfile();
 		SetPage(AchievementMenuPage.Achievements);
 		Show();
+		UpdateMenuLayout();
 		_backButton.GrabFocus();
 	}
 
@@ -123,7 +140,7 @@ public partial class AchievementMenu : Control
 		_statisticsData = data;
 
 		AchievementProgress progress = AchievementCatalog.GetProgress(data);
-		_levelLabel.Text = $"STUFE\n{progress.CurrentLevel}";
+		_levelLabel.Text = $"Stufe\n{progress.CurrentLevel}";
 		_experienceBar.MaxValue = progress.ExperienceForNextLevel;
 		_experienceBar.Value = progress.ExperienceInCurrentLevel;
 		_experienceLabel.Text =
@@ -293,7 +310,7 @@ public partial class AchievementMenu : Control
 			CustomMinimumSize = new Vector2(0.0f, 68.0f),
 			MouseFilter = MouseFilterEnum.Ignore
 		};
-		row.AddThemeStyleboxOverride("panel", CreateLeaderboardRowStyle(rankColor));
+		row.AddThemeStyleboxOverride("panel", CreateLeaderboardRowStyle());
 
 		HBoxContainer content = new()
 		{
@@ -331,9 +348,9 @@ public partial class AchievementMenu : Control
 			new Color(0.35f, 0.24f, 0.14f)));
 
 		Label score = CreateLabel(
-			$"STUFE {entry.CurrentLevel}\n{entry.TotalExperience} EP",
+			$"Stufe {entry.CurrentLevel}\n{entry.TotalExperience} EP",
 			18,
-			rankColor);
+			new Color(0.459f, 0.263f, 0.176f));
 		score.HorizontalAlignment = HorizontalAlignment.Right;
 		score.VerticalAlignment = VerticalAlignment.Center;
 		content.AddChild(score);
@@ -348,12 +365,13 @@ public partial class AchievementMenu : Control
 		Color badgeColor = GetBadgeColor(achievement.BadgeTier);
 		PanelContainer card = new()
 		{
-			CustomMinimumSize = new Vector2(320.0f, 230.0f),
+			CustomMinimumSize = new Vector2(360.0f, 244.0f),
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
 			MouseFilter = MouseFilterEnum.Ignore
 		};
 		card.AddThemeStyleboxOverride(
 			"panel",
-			CreateAchievementCardStyle(badgeColor, isUnlocked));
+			CreateAchievementCardStyle(isUnlocked));
 
 		VBoxContainer content = new()
 		{
@@ -397,33 +415,33 @@ public partial class AchievementMenu : Control
 		};
 		header.AddChild(headerText);
 		headerText.AddChild(CreateLabel(
-			isUnlocked ? $"{GetBadgeLabel(achievement.BadgeTier)}-ABZEICHEN" : "NOCH VERSCHLOSSEN",
-			15,
-			isUnlocked ? badgeColor : new Color(0.46f, 0.38f, 0.29f)));
+			isUnlocked ? $"{GetBadgeLabel(achievement.BadgeTier)}-Abzeichen" : "Abzeichen",
+			18,
+			new Color(0.459f, 0.263f, 0.176f)));
 		headerText.AddChild(CreateLabel(
-			isUnlocked ? "FREIGESCHALTET" : "ERFÜLLE DIE BEDINGUNG",
-			14,
+			isUnlocked ? "Freigeschaltet" : "Gesperrt",
+			18,
 			isUnlocked ? new Color(0.30f, 0.47f, 0.22f) : new Color(0.42f, 0.34f, 0.26f)));
 
 		Label title = CreateLabel(
-			isUnlocked ? achievement.DisplayName : "Unbekannter Pfad",
-			24,
+			isUnlocked ? achievement.DisplayName : "Noch nicht freigeschaltet",
+			26,
 			isUnlocked ? new Color(0.25f, 0.105f, 0.055f) : new Color(0.35f, 0.28f, 0.22f));
 		title.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		content.AddChild(title);
 
 		Label description = CreateLabel(
 			achievement.Description,
-			17,
-			isUnlocked ? new Color(0.34f, 0.23f, 0.14f) : new Color(0.43f, 0.35f, 0.27f));
+			20,
+			new Color(0.459f, 0.263f, 0.176f));
 		description.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		description.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
 		content.AddChild(description);
 
 		Label reward = CreateLabel(
-			$"BELOHNUNG · {achievement.ExperienceReward} EP",
-			16,
-			isUnlocked ? badgeColor : new Color(0.47f, 0.38f, 0.29f));
+			$"Belohnung · {achievement.ExperienceReward} EP",
+			20,
+			new Color(0.459f, 0.263f, 0.176f));
 		reward.HorizontalAlignment = HorizontalAlignment.Right;
 		content.AddChild(reward);
 
@@ -442,7 +460,7 @@ public partial class AchievementMenu : Control
 		return label;
 	}
 
-	private static StyleBoxFlat CreateAchievementCardStyle(Color badgeColor, bool isUnlocked)
+	private static StyleBoxFlat CreateAchievementCardStyle(bool isUnlocked)
 	{
 		return new StyleBoxFlat
 		{
@@ -451,19 +469,19 @@ public partial class AchievementMenu : Control
 			ContentMarginRight = 18.0f,
 			ContentMarginBottom = 16.0f,
 			BgColor = isUnlocked
-				? new Color(0.82f, 0.67f, 0.48f, 1.0f)
-				: new Color(0.58f, 0.49f, 0.39f, 0.94f),
-			BorderWidthLeft = 3,
-			BorderWidthTop = 3,
-			BorderWidthRight = 3,
-			BorderWidthBottom = 3,
-			BorderColor = isUnlocked ? badgeColor : new Color(0.39f, 0.31f, 0.23f),
+				? new Color(0.847f, 0.737f, 0.584f, 1.0f)
+				: new Color(0.88f, 0.81f, 0.68f, 1.0f),
+			BorderWidthLeft = 2,
+			BorderWidthTop = 2,
+			BorderWidthRight = 2,
+			BorderWidthBottom = 2,
+			BorderColor = new Color(0.459f, 0.263f, 0.176f),
 			CornerRadiusTopLeft = 18,
 			CornerRadiusTopRight = 18,
 			CornerRadiusBottomRight = 18,
 			CornerRadiusBottomLeft = 18,
 			ShadowColor = new Color(0.18f, 0.075f, 0.035f, 0.36f),
-			ShadowSize = 6,
+			ShadowSize = 0,
 			ShadowOffset = new Vector2(0.0f, 4.0f)
 		};
 	}
@@ -487,7 +505,7 @@ public partial class AchievementMenu : Control
 		};
 	}
 
-	private static StyleBoxFlat CreateLeaderboardRowStyle(Color rankColor)
+	private static StyleBoxFlat CreateLeaderboardRowStyle()
 	{
 		return new StyleBoxFlat
 		{
@@ -495,18 +513,18 @@ public partial class AchievementMenu : Control
 			ContentMarginTop = 9.0f,
 			ContentMarginRight = 14.0f,
 			ContentMarginBottom = 9.0f,
-			BgColor = new Color(0.83f, 0.68f, 0.49f, 1.0f),
-			BorderWidthLeft = 3,
-			BorderWidthTop = 3,
-			BorderWidthRight = 3,
-			BorderWidthBottom = 3,
-			BorderColor = rankColor,
+			BgColor = new Color(0.94f, 0.866f, 0.718f, 1.0f),
+			BorderWidthLeft = 2,
+			BorderWidthTop = 2,
+			BorderWidthRight = 2,
+			BorderWidthBottom = 2,
+			BorderColor = new Color(0.459f, 0.263f, 0.176f),
 			CornerRadiusTopLeft = 15,
 			CornerRadiusTopRight = 15,
 			CornerRadiusBottomRight = 15,
 			CornerRadiusBottomLeft = 15,
 			ShadowColor = new Color(0.18f, 0.075f, 0.035f, 0.25f),
-			ShadowSize = 4,
+			ShadowSize = 0,
 			ShadowOffset = new Vector2(0.0f, 3.0f)
 		};
 	}
@@ -528,12 +546,12 @@ public partial class AchievementMenu : Control
 	{
 		return badgeTier switch
 		{
-			AchievementBadgeTier.Bronze => "BRONZE",
-			AchievementBadgeTier.Silver => "SILBER",
-			AchievementBadgeTier.Gold => "GOLD",
-			AchievementBadgeTier.Verdant => "WALD",
-			AchievementBadgeTier.Copper => "KUPFER",
-			_ => "WALD"
+			AchievementBadgeTier.Bronze => "Bronze",
+			AchievementBadgeTier.Silver => "Silber",
+			AchievementBadgeTier.Gold => "Gold",
+			AchievementBadgeTier.Verdant => "Wald",
+			AchievementBadgeTier.Copper => "Kupfer",
+			_ => "Wald"
 		};
 	}
 }

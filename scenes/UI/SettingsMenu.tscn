@@ -1,64 +1,245 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scripts/UI/SettingsMenu.cs" id="1_settings"]
 [ext_resource type="Theme" path="res://assets/ui/themes/forest_card_theme.tres" id="2_theme"]
-[ext_resource type="FontFile" path="res://assets/ui/fonts/OhnoBlazefaceDemo-48Point.otf" id="3_title_font"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="3_title_font"]
 [ext_resource type="Script" path="res://scripts/UI/MenuCardMotion.cs" id="4_motion"]
 [ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="5_ivy"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/settings_background.png" id="6_background"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/sound_on.png" id="7_sound_on"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/sound_off.png" id="8_sound_off"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/sound_muted.png" id="9_sound_muted"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/music_on.png" id="10_music_on"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings/music_muted.png" id="11_music_muted"]
 
-[sub_resource type="StyleBoxFlat" id="PanelStyle"]
-content_margin_left = 44.0
-content_margin_top = 24.0
-content_margin_right = 44.0
+[ext_resource type="Texture2D" path="res://assets/ui/settings/settings_controls.svg" id="12_controls"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="13_lora_regular"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="14_lora_bold"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/card_place.svg" id="15_help"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/mouse_left_drag.svg" id="16_help"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/mouse_wheel.svg" id="18_help"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/pause.svg" id="20_help"]
+
+[sub_resource type="AtlasTexture" id="SoundMutedIcon"]
+atlas = ExtResource("9_sound_muted")
+region = Rect2(70, 72, 227, 226)
+
+[sub_resource type="AtlasTexture" id="MusicMutedIcon"]
+atlas = ExtResource("11_music_muted")
+region = Rect2(70, 72, 227, 226)
+
+[sub_resource type="StyleBoxTexture" id="PanelStyle"]
+content_margin_left = 64.0
+content_margin_top = 80.0
+content_margin_right = 64.0
 content_margin_bottom = 24.0
-bg_color = Color(0.9, 0.79, 0.62, 0.985)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.29, 0.125, 0.07, 1)
-corner_radius_top_left = 28
-corner_radius_top_right = 28
-corner_radius_bottom_right = 28
-corner_radius_bottom_left = 28
-shadow_color = Color(0.008, 0.018, 0.009, 0.75)
-shadow_size = 18
-shadow_offset = Vector2(4, 9)
+texture = ExtResource("6_background")
 
 [sub_resource type="StyleBoxFlat" id="SectionStyle"]
-content_margin_left = 30.0
-content_margin_top = 18.0
-content_margin_right = 30.0
-content_margin_bottom = 18.0
-bg_color = Color(0.96, 0.87, 0.7, 0.96)
+content_margin_left = 64.0
+content_margin_top = 32.0
+content_margin_right = 64.0
+content_margin_bottom = 32.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.35, 0.43, 0.22, 0.92)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0.22, 0.105, 0.055, 0.22)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
 
-[sub_resource type="StyleBoxFlat" id="TabBarStyle"]
+[sub_resource type="StyleBoxEmpty" id="TabBarStyle"]
+
+[sub_resource type="AtlasTexture" id="MuteUnchecked"]
+atlas = ExtResource("12_controls")
+region = Rect2(0, 0, 72, 32)
+
+[sub_resource type="AtlasTexture" id="MuteChecked"]
+atlas = ExtResource("12_controls")
+region = Rect2(80, 0, 72, 32)
+
+[sub_resource type="AtlasTexture" id="VolumeGrabber"]
+atlas = ExtResource("12_controls")
+region = Rect2(152, 0, 32, 32)
+
+
+[sub_resource type="StyleBoxFlat" id="TabNormal"]
 content_margin_left = 16.0
-content_margin_top = 12.0
+content_margin_top = 0.0
 content_margin_right = 16.0
-content_margin_bottom = 12.0
-bg_color = Color(0.72, 0.57, 0.4, 0.72)
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="TabHover"]
+content_margin_left = 16.0
+content_margin_top = 0.0
+content_margin_right = 16.0
+content_margin_bottom = 0.0
+bg_color = Color(0.847, 0.737, 0.584, 0.35)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="TabSelected"]
+content_margin_left = 16.0
+content_margin_top = 0.0
+content_margin_right = 16.0
+content_margin_bottom = 0.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 0
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+expand_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="TabFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 0
+border_color = Color(0.55, 0.58, 0.32, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+
+[sub_resource type="StyleBoxFlat" id="ControlFocus"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="BackNormal"]
+content_margin_left = 24.0
+content_margin_top = 0.0
+content_margin_right = 24.0
+content_margin_bottom = 0.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="BackHover"]
+content_margin_left = 24.0
+content_margin_top = 0.0
+content_margin_right = 24.0
+content_margin_bottom = 0.0
+bg_color = Color(0.89, 0.79, 0.64, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="BackPressed"]
+content_margin_left = 24.0
+content_margin_top = 0.0
+content_margin_right = 24.0
+content_margin_bottom = 0.0
+bg_color = Color(0.79, 0.66, 0.5, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
+[sub_resource type="StyleBoxFlat" id="VolumeTrack"]
+content_margin_left = 0.0
+content_margin_top = 9.0
+content_margin_right = 0.0
+content_margin_bottom = 9.0
+bg_color = Color(0.847, 0.737, 0.584, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.43, 0.32, 0.18, 0.72)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="VolumeFill"]
+content_margin_left = 0.0
+content_margin_top = 9.0
+content_margin_right = 0.0
+content_margin_bottom = 9.0
+bg_color = Color(0.588, 0.745, 0.443, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.459, 0.263, 0.176, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="Theme" id="SettingsControlsTheme"]
+default_font = ExtResource("13_lora_regular")
+default_font_size = 26
+HSlider/icons/grabber = SubResource("VolumeGrabber")
+HSlider/icons/grabber_disabled = SubResource("VolumeGrabber")
+HSlider/icons/grabber_highlight = SubResource("VolumeGrabber")
+HSlider/styles/slider = SubResource("VolumeTrack")
+HSlider/styles/grabber_area = SubResource("VolumeFill")
+HSlider/styles/grabber_area_highlight = SubResource("VolumeFill")
+CheckButton/icons/checked = SubResource("MuteChecked")
+CheckButton/icons/checked_disabled = SubResource("MuteChecked")
+CheckButton/icons/unchecked = SubResource("MuteUnchecked")
+CheckButton/icons/unchecked_disabled = SubResource("MuteUnchecked")
+CheckButton/styles/normal = SubResource("TabBarStyle")
+CheckButton/styles/hover = SubResource("TabBarStyle")
+CheckButton/styles/pressed = SubResource("TabBarStyle")
+CheckButton/styles/hover_pressed = SubResource("TabBarStyle")
+CheckButton/styles/disabled = SubResource("TabBarStyle")
+CheckButton/styles/focus = SubResource("ControlFocus")
 
 [node name="SettingsMenu" type="Control"]
 layout_mode = 3
@@ -70,6 +251,11 @@ grow_vertical = 2
 z_index = 20
 theme = ExtResource("2_theme")
 script = ExtResource("1_settings")
+SoundOnIcon = ExtResource("7_sound_on")
+SoundOffIcon = ExtResource("8_sound_off")
+SoundMutedIcon = SubResource("SoundMutedIcon")
+MusicOnIcon = ExtResource("10_music_on")
+MusicMutedIcon = SubResource("MusicMutedIcon")
 
 [node name="Dimmer" type="ColorRect" parent="."]
 layout_mode = 1
@@ -89,21 +275,22 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SettingsPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(1560, 960)
+custom_minimum_size = Vector2(1920, 1080)
 layout_mode = 2
 theme_override_styles/panel = SubResource("PanelStyle")
 
 [node name="Content" type="VBoxContainer" parent="CenterContainer/SettingsPanel"]
 z_index = 1
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 0
+theme = SubResource("SettingsControlsTheme")
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/SettingsPanel/Content"]
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.28, 0.12, 0.065, 1)
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
 theme_override_fonts/font = ExtResource("3_title_font")
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 80
 text = "Einstellungen"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -114,48 +301,103 @@ theme_override_colors/font_color = Color(0.4, 0.27, 0.17, 1)
 theme_override_font_sizes/font_size = 23
 text = "Audio, Anzeige, Kamerasteuerung und Entwickleroptionen"
 horizontal_alignment = 1
+visible = false
+
+[node name="HeaderSpacer" type="Control" parent="CenterContainer/SettingsPanel/Content"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="TabBarPanel" type="PanelContainer" parent="CenterContainer/SettingsPanel/Content"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("TabBarStyle")
+z_index = 2
 
 [node name="TabBar" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/TabBarPanel"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 0
 alignment = 1
 
 [node name="AudioTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 64)
+custom_minimum_size = Vector2(400, 72)
 layout_mode = 2
 toggle_mode = true
 button_pressed = true
-theme_override_font_sizes/font_size = 24
-text = "♪  AUDIO"
+theme_override_font_sizes/font_size = 40
+text = "Audio"
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("14_lora_bold")
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_styles/normal = SubResource("TabNormal")
+theme_override_styles/hover = SubResource("TabHover")
+theme_override_styles/pressed = SubResource("TabSelected")
+theme_override_styles/hover_pressed = SubResource("TabSelected")
+theme_override_styles/focus = SubResource("TabFocus")
 
 [node name="DisplayTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 64)
+custom_minimum_size = Vector2(400, 72)
 layout_mode = 2
 toggle_mode = true
-theme_override_font_sizes/font_size = 24
-text = "▣  ANZEIGE"
+theme_override_font_sizes/font_size = 40
+text = "Anzeige"
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("14_lora_bold")
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_styles/normal = SubResource("TabNormal")
+theme_override_styles/hover = SubResource("TabHover")
+theme_override_styles/pressed = SubResource("TabSelected")
+theme_override_styles/hover_pressed = SubResource("TabSelected")
+theme_override_styles/focus = SubResource("TabFocus")
 
 [node name="ControlsTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 64)
+custom_minimum_size = Vector2(400, 72)
 layout_mode = 2
 toggle_mode = true
-theme_override_font_sizes/font_size = 24
-text = "◆  STEUERUNG"
+theme_override_font_sizes/font_size = 40
+text = "Steuerung"
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("14_lora_bold")
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_styles/normal = SubResource("TabNormal")
+theme_override_styles/hover = SubResource("TabHover")
+theme_override_styles/pressed = SubResource("TabSelected")
+theme_override_styles/hover_pressed = SubResource("TabSelected")
+theme_override_styles/focus = SubResource("TabFocus")
 
 [node name="DeveloperTabButton" type="Button" parent="CenterContainer/SettingsPanel/Content/TabBarPanel/TabBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 64)
+custom_minimum_size = Vector2(400, 72)
 layout_mode = 2
 toggle_mode = true
-theme_override_font_sizes/font_size = 24
-text = "ENTWICKLER"
+theme_override_font_sizes/font_size = 40
+text = "Entwickler"
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("14_lora_bold")
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_styles/normal = SubResource("TabNormal")
+theme_override_styles/hover = SubResource("TabHover")
+theme_override_styles/pressed = SubResource("TabSelected")
+theme_override_styles/hover_pressed = SubResource("TabSelected")
+theme_override_styles/focus = SubResource("TabFocus")
 
 [node name="AudioPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
@@ -167,43 +409,57 @@ horizontal_scroll_mode = 0
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 0
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.43, 0.22, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 28
 text = "Audio"
+visible = false
 
 [node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
 theme_override_font_sizes/font_size = 24
 text = "Passe Gesamtlautstärke, Musik und Spieleffekte getrennt an."
+visible = false
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent"]
 layout_mode = 2
+visible = false
 
 [node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
 [node name="MasterRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 24
+
+[node name="MasterVolumeIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MasterRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("7_sound_on")
+expand_mode = 1
+stretch_mode = 5
+visible = false
 
 [node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MasterRow"]
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 30
 text = "Gesamtlautstärke"
 vertical_alignment = 1
 
 [node name="MasterVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MasterRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 48)
+custom_minimum_size = Vector2(820, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
@@ -212,30 +468,41 @@ value = 80.0
 
 [node name="MasterVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MasterRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(90, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 26
 text = "80 %"
-horizontal_alignment = 2
+horizontal_alignment = 0
 vertical_alignment = 1
 
 [node name="MusicRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 24
+
+[node name="MusicVolumeIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MusicRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("10_music_on")
+expand_mode = 1
+stretch_mode = 5
+visible = false
 
 [node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MusicRow"]
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 30
 text = "Musik"
 vertical_alignment = 1
 
 [node name="MusicVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MusicRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 48)
+custom_minimum_size = Vector2(820, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
@@ -244,30 +511,41 @@ value = 80.0
 
 [node name="MusicVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MusicRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(90, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 26
 text = "80 %"
-horizontal_alignment = 2
+horizontal_alignment = 0
 vertical_alignment = 1
 
 [node name="EffectsRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 24
+
+[node name="EffectsVolumeIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/EffectsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("7_sound_on")
+expand_mode = 1
+stretch_mode = 5
+visible = false
 
 [node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/EffectsRow"]
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
-text = "Spieleffekte"
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 30
+text = "Effekte"
 vertical_alignment = 1
 
 [node name="EffectsVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/EffectsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 48)
+custom_minimum_size = Vector2(820, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
@@ -276,29 +554,35 @@ value = 80.0
 
 [node name="EffectsVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/EffectsRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(90, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 26
 text = "80 %"
-horizontal_alignment = 2
+horizontal_alignment = 0
 vertical_alignment = 1
 
-[node name="MuteRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 60)
+[node name="MuteSpacer" type="Control" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
+mouse_filter = 2
+
+[node name="MuteRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+theme_override_constants/separation = 24
 
 [node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MuteRow"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
-text = "Gesamten Ton stummschalten"
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 30
+text = "Alles stummschalten"
 vertical_alignment = 1
+custom_minimum_size = Vector2(440, 0)
 
 [node name="MuteToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/AudioPage/PageContent/Rows/MuteRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 52)
+custom_minimum_size = Vector2(72, 48)
 layout_mode = 2
 
 [node name="DisplayPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
@@ -312,26 +596,27 @@ horizontal_scroll_mode = 0
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.43, 0.22, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 34
 text = "Anzeige"
 
 [node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 20
 text = "Lege Fenstermodus, Auflösung, 3D-Skalierung und Bildsynchronisation fest."
+autowrap_mode = 3
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent"]
 layout_mode = 2
 
 [node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent"]
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 12
 
 [node name="FullscreenRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows"]
 custom_minimum_size = Vector2(0, 72)
@@ -344,24 +629,26 @@ size_flags_horizontal = 3
 [node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/FullscreenRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 30
 text = "Vollbild"
+autowrap_mode = 3
 
 [node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/FullscreenRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Nutzt die gesamte verfügbare Bildschirmfläche."
+autowrap_mode = 3
 
 [node name="FullscreenToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/FullscreenRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 52)
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
 
 [node name="ResolutionRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows"]
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 12
 
 [node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/ResolutionRow"]
 custom_minimum_size = Vector2(620, 0)
@@ -371,25 +658,28 @@ size_flags_horizontal = 3
 [node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/ResolutionRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 30
 text = "Fensterauflösung"
+autowrap_mode = 3
 
 [node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/ResolutionRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Ist im Vollbildmodus nicht verfügbar."
+autowrap_mode = 3
 
 [node name="ResolutionOptions" type="OptionButton" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/ResolutionRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(500, 50)
+custom_minimum_size = Vector2(360, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 26
 
 [node name="RenderScaleRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
 [node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow"]
 custom_minimum_size = Vector2(560, 0)
@@ -398,14 +688,16 @@ layout_mode = 2
 [node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 30
 text = "3D-Render-Skalierung"
+autowrap_mode = 3
 
 [node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Senkt nur die interne 3D-Auflösung; die Oberfläche bleibt scharf."
+autowrap_mode = 3
 
 [node name="RenderScaleSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/RenderScaleRow"]
 unique_name_in_owner = true
@@ -422,7 +714,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -438,18 +730,20 @@ size_flags_horizontal = 3
 [node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/VsyncRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 30
 text = "VSync"
+autowrap_mode = 3
 
 [node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/VsyncRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Synchronisiert die Bildausgabe mit dem Monitor."
+autowrap_mode = 3
 
 [node name="VsyncToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DisplayPage/PageContent/Rows/VsyncRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 52)
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
 
 [node name="ControlsPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
@@ -463,51 +757,60 @@ horizontal_scroll_mode = 0
 [node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.43, 0.22, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 34
 text = "Steuerung"
 
 [node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
-theme_override_font_sizes/font_size = 24
-text = "Passe Kameradrehung, Mausrad-Zoom und vertikale Bewegung an."
+theme_override_font_sizes/font_size = 20
+text = "Eingaben und Einstellungen für die Kamera."
+autowrap_mode = 3
 
 [node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent"]
 layout_mode = 2
 
-[node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent"]
+[node name="ControlColumns" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent"]
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 48
 
-[node name="CameraSensitivityRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
+[node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns"]
 layout_mode = 2
-theme_override_constants/separation = 20
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.15
+theme_override_constants/separation = 12
 
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/CameraSensitivityRow"]
-custom_minimum_size = Vector2(560, 0)
+[node name="CameraSensitivityRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/CameraSensitivityRow"]
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/CameraSensitivityRow/Labels"]
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/CameraSensitivityRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 26
 text = "Mausempfindlichkeit"
+autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/CameraSensitivityRow/Labels"]
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/CameraSensitivityRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 18
 text = "Geschwindigkeit der Kameradrehung beim Ziehen."
+autowrap_mode = 3
 
-[node name="CameraSensitivitySlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/CameraSensitivityRow"]
+[node name="CameraSensitivitySlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/CameraSensitivityRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(240, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 50.0
@@ -515,40 +818,42 @@ max_value = 200.0
 step = 5.0
 value = 100.0
 
-[node name="CameraSensitivityValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/CameraSensitivityRow"]
+[node name="CameraSensitivityValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/CameraSensitivityRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ZoomSensitivityRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
+[node name="ZoomSensitivityRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/ZoomSensitivityRow"]
-custom_minimum_size = Vector2(560, 0)
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/ZoomSensitivityRow"]
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/ZoomSensitivityRow/Labels"]
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/ZoomSensitivityRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 26
 text = "Zoomempfindlichkeit"
+autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/ZoomSensitivityRow/Labels"]
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/ZoomSensitivityRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 18
 text = "Schrittweite des Mausrads beim Zoomen."
+autowrap_mode = 3
 
-[node name="ZoomSensitivitySlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/ZoomSensitivityRow"]
+[node name="ZoomSensitivitySlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/ZoomSensitivityRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(240, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 50.0
@@ -556,40 +861,42 @@ max_value = 200.0
 step = 5.0
 value = 100.0
 
-[node name="ZoomSensitivityValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/ZoomSensitivityRow"]
+[node name="ZoomSensitivityValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/ZoomSensitivityRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="TileFocusDistanceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
+[node name="TileFocusDistanceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow"]
-custom_minimum_size = Vector2(560, 0)
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/TileFocusDistanceRow"]
+custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow/Labels"]
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/TileFocusDistanceRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 26
 text = "Fokusabstand"
+autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow/Labels"]
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/TileFocusDistanceRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 18
 text = "Legt fest, wie nah die Kamera nach dem Doppelklick am Feld endet."
+autowrap_mode = 3
 
-[node name="TileFocusDistanceSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow"]
+[node name="TileFocusDistanceSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/TileFocusDistanceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 48)
+custom_minimum_size = Vector2(240, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = 8.0
@@ -597,81 +904,145 @@ max_value = 24.0
 step = 0.5
 value = 14.0
 
-[node name="TileFocusDistanceValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/TileFocusDistanceRow"]
+[node name="TileFocusDistanceValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/TileFocusDistanceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
+custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "14.0"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="BoardOverviewDistanceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow"]
-custom_minimum_size = Vector2(560, 0)
+[node name="InvertRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
-text = "Übersichtsabstand"
-
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
-theme_override_font_sizes/font_size = 22
-text = "Legt den Abstand der Boardübersicht nach einem Eichen-Doppelklick fest."
-
-[node name="BoardOverviewDistanceSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(520, 48)
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/InvertRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-min_value = 50.0
-max_value = 150.0
-step = 2.5
-value = 87.5
 
-[node name="BoardOverviewDistanceValue" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/BoardOverviewDistanceRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/InvertRow/Labels"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
-text = "88 %"
-horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
+theme_override_font_sizes/font_size = 26
+text = "Vertikale Pan-Richtung umkehren"
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/InvertRow/Labels"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+theme_override_font_sizes/font_size = 18
+text = "Kehrt die vertikale Bewegung beim Pannen mit der linken Maustaste um."
+autowrap_mode = 3
+
+[node name="InvertVerticalToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/Rows/InvertRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 48)
+layout_mode = 2
+
+[node name="ControlGrid" type="GridContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 14
+columns = 3
+
+[node name="CardIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+texture = ExtResource("15_help")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CardControl" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 23
+text = "Karte platzieren"
 vertical_alignment = 1
 
-[node name="InvertRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
-layout_mode = 2
-
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow"]
+[node name="CardInput" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 27
-text = "Vertikale Pan-Richtung umkehren"
-
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow/Labels"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
 theme_override_font_sizes/font_size = 22
-text = "Kehrt die vertikale Bewegung beim Pannen mit der linken Maustaste um."
+text = "Karte mit linker Maustaste auf ein Feld ziehen"
+vertical_alignment = 1
 
-[node name="InvertVerticalToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/Rows/InvertRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 52)
+[node name="YawIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+texture = ExtResource("16_help")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="YawControl" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 23
+text = "Kamera drehen"
+vertical_alignment = 1
+
+[node name="YawInput" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 22
+text = "Freie Fläche mit linker Maustaste ziehen"
+vertical_alignment = 1
+
+[node name="ZoomIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+texture = ExtResource("18_help")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ZoomControl" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 23
+text = "Kamera zoomen"
+vertical_alignment = 1
+
+[node name="ZoomInput" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 22
+text = "Mausrad"
+vertical_alignment = 1
+
+[node name="PauseIcon" type="TextureRect" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+texture = ExtResource("20_help")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PauseControl" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 23
+text = "Pause"
+vertical_alignment = 1
+
+[node name="PauseInput" type="Label" parent="CenterContainer/SettingsPanel/Content/ControlsPage/PageContent/ControlColumns/ControlGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_font_sizes/font_size = 22
+text = "Esc"
+vertical_alignment = 1
 
 [node name="DeveloperPage" type="ScrollContainer" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
@@ -681,80 +1052,90 @@ size_flags_vertical = 3
 theme_override_styles/panel = SubResource("SectionStyle")
 horizontal_scroll_mode = 0
 
-[node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage"]
+[node name="ContentMargin" type="MarginContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 8
+theme_override_constants/margin_right = 32
 
-[node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+[node name="PageContent" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="PageTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.43, 0.22, 1)
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 34
 text = "Entwickleroptionen"
 
-[node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+[node name="PageHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.43, 0.3, 0.2, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 20
 text = "Steuere Rundenpräsentation, Renderdiagnose und einzelne Spielklänge."
+autowrap_mode = 3
 
-[node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+[node name="Separator" type="HSeparator" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent"]
 layout_mode = 2
 
-[node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent"]
+[node name="Rows" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
-[node name="DayNightCycleRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 62)
+[node name="DayNightCycleRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow"]
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/DayNightCycleRow"]
 custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow/Labels"]
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/DayNightCycleRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Tag-Nacht-Zyklus"
+autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow/Labels"]
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/DayNightCycleRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
 theme_override_font_sizes/font_size = 20
 text = "Spielt beim Rundenende den Wechsel von Tag zu Nacht und zurück."
+autowrap_mode = 3
 
-[node name="DayNightCycleToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/DayNightCycleRow"]
+[node name="DayNightCycleToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/DayNightCycleRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 52)
+custom_minimum_size = Vector2(96, 48)
 layout_mode = 2
 button_pressed = true
 
-[node name="CameraPitchRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 76)
+[node name="CameraPitchRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow"]
+[node name="Labels" type="VBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/CameraPitchRow"]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow/Labels"]
+[node name="Title" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/CameraPitchRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Kamerawinkel"
+autowrap_mode = 3
 
-[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow/Labels"]
+[node name="Hint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/CameraPitchRow/Labels"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
 theme_override_font_sizes/font_size = 20
 text = "Ändert den Blickwinkel sofort und speichert ihn als Startwert."
+autowrap_mode = 3
 
-[node name="CameraPitchSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow"]
+[node name="CameraPitchSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/CameraPitchRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(520, 48)
 layout_mode = 2
@@ -764,354 +1145,355 @@ max_value = 75.0
 step = 1.0
 value = 15.0
 
-[node name="CameraPitchValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/CameraPitchRow"]
+[node name="CameraPitchValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/CameraPitchRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 26
 text = "15°"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="RenderDiagnosticsTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+[node name="RenderDiagnosticsTitle" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Renderdiagnose"
 
-[node name="RenderDiagnosticsHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+[node name="RenderDiagnosticsHint" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.36, 0.24, 1)
 theme_override_font_sizes/font_size = 20
 text = "Blende Gruppen einzeln aus und vergleiche danach die Zeichenaufrufe."
+autowrap_mode = 3
 
-[node name="DrawCallsValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+[node name="DrawCallsValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "Zeichenaufrufe gesamt: 0"
 
-[node name="RenderDiagnosticsToggles" type="HFlowContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
+[node name="RenderDiagnosticsToggles" type="HFlowContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_override_constants/h_separation = 18
 theme_override_constants/v_separation = 8
 
-[node name="GrassVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="GrassVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Gras"
 
-[node name="TileModelsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="TileModelsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Tile-Modelle"
 
-[node name="PlantsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="PlantsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Pflanzen"
 
-[node name="StoneBorderVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="StoneBorderVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Steinrand"
 
-[node name="OuterRingVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterRingVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Außenring"
 
-[node name="OuterGrassVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterGrassVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(190, 44)
+custom_minimum_size = Vector2(190, 48)
 layout_mode = 2
 button_pressed = true
 text = "Außengras"
 
-[node name="OuterCommonTreeVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterCommonTreeVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(190, 44)
+custom_minimum_size = Vector2(190, 48)
 layout_mode = 2
 button_pressed = true
 text = "Laubbaum"
 
-[node name="OuterPine1VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterPine1VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Kiefer 1"
 
-[node name="OuterPine2VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterPine2VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Kiefer 2"
 
-[node name="OuterPine3VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterPine3VisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Kiefer 3"
 
-[node name="OuterBushVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterBushVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Busch"
 
-[node name="OuterFloweringBushVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterFloweringBushVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 44)
+custom_minimum_size = Vector2(210, 48)
 layout_mode = 2
 button_pressed = true
 text = "Blütenbusch"
 
-[node name="OuterFlowersVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterFlowersVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Blumen"
 
-[node name="OuterMushroomsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterMushroomsVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Pilze"
 
-[node name="OuterOtherVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="OuterOtherVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 44)
+custom_minimum_size = Vector2(200, 48)
 layout_mode = 2
 button_pressed = true
 text = "Sonstiges außen"
 
-[node name="WaterVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="WaterVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Wasser"
 
-[node name="FishVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="FishVisibilityToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 button_pressed = true
 text = "Fische"
 
-[node name="ShadowsToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RenderDiagnosticsToggles"]
+[node name="ShadowsToggle" type="CheckButton" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RenderDiagnosticsToggles"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 44)
+custom_minimum_size = Vector2(170, 48)
 layout_mode = 2
 text = "Schatten"
 
-[node name="PlantingRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 52)
+[node name="PlantingRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/PlantingRow"]
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/PlantingRow"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Einpflanzen"
 vertical_alignment = 1
 
-[node name="PlantingVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/PlantingRow"]
+[node name="PlantingVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/PlantingRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 44)
+custom_minimum_size = Vector2(560, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="PlantingVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/PlantingRow"]
+[node name="PlantingVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/PlantingRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ForestAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 52)
+[node name="ForestAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/ForestAmbienceRow"]
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/ForestAmbienceRow"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Waldambiente"
 vertical_alignment = 1
 
-[node name="ForestAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/ForestAmbienceRow"]
+[node name="ForestAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/ForestAmbienceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 44)
+custom_minimum_size = Vector2(560, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="ForestAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/ForestAmbienceRow"]
+[node name="ForestAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/ForestAmbienceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="WaterAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 52)
+[node name="WaterAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/WaterAmbienceRow"]
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/WaterAmbienceRow"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Wasserplätschern"
 vertical_alignment = 1
 
-[node name="WaterAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/WaterAmbienceRow"]
+[node name="WaterAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/WaterAmbienceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 44)
+custom_minimum_size = Vector2(560, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="WaterAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/WaterAmbienceRow"]
+[node name="WaterAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/WaterAmbienceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="HeatAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 52)
+[node name="HeatAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeatAmbienceRow"]
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/HeatAmbienceRow"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Hitze und Grillen"
 vertical_alignment = 1
 
-[node name="HeatAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeatAmbienceRow"]
+[node name="HeatAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/HeatAmbienceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 44)
+custom_minimum_size = Vector2(560, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="HeatAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeatAmbienceRow"]
+[node name="HeatAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/HeatAmbienceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="RainAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 52)
+[node name="RainAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RainAmbienceRow"]
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RainAmbienceRow"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Regen"
 vertical_alignment = 1
 
-[node name="RainAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RainAmbienceRow"]
+[node name="RainAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RainAmbienceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 44)
+custom_minimum_size = Vector2(560, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="RainAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/RainAmbienceRow"]
+[node name="RainAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/RainAmbienceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="HeavyRainAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows"]
-custom_minimum_size = Vector2(0, 52)
+[node name="HeavyRainAmbienceRow" type="HBoxContainer" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeavyRainAmbienceRow"]
+[node name="Label" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/HeavyRainAmbienceRow"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.16, 0.09, 1)
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 30
 text = "Starkregen"
 vertical_alignment = 1
 
-[node name="HeavyRainAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeavyRainAmbienceRow"]
+[node name="HeavyRainAmbienceVolumeSlider" type="HSlider" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/HeavyRainAmbienceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 44)
+custom_minimum_size = Vector2(560, 48)
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100.0
 step = 1.0
 value = 100.0
 
-[node name="HeavyRainAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/PageContent/Rows/HeavyRainAmbienceRow"]
+[node name="HeavyRainAmbienceVolumeValue" type="Label" parent="CenterContainer/SettingsPanel/Content/DeveloperPage/ContentMargin/PageContent/Rows/HeavyRainAmbienceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.48, 0.2, 0.16, 1)
-theme_override_font_sizes/font_size = 23
+theme_override_font_sizes/font_size = 26
 text = "100 %"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -1122,16 +1504,34 @@ theme_override_colors/font_color = Color(0.43, 0.32, 0.2, 1)
 theme_override_font_sizes/font_size = 22
 text = "Die Fischanzeige wird gespeichert; die übrige Renderdiagnose gilt nur für die laufende Partie."
 horizontal_alignment = 1
+visible = false
+
+[node name="BackSpacer" type="Control" parent="CenterContainer/SettingsPanel/Content"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="BackButton" type="Button" parent="CenterContainer/SettingsPanel/Content"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 56)
+custom_minimum_size = Vector2(360, 64)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 25
-text = "ZURÜCK"
+theme_override_font_sizes/font_size = 38
+text = "Zurück"
+theme_override_fonts/font = ExtResource("14_lora_bold")
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_styles/normal = SubResource("BackNormal")
+theme_override_styles/hover = SubResource("BackHover")
+theme_override_styles/pressed = SubResource("BackPressed")
+theme_override_styles/hover_pressed = SubResource("BackPressed")
+theme_override_styles/focus = SubResource("ControlFocus")
 
 [node name="IvyDecoration" type="Control" parent="CenterContainer/SettingsPanel"]
+visible = false
 layout_mode = 2
 mouse_filter = 2
 
@@ -1204,4 +1604,4 @@ flip_v = true
 
 [node name="MenuCardMotion" type="Node" parent="."]
 script = ExtResource("4_motion")
-TargetPath = NodePath("../CenterContainer/SettingsPanel/Content")
+TargetPath = NodePath("../CenterContainer/SettingsPanel/Content/BackButton")

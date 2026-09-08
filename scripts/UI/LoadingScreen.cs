@@ -8,22 +8,45 @@ public partial class LoadingScreen : Control
 	private const float ResourceLoadProgressShare = 0.9f;
 	private const float ProgressCatchUpPerSecond = 3.0f;
 	private const float SceneFadeDuration = 0.55f;
+	private const float TipDisplayDuration = 6.0f;
+	private static readonly string[] LoadingTips =
+	{
+		"Mit Escape pausierst du das Spiel.",
+		"Mit der Schaufel holst du Pflanzen in Stufe 1 als Karte zurück.",
+		"Im Lexikon stehen die Werte und Effekte entdeckter Karten.",
+		"Blau zeigt die Wasserproduktion, Rot den Wasserverbrauch.",
+		"Moos sammelt Wasser, sobald es ausgewachsen ist.",
+		"Ausgewachsene Blumen fördern die Ausbreitung ihrer Nachbarn.",
+		"Pilze können die Wasserproduktion benachbarter Pflanzen erhöhen."
+	};
 
 	private Label _statusLabel;
 	private ProgressBar _progressBar;
+	private Control _layout;
 	private readonly Godot.Collections.Array _loadProgress = new();
 	private float _elapsedTime;
+	private float _tipElapsedTime;
+	private int _tipIndex;
 	private float _displayedProgress;
 	private ulong _resourceLoadStartedUsec;
 	private int _lastLoggedProgressBucket = -10;
 	private bool _resourceLoadFinishedLogged;
 	private bool _isChangingScene;
 
+	public override void _EnterTree()
+	{
+		Resized += UpdateLayout;
+	}
+
 	public override void _Ready()
 	{
 		LoadProfiler.StartSession();
 		_statusLabel = GetNode<Label>("%StatusLabel");
 		_progressBar = GetNode<ProgressBar>("%ProgressBar");
+		_layout = GetNode<Control>("Layout");
+		UpdateLayout();
+		_tipIndex = GD.RandRange(0, LoadingTips.Length - 1);
+		_statusLabel.Text = LoadingTips[_tipIndex];
 
 		_resourceLoadStartedUsec = LoadProfiler.BeginPhase(
 			"Main.tscn einschließlich Abhängigkeiten laden");
@@ -43,12 +66,28 @@ public partial class LoadingScreen : Control
 		}
 	}
 
+	public override void _ExitTree()
+	{
+		Resized -= UpdateLayout;
+	}
+
+	private void UpdateLayout()
+	{
+		if (_layout == null || Size.X <= 0.0f || Size.Y <= 0.0f)
+			return;
+
+		float scale = Mathf.Min(Size.X / 1920.0f, Size.Y / 1080.0f);
+		_layout.Size = Size / scale;
+		_layout.Scale = Vector2.One * scale;
+	}
+
 	public override void _Process(double delta)
 	{
 		if (_isChangingScene)
 			return;
 
 		_elapsedTime += (float)delta;
+		UpdateTip((float)delta);
 		_loadProgress.Clear();
 		ResourceLoader.ThreadLoadStatus loadStatus =
 			ResourceLoader.LoadThreadedGetStatus(
@@ -102,7 +141,6 @@ public partial class LoadingScreen : Control
 	{
 		_displayedProgress = 1.0f;
 		_progressBar.Value = 100.0f;
-		_statusLabel.Text = "Spielwelt wird aufgebaut …";
 	}
 
 	private void UpdateDisplayedProgress(float resourceProgress, float delta)
@@ -119,25 +157,22 @@ public partial class LoadingScreen : Control
 			ProgressCatchUpPerSecond * delta);
 
 		_progressBar.Value = _displayedProgress * 100.0f;
-		UpdateStatusText(_displayedProgress / ResourceLoadProgressShare);
 	}
 
-	private void UpdateStatusText(float progress)
+	private void UpdateTip(float delta)
 	{
-		if (progress < 0.25f)
-			_statusLabel.Text = "Spieldaten werden geladen …";
-		else if (progress < 0.65f)
-			_statusLabel.Text = "Modelle und Texturen werden geladen …";
-		else if (progress < 0.95f)
-			_statusLabel.Text = "Spielwelt wird vorbereitet …";
-		else
-			_statusLabel.Text = "Spielwelt wird aufgebaut …";
+		_tipElapsedTime += delta;
+		if (_tipElapsedTime < TipDisplayDuration)
+			return;
+
+		_tipElapsedTime %= TipDisplayDuration;
+		_tipIndex = (_tipIndex + 1) % LoadingTips.Length;
+		_statusLabel.Text = LoadingTips[_tipIndex];
 	}
 
 	private async void OpenGameScene()
 	{
 		_isChangingScene = true;
-		_statusLabel.Text = "Spielwelt wird aufgebaut …";
 		ulong phaseStartedUsec = LoadProfiler.BeginPhase(
 			"Geladene PackedScene übernehmen");
 		PackedScene gameScene =
@@ -183,7 +218,6 @@ public partial class LoadingScreen : Control
 		Reparent(fadeLayer, false);
 
 		_progressBar.Value = 100.0f;
-		_statusLabel.Text = "Spielwelt ist bereit";
 		LoadProfiler.EndPhase(
 			"Ladebildschirm für Übergang vorbereiten",
 			phaseStartedUsec);

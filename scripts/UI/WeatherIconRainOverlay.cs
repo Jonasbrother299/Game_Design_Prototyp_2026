@@ -28,9 +28,7 @@ public partial class WeatherIconRainOverlay : Control
 		new Rect2(223.0f, 415.0f, 62.0f, 93.0f),
 		new Rect2(89.0f, 398.0f, 59.0f, 93.0f),
 		new Rect2(468.0f, 423.0f, 58.0f, 92.0f),
-		new Rect2(349.0f, 467.0f, 54.0f, 81.0f),
-		new Rect2(433.0f, 568.0f, 59.0f, 93.0f),
-		new Rect2(284.0f, 573.0f, 55.0f, 83.0f)
+		new Rect2(433.0f, 568.0f, 59.0f, 93.0f)
 	};
 	private static readonly float[] HeavyRainDropPhaseOffsets =
 	{
@@ -40,9 +38,7 @@ public partial class WeatherIconRainOverlay : Control
 		0.68f,
 		0.1f,
 		0.55f,
-		0.47f,
-		0.82f,
-		0.34f
+		0.82f
 	};
 	private const float IconCenterX = 375.0f;
 	private const float RainIconCenterY = 358.5f;

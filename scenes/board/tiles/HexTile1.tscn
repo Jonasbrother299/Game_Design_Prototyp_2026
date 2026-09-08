@@ -1,6 +1,7 @@
 [gd_scene format=4 uid="uid://cnjipajjn7apw"]
 
 [ext_resource type="Script" uid="uid://dswtovmxx7vpi" path="res://scripts/board/HexTile.cs" id="1_vw4n3"]
+[ext_resource type="Script" uid="uid://dnvos40aifygh" path="res://scripts/visuals/PlantPlacementWindIndicator.cs" id="placement_wind_indicator"]
 [ext_resource type="PackedScene" uid="uid://bi5vgilqldu0g" path="res://assets/models/tiles/tile1.fbx" id="1_wgx2s"]
 [ext_resource type="Texture2D" uid="uid://brav1xihem3m1" path="res://assets/models/tiles/textures/tile1/tile1_Rock3_AlbedoTransparency.png" id="2_ymots"]
 [ext_resource type="Texture2D" uid="uid://c2yc8hd2ypsgy" path="res://assets/models/tiles/textures/tile1/tile1_Rock3_Normal.png" id="3_cxgp3"]
@@ -164,6 +165,9 @@ visible = false
 [node name="MeshInstance3D" type="MeshInstance3D" parent="HandCardPlacementIndicator" index="0" unique_id=1852808585]
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_placement_indicator")
+
+[node name="PlantPlacementWindIndicator" type="Node3D" parent="HandCardPlacementIndicator" index="1"]
+script = ExtResource("placement_wind_indicator")
 
 [editable path="tile1_grass"]
 [editable path="tile1_grass/grass"]

@@ -1,21 +1,51 @@
-[gd_scene load_steps=5 format=3 uid="uid://es3ylu5osnqc"]
+[gd_scene load_steps=11 format=3 uid="uid://es3ylu5osnqc"]
 
 [ext_resource type="Script" uid="uid://detltfj3hgo8" path="res://scripts/UI/LoadingScreen.cs" id="1_loading"]
-[ext_resource type="Texture2D" path="res://assets/images/LoadingScreen.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://assets/ui/loading/loading_bar.svg" id="2_bar"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="3_font"]
 
-[sub_resource type="StyleBoxFlat" id="StyleProgressBackground"]
-bg_color = Color(0.008, 0.025, 0.014, 0.95)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="Gradient" id="BackgroundGradient"]
+offsets = PackedFloat32Array(0, 0.3, 0.7, 1)
+colors = PackedColorArray(0.22745, 0.23529, 0.05098, 1, 0.2, 0.20784, 0.04314, 1, 0.11765, 0.12157, 0.01961, 1, 0.07059, 0.07451, 0.00392, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleProgressFill"]
-bg_color = Color(0.61, 0.75, 0.36, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+[sub_resource type="GradientTexture2D" id="BackgroundTexture"]
+gradient = SubResource("BackgroundGradient")
+width = 1024
+height = 1024
+fill = 1
+fill_from = Vector2(0.5, 0.51)
+fill_to = Vector2(1, 0.9)
+
+[sub_resource type="AtlasTexture" id="BackgroundCrop"]
+atlas = SubResource("BackgroundTexture")
+region = Rect2(0, 224, 1024, 576)
+
+[sub_resource type="AtlasTexture" id="ProgressFrame"]
+atlas = ExtResource("2_bar")
+region = Rect2(0, 0, 1200, 52)
+
+[sub_resource type="AtlasTexture" id="ProgressHatching"]
+atlas = ExtResource("2_bar")
+region = Rect2(0, 52, 32, 52)
+
+[sub_resource type="StyleBoxTexture" id="StyleProgressBackground"]
+content_margin_left = 6.0
+content_margin_top = 5.0
+content_margin_right = 6.0
+content_margin_bottom = 5.0
+texture = SubResource("ProgressFrame")
+texture_margin_left = 10.0
+texture_margin_top = 8.0
+texture_margin_right = 10.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleProgressFill"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+texture = SubResource("ProgressHatching")
+axis_stretch_horizontal = 1
 
 [node name="LoadingScreen" type="Control" unique_id=359494277]
 layout_mode = 3
@@ -34,64 +64,44 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_background")
+texture = SubResource("BackgroundCrop")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 0
 
-[node name="ScreenMargin" type="MarginContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 72
-theme_override_constants/margin_top = 64
-theme_override_constants/margin_right = 72
-theme_override_constants/margin_bottom = 64
-
-[node name="Layout" type="VBoxContainer" parent="ScreenMargin"]
-layout_mode = 2
-
-[node name="FlexibleSpace" type="Control" parent="ScreenMargin/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
+[node name="Layout" type="Control" parent="."]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
 mouse_filter = 2
 
-[node name="LoadingPanel" type="MarginContainer" parent="ScreenMargin/Layout"]
-custom_minimum_size = Vector2(760, 180)
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_constants/margin_left = 6
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 6
-theme_override_constants/margin_bottom = 6
-
-[node name="Content" type="VBoxContainer" parent="ScreenMargin/Layout/LoadingPanel"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="TitleLabel" type="Label" parent="ScreenMargin/Layout/LoadingPanel/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.94, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
-theme_override_constants/outline_size = 7
-theme_override_font_sizes/font_size = 38
-text = "Ökosystem wird vorbereitet"
-
-[node name="StatusLabel" type="Label" parent="ScreenMargin/Layout/LoadingPanel/Content"]
+[node name="StatusLabel" type="Label" parent="Layout"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 0.96, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.95)
-theme_override_constants/outline_size = 5
-theme_override_font_sizes/font_size = 21
-text = "Boden wird vorbereitet …"
+layout_mode = 1
+anchor_left = 0.14
+anchor_top = 0.52
+anchor_right = 0.86
+anchor_bottom = 0.7
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.98, 0.95, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 72
+text = "Mit Escape pausierst du das Spiel."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
 
-[node name="ProgressBar" type="ProgressBar" parent="ScreenMargin/Layout/LoadingPanel/Content"]
+[node name="ProgressBar" type="ProgressBar" parent="Layout"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(700, 16)
-layout_mode = 2
+layout_mode = 1
+anchor_left = 0.194
+anchor_top = 0.755
+anchor_right = 0.806
+anchor_bottom = 0.755
+offset_bottom = 52.0
+grow_horizontal = 2
+mouse_filter = 2
 theme_override_styles/background = SubResource("StyleProgressBackground")
 theme_override_styles/fill = SubResource("StyleProgressFill")
 show_percentage = false

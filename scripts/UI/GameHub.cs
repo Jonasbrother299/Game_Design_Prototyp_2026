@@ -47,7 +47,6 @@ public partial class GameHub : Control
 	private BoardManager _boardManager;
 	private EventDisplayUI _eventDisplay;
 	private WaterDisplayUI _waterDisplay;
-	private RoundDisplayUI _roundDisplay;
 	private BaseButton _endTurnButton;
 	private ColorRect _dayNightOverlay;
 	private DayCycleDisplayUI _dayCycleDisplay;
@@ -86,7 +85,7 @@ public partial class GameHub : Control
 		MouseFilter = MouseFilterEnum.Ignore;
 
 		WaterFeedbackFont ??= GD.Load<Font>(
-			"res://assets/ui/fonts/Eckmannpsych-Medium.ttf");
+			"res://assets/ui/fonts/lora/Lora-Bold.otf");
 
 		if (ExitButton == null)
 			ExitButton = GetNodeOrNull<Button>("ExitButton");
@@ -186,16 +185,6 @@ public partial class GameHub : Control
 			UpdateWaterPreview();
 		}
 
-		_roundDisplay = GetNodeOrNull<RoundDisplayUI>("RoundDisplay");
-		if (_roundDisplay == null)
-		{
-			GD.PushError("GameHub: Rundenanzeige fehlt.");
-		}
-		else if (_turnManager.State != null)
-		{
-			_roundDisplay.ShowRound(_turnManager.State.CurrentRound);
-		}
-
 		_endTurnButton = GetNodeOrNull<BaseButton>("EndTurnButton");
 		_dayNightOverlay = GetNodeOrNull<ColorRect>("DayNightOverlay");
 		_dayCycleDisplay = GetNodeOrNull<DayCycleDisplayUI>("DayCycleDisplay");
@@ -236,7 +225,6 @@ public partial class GameHub : Control
 		_waterDisplay?.ShowCurrentState(
 			_turnManager.State.Water,
 			_turnManager.Config.WinWaterLimit);
-		_roundDisplay?.ShowRound(_turnManager.State.CurrentRound);
 		SetEndTurnLocked(_turnManager.State.IsGameOver);
 		UpdateWaterPreview();
 		RefreshActiveEventDisplay();
@@ -424,6 +412,13 @@ public partial class GameHub : Control
 
 	private void OnEndTurnRequested(int _)
 	{
+		float calendarFlipDuration =
+			(_endTurnButton as EndTurnButtonUI)?.CalendarFlipDuration ?? 0.0f;
+		_feedbackSequenceEndDelay = Mathf.Max(
+			_feedbackSequenceEndDelay,
+			calendarFlipDuration);
+		SetEndTurnLocked(true);
+
 		if (!SettingsMenu.IsDayNightCycleEnabled())
 		{
 			ResetDayNightPresentation();
@@ -436,7 +431,6 @@ public partial class GameHub : Control
 		_feedbackSequenceEndDelay = Mathf.Max(
 			_feedbackSequenceEndDelay,
 			Mathf.Max(userInterfaceDuration, worldDuration));
-		SetEndTurnLocked(true);
 	}
 
 	private float StartDayNightTransition()
@@ -508,13 +502,12 @@ public partial class GameHub : Control
 		ScheduleRoundPresentationCompletion(round);
 	}
 
-	private void ScheduleRoundPresentationCompletion(int round)
+	private void ScheduleRoundPresentationCompletion(int _)
 	{
 		float delay = Mathf.Max(_feedbackSequenceEndDelay, 0.0f);
 
 		if (delay <= 0.01f)
 		{
-			_roundDisplay?.ShowRound(round);
 			SetEndTurnLocked(false);
 			_gameManager?.SetDayNightPresentationInputLocked(false);
 			_feedbackSequenceEndDelay = 0.0f;
@@ -526,7 +519,6 @@ public partial class GameHub : Control
 		_feedbackTimelineTween.TweenInterval(delay);
 		_feedbackTimelineTween.TweenCallback(Callable.From(() =>
 		{
-			_roundDisplay?.ShowRound(round);
 			SetEndTurnLocked(false);
 			_gameManager?.SetDayNightPresentationInputLocked(false);
 			_feedbackSequenceEndDelay = 0.0f;

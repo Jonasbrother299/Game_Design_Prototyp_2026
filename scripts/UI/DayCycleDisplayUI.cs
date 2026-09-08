@@ -2,8 +2,6 @@ using Godot;
 
 public partial class DayCycleDisplayUI : TextureRect
 {
-	private const bool HeavyRainIconAnimationEnabled = false;
-
 	[Export] public Texture2D SunIcon;
 	[Export] public Texture2D RainIcon;
 	[Export] public Texture2D RainDropsIcon;
@@ -133,8 +131,7 @@ public partial class DayCycleDisplayUI : TextureRect
 
 		_rainOverlay?.SetRainMode(
 			_eventType == GameEventType.Rain ||
-			(_eventType == GameEventType.HeavyRain &&
-				HeavyRainIconAnimationEnabled),
+			_eventType == GameEventType.HeavyRain,
 			_eventType == GameEventType.HeavyRain);
 	}
 

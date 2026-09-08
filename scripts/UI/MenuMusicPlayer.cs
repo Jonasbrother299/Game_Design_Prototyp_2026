@@ -280,12 +280,12 @@ public partial class MenuMusicPlayer : PanelContainer
 
 		if (!hasTracks)
 		{
-			_trackTitle.Text = "KEIN TITEL AUSGEWÄHLT";
+			_trackTitle.Text = "Kein Titel ausgewählt";
 			_trackArtist.Text = "Musikdateien folgen";
 			_progressBar.Value = 0.0;
 			_elapsedTimeLabel.Text = "00:00";
 			_durationLabel.Text = "00:00";
-			_collapsedTrackTitle.Text = "MUSIKPLAYER";
+			_collapsedTrackTitle.Text = "Musikplayer";
 			UpdateMuteButton();
 			return;
 		}
@@ -293,7 +293,7 @@ public partial class MenuMusicPlayer : PanelContainer
 		_trackTitle.Text = GetTrackTitle(_currentTrackIndex);
 		_trackArtist.Text = GetTrackArtist(_currentTrackIndex);
 		_collapsedTrackTitle.Text =
-			$"MUSIK  •  {GetTrackTitle(_currentTrackIndex)}";
+			$"Musik · {GetTrackTitle(_currentTrackIndex)}";
 		UpdateProgress();
 		UpdateMuteButton();
 	}
@@ -331,8 +331,8 @@ public partial class MenuMusicPlayer : PanelContainer
 		bool isMuted =
 			_musicBusIndex >= 0 && AudioServer.IsBusMute(_musicBusIndex);
 		_muteButton.Text = isMuted
-			? "KLANG AUS"
-			: "KLANG AN";
+			? "Musik aus"
+			: "Musik an";
 		_muteButton.TooltipText = isMuted
 			? "Musik einschalten"
 			: "Musik stummschalten";
@@ -366,8 +366,8 @@ public partial class MenuMusicPlayer : PanelContainer
 		}
 
 		_playbackLamp.SelfModulate = isPlaying
-			? new Color(0.82f, 0.32f, 0.15f, 1.0f)
-			: new Color(0.28f, 0.16f, 0.09f, 0.72f);
+			? Colors.White
+			: new Color(0.60f, 0.60f, 0.60f, 1.0f);
 	}
 
 	private void BindButtonAnimation(Button button)
@@ -415,7 +415,7 @@ public partial class MenuMusicPlayer : PanelContainer
 		tween.TweenProperty(
 			button,
 			"self_modulate",
-			pressed ? new Color(0.82f, 0.72f, 0.56f, 1.0f) : Colors.White,
+			pressed ? new Color(0.92f, 0.92f, 0.88f, 1.0f) : Colors.White,
 			duration);
 		_buttonTweens[button] = tween;
 	}
@@ -464,10 +464,10 @@ public partial class MenuMusicPlayer : PanelContainer
 			trackIndex < TrackTitles.Length &&
 			!string.IsNullOrWhiteSpace(TrackTitles[trackIndex]))
 		{
-			return TrackTitles[trackIndex].ToUpperInvariant();
+			return TrackTitles[trackIndex];
 		}
 
-		return $"WALDKLANG {trackIndex + 1}";
+		return $"Waldklang {trackIndex + 1}";
 	}
 
 	private string GetTrackArtist(int trackIndex)
@@ -479,7 +479,7 @@ public partial class MenuMusicPlayer : PanelContainer
 			return TrackArtists[trackIndex];
 		}
 
-		return "ECOSYSTEM-SOUNDTRACK";
+		return "Eco Cards · Soundtrack";
 	}
 
 	private void EnsureMusicBus()

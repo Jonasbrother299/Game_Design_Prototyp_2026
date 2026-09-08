@@ -38,7 +38,7 @@ public partial class CameraRigController : Node3D
 	[Export(PropertyHint.Range, "0.0,4.0,0.1")]
 	public float FocusHeightOffset = 1.0f;
 	[Export(PropertyHint.Range, "0.0,0.6,0.01")]
-	public float InspectionFocusHorizontalOffsetRatio = 0.30f;
+	public float InspectionFocusHorizontalOffsetRatio = 0.0f;
 	[Export(PropertyHint.Range, "8.0,30.0,0.5")]
 	public float InspectionTreeMinimumFocusDistance = 16.0f;
 	[Export(PropertyHint.Range, "8.0,30.0,0.5")]
