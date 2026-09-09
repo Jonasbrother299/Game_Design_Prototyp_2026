@@ -6,6 +6,7 @@
 [ext_resource type="Material" uid="uid://v0fgmrlyoypy" path="res://assets/models/plants/Moss/textures/mossmaterial.tres" id="4_qmn5a"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vsu6i"]
+albedo_color = Color(1.2237577, 1.2237577, 1.2237577, 1)
 albedo_texture = ExtResource("2_dxob2")
 normal_enabled = true
 normal_texture = ExtResource("3_rq4l1")
@@ -25,10 +26,10 @@ data = PackedVector3Array(-0.782, 0.3506, -0.2633, -0.8045, 0.7241, -0.2539, -0.
 [node name="Moss" unique_id=499062124 instance=ExtResource("1_uej0n")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.031319797, 0)
 
-[node name="Ground" parent="." index="0" unique_id=2054607647]
+[node name="Ground" parent="." index="0" unique_id=557134802]
 material_override = SubResource("StandardMaterial3D_vsu6i")
 
-[node name="Moss1" parent="." index="1" unique_id=1663589548]
+[node name="Moss1" parent="." index="1" unique_id=1051811425]
 material_override = ExtResource("4_qmn5a")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Moss1" index="0" unique_id=151064899]
@@ -36,7 +37,7 @@ material_override = ExtResource("4_qmn5a")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Moss1/StaticBody3D" index="0" unique_id=1586392420]
 shape = SubResource("ConcavePolygonShape3D_dxob2")
 
-[node name="Moss2" parent="." index="2" unique_id=64671164]
+[node name="Moss2" parent="." index="2" unique_id=1920262016]
 material_override = ExtResource("4_qmn5a")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Moss2" index="0" unique_id=1221907841]
@@ -44,7 +45,7 @@ material_override = ExtResource("4_qmn5a")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Moss2/StaticBody3D" index="0" unique_id=134654437]
 shape = SubResource("ConcavePolygonShape3D_rq4l1")
 
-[node name="Moss3" parent="." index="3" unique_id=652708753]
+[node name="Moss3" parent="." index="3" unique_id=1072879353]
 material_override = ExtResource("4_qmn5a")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Moss3" index="0" unique_id=949057279]
@@ -52,7 +53,7 @@ material_override = ExtResource("4_qmn5a")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Moss3/StaticBody3D" index="0" unique_id=1341166335]
 shape = SubResource("ConcavePolygonShape3D_qmn5a")
 
-[node name="Moss4" parent="." index="4" unique_id=1549009205]
+[node name="Moss4" parent="." index="4" unique_id=2087693042]
 material_override = ExtResource("4_qmn5a")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Moss4" index="0" unique_id=1226674672]

@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://d3s80ti7s7x61"]
 
-[ext_resource type="Texture2D" uid="uid://bjjxwar27gdwn" path="res://assets/ui/decor/settings_controls.svg" id="1_controls"]
+[ext_resource type="Texture2D" uid="uid://dcgemdc7pk08t" path="res://assets/ui/decor/settings_controls.svg" id="1_controls"]
 
 [sub_resource type="StyleBoxFlat" id="ButtonDisabled"]
 content_margin_left = 24.0

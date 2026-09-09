@@ -2,7 +2,6 @@
 
 [ext_resource type="PackedScene" uid="uid://bo7c71b1l4jhf" path="res://assets/models/tiles/tile3.fbx" id="1_86rw7"]
 [ext_resource type="Script" uid="uid://dswtovmxx7vpi" path="res://scripts/board/HexTile.cs" id="1_hex_tile"]
-[ext_resource type="Script" uid="uid://dnvos40aifygh" path="res://scripts/visuals/PlantPlacementWindIndicator.cs" id="placement_wind_indicator"]
 [ext_resource type="Texture2D" uid="uid://cj47kgomwwft8" path="res://assets/models/tiles/textures/tile3/tile3_Rock_AlbedoTransparency.png" id="2_2deet"]
 [ext_resource type="Texture2D" uid="uid://c1b3fwb01wucv" path="res://assets/models/tiles/textures/tile3/tile3_Rock_Normal.png" id="3_rn06m"]
 [ext_resource type="Texture2D" uid="uid://dvapuxvyuxtq4" path="res://assets/models/tiles/textures/tile3/tile3_Rock_Roughness.png" id="4_iny0k"]
@@ -12,8 +11,9 @@
 [ext_resource type="PackedScene" uid="uid://b1tikic28ddfu" path="res://assets/models/tiles/textures/tile3/tile3_grass.fbx" id="8_axfrm"]
 [ext_resource type="Shader" uid="uid://duky11px7nkj0" path="res://shaders/anime-grass.gdshader" id="9_eh8ex"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="10_fosnb"]
-[ext_resource type="PackedScene" uid="uid://dmfripbc5xbaq" path="res://assets/models/plants/grass/grass.fbx" id="11_wv37v"]
+[ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="11_wv37v"]
 [ext_resource type="Texture2D" uid="uid://b1uhljqahla82" path="res://assets/models/plants/grass/grass_DefaultMaterial_AlbedoTransparency.png" id="12_grass"]
+[ext_resource type="Script" uid="uid://dnvos40aifygh" path="res://scripts/visuals/PlantPlacementWindIndicator.cs" id="placement_wind_indicator"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_17btd"]
 albedo_texture = ExtResource("2_2deet")
@@ -41,6 +41,7 @@ shader_parameter/grass_base_color = Color(0.095, 0.205, 0.07, 1)
 shader_parameter/grass_light_color = Color(0.275, 0.36, 0.125, 1)
 shader_parameter/grass_cool_color = Color(0.045, 0.145, 0.105, 1)
 shader_parameter/grass_warm_color = Color(0.205, 0.255, 0.085, 1)
+shader_parameter/grass_wind_light_color = Color(0.38, 0.46, 0.18, 1)
 shader_parameter/grass_dry_shadow_color = Color(0.135, 0.09, 0.045, 1)
 shader_parameter/grass_dry_color = Color(0.26, 0.18, 0.075, 1)
 shader_parameter/grass_dry_light_color = Color(0.385, 0.31, 0.145, 1)
@@ -54,6 +55,11 @@ shader_parameter/toon_shadow_strength = 0.68
 shader_parameter/wind_direction = Vector2(0.894, 0.447)
 shader_parameter/wind_wave_scale = 0.07
 shader_parameter/wind_detail_scale = 0.24
+shader_parameter/wind_gust_strength = 0.06
+shader_parameter/wind_gust_threshold = 0.7
+shader_parameter/wind_gust_softness = 0.08
+shader_parameter/wind_gust_speed_multiplier = 0.5
+shader_parameter/wind_gust_patch_scale = 0.48
 shader_parameter/tile_color_blend_width = 0.95
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sm764"]
@@ -136,7 +142,7 @@ height = 0.45
 [node name="tile3" unique_id=1402458833 instance=ExtResource("1_86rw7")]
 script = ExtResource("1_hex_tile")
 
-[node name="Rock_Small_003" parent="." index="0" unique_id=1321491204]
+[node name="Rock_Small_003" parent="." index="0" unique_id=784217929]
 material_override = SubResource("StandardMaterial3D_17btd")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Rock_Small_003" index="0" unique_id=1593398457 groups=["grass_blocker"]]
@@ -144,12 +150,13 @@ material_override = SubResource("StandardMaterial3D_17btd")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rock_Small_003/StaticBody3D" index="0" unique_id=1842865489]
 shape = SubResource("ConcavePolygonShape3D_fosnb")
 
-[node name="TileNew_003" parent="." index="1" unique_id=947322529]
+[node name="TileNew_003" parent="." index="1" unique_id=1865374051]
 material_override = SubResource("StandardMaterial3D_02ojw")
 
 [node name="tile3_grass" parent="." index="2" unique_id=195225169 instance=ExtResource("8_axfrm")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.033641517, 0)
 
-[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="tile3_grass/Tile3_Grass" parent_id_path=PackedInt32Array(195225169, 2064608651) index="0" unique_id=320732372]
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="tile3_grass/Tile3_Grass" parent_id_path=PackedInt32Array(195225169, 1661187506) index="0" unique_id=320732372]
 material_override = SubResource("ShaderMaterial_51bqj")
 cast_shadow = 0
 multimesh = SubResource("MultiMesh_k3vn3")
@@ -157,7 +164,7 @@ multimesh = SubResource("MultiMesh_k3vn3")
 [node name="grass" parent="tile3_grass" index="1" unique_id=140818270 instance=ExtResource("11_wv37v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1933471, 0.17313486, 0.16988575)
 
-[node name="Plane_001" parent="tile3_grass/grass" index="0" unique_id=1160011182]
+[node name="Plane_001" parent="tile3_grass/grass" index="0" unique_id=759644433]
 transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0)
 visible = false
 mesh = SubResource("ArrayMesh_iyyd4")
@@ -173,7 +180,7 @@ visible = false
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_placement_indicator")
 
-[node name="PlantPlacementWindIndicator" type="Node3D" parent="HandCardPlacementIndicator" index="1"]
+[node name="PlantPlacementWindIndicator" type="Node3D" parent="HandCardPlacementIndicator" index="1" unique_id=1745158000]
 script = ExtResource("placement_wind_indicator")
 
 [editable path="tile3_grass"]

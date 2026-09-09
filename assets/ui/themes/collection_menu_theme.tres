@@ -1,7 +1,7 @@
 [gd_resource type="Theme" format=3 uid="uid://dgo4vmljnkx58"]
 
-[ext_resource type="FontFile" uid="uid://d0802gmut0pbo" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="1_regular"]
-[ext_resource type="FontFile" uid="uid://qmljn6vjen7a" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_bold"]
+[ext_resource type="FontFile" uid="uid://x5qxxlwvguch" path="res://assets/ui/fonts/lora/Lora-Regular.otf" id="1_regular"]
+[ext_resource type="FontFile" uid="uid://cdiqkhjcj67qw" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="2_bold"]
 
 [sub_resource type="StyleBoxFlat" id="ButtonDisabled"]
 content_margin_left = 20.0
