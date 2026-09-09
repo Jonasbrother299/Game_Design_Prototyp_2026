@@ -669,8 +669,7 @@ public partial class TutorialManager : Node
 			case CardExplanationPage.Light:
 				_overlay.SetCardExplanation(
 					"Lichtbedarf",
-					$"Hier siehst du, bei welchen Lichtverhältnissen du die Pflanze platzieren kannst.\n\n" +
-					$"Moos: {FormatLightLevels(moss)}",
+					$"Hier siehst du, bei welchen Lichtverhältnissen du die Pflanze platzieren kannst.\n\n",
 					new Rect2(
 						0.055f,
 						0.047f,
@@ -683,8 +682,7 @@ public partial class TutorialManager : Node
 			case CardExplanationPage.Growth:
 				_overlay.SetCardExplanation(
 					"Wachstumsdauer",
-					$"So viele Wachstumsschritte braucht die Pflanze, bis sie ausgewachsen ist.\n\n" +
-					$"Moos: {moss.GrowthRounds} Schritte",
+					$"So viele Wachstumsstadien hat die Pflanze insgesamt.\n\n",
 					new Rect2(
 						0.755f,
 						0.047f,
@@ -697,8 +695,7 @@ public partial class TutorialManager : Node
 			case CardExplanationPage.WaterConsumption:
 				_overlay.SetCardExplanation(
 					"Wasserverbrauch",
-					$"So viel Wasser verbraucht die Pflanze pro Runde.\n\n" +
-					$"Moos: {moss.WaterConsumption}",
+					$"So viel Wasser verbraucht die Pflanze pro Runde.\n\n",
 					new Rect2(
 						0.127f,
 						0.252f,
@@ -711,8 +708,7 @@ public partial class TutorialManager : Node
 			case CardExplanationPage.WaterProduction:
 				_overlay.SetCardExplanation(
 					"Wasserproduktion",
-					$"So viel Wasser produziert die Pflanze, sobald sie ausgewachsen ist.\n\n" +
-					$"Moos: +{moss.WaterProduction}",
+					$"So viel Wasser produziert die Pflanze, sobald sie ausgewachsen ist.\n\n",
 					new Rect2(
 						0.090f,
 						0.364f,
@@ -723,18 +719,9 @@ public partial class TutorialManager : Node
 				break;
 
 			case CardExplanationPage.Description:
-			{
-				string description =
-					string.IsNullOrWhiteSpace(
-						moss.Description
-					)
-						? "Hier steht die besondere Stärke der Pflanze."
-						: moss.Description;
-
 				_overlay.SetCardExplanation(
 					"Kartentext",
-					"Hier wird die besondere Eigenschaft der Pflanze beschrieben.\n\n" +
-					description,
+					"Hier wird die besondere Eigenschaft der Pflanze beschrieben.\n\n",
 					new Rect2(
 						0.10f,
 						0.81f,
@@ -744,7 +731,7 @@ public partial class TutorialManager : Node
 				);
 
 				break;
-			}
+			
 		}
 	}
 
