@@ -33,11 +33,17 @@ public partial class TurnManager : Node
 		State.CurrentRound >= Config.HandDiscardAvailableFromRound &&
 		State.HandCards.Count > 0;
 
+	public bool CanUseShovel =>
+		State != null &&
+		!State.IsGameOver &&
+		_placedCardsThisTurn.Count > 0;
+
 	private readonly RandomNumberGenerator _rng = new();
 	private readonly WaterPhase _waterPhase = new();
 	private readonly SpreadPhase _spreadPhase = new();
 	private readonly GrowthPhase _growthPhase = new();
 	private readonly EventPhase _eventPhase = new();
+	private readonly Dictionary<HexCoord, CardData> _placedCardsThisTurn = new();
 
 	private BoardManager _boardManager;
 
@@ -86,6 +92,7 @@ public partial class TurnManager : Node
 			return;
 
 		State.CardsPlayedThisTurn = 0;
+		_placedCardsThisTurn.Clear();
 
 		GD.Print("----------------------------------------");
 		GD.Print($"Round {State.CurrentRound} started.");
@@ -222,6 +229,7 @@ public partial class TurnManager : Node
 		_boardManager.GetTileView(tile.Coord)?.UpdateVisualState();
 		_boardManager.RecalculateLightLevels();
 		State.HandCards.Remove(card);
+		_placedCardsThisTurn[tile.Coord] = card;
 
 		PlantPlaced?.Invoke(card.PlantType, tile.Coord);
 		return true;
@@ -232,8 +240,7 @@ public partial class TurnManager : Node
 		return State != null &&
 			!State.IsGameOver &&
 			tile?.Plant != null &&
-			!tile.Coord.Equals(new HexCoord(0, 0)) &&
-			tile.Plant.VisualGrowthStage == 1;
+			_placedCardsThisTurn.ContainsKey(tile.Coord);
 	}
 
 	public bool TryRemoveYoungPlant(HexTileData tile, out string errorMessage)
@@ -258,19 +265,18 @@ public partial class TurnManager : Node
 			return false;
 		}
 
-		if (tile.Coord.Equals(new HexCoord(0, 0)))
+		if (!_placedCardsThisTurn.TryGetValue(tile.Coord, out CardData playedCard))
 		{
-			errorMessage = "Die Haupteiche kann nicht entfernt werden.";
-			return false;
-		}
-
-		if (tile.Plant.VisualGrowthStage != 1)
-		{
-			errorMessage = "Nur Pflanzen im ersten Stadium können entfernt werden.";
+			errorMessage = "Diese Pflanze wurde nicht in dieser Runde gesetzt.";
 			return false;
 		}
 
 		tile.RemovePlant();
+		_placedCardsThisTurn.Remove(tile.Coord);
+		State.HandCards.Add(playedCard);
+		State.CardsPlayedThisTurn = Mathf.Max(State.CardsPlayedThisTurn - 1, 0);
+		State.CardsPlayedTotal = Mathf.Max(State.CardsPlayedTotal - 1, 0);
+
 		_boardManager.GetTileView(tile.Coord)?.UpdateVisualState();
 		_boardManager.RecalculateLightLevels();
 		return true;

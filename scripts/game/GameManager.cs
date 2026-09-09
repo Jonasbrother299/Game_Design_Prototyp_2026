@@ -660,8 +660,8 @@ private void OnShovelButtonDown()
 	if (IsGameplayInputLocked ||
 		_isCardDragActive ||
 		GetTree().Paused ||
-		_turnManager?.State == null ||
-		_turnManager.State.IsGameOver)
+		_turnManager == null ||
+		!_turnManager.CanUseShovel)
 	{
 		return;
 	}
@@ -744,8 +744,8 @@ private void UpdateShovelButtonState()
 
 	_shovelButton.Disabled =
 		IsGameplayInputLocked ||
-		_turnManager?.State == null ||
-		_turnManager.State.IsGameOver;
+		_turnManager == null ||
+		!_turnManager.CanUseShovel;
 }
 
 private void OnEndTurnButtonPressed()
@@ -771,6 +771,7 @@ private void OnEndTurnButtonPressed()
 	_turnManager.EndTurn();
 	_cardHand?.SetCards(_turnManager.State.HandCards);
 	UpdateDiscardHandButtonState();
+	UpdateShovelButtonState();
 }
 
 private void OnDiscardHandButtonPressed()
@@ -844,6 +845,7 @@ private void OnPlantCardDragged(PlantType plantType, Vector2 mousePosition)
 		{
 			_cardHand?.CommitDraggedCardPlacement();
 			UpdateDiscardHandButtonState();
+			UpdateShovelButtonState();
 		}
 
 		ClearCurrentPreview();
