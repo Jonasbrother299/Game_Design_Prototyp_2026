@@ -462,7 +462,10 @@ public partial class TutorialManager : Node
 					"UI/CanvasLayer/GameHub/WaterLabel";
 
 				HighlightNode(path);
-				PositionHintNearNode(path);
+				PositionHintNearNode(
+					path,
+					alignTop: true
+				);
 
 				break;
 			}
@@ -585,7 +588,8 @@ public partial class TutorialManager : Node
 	}
 
 	private void PositionHintNearNode(
-		string path)
+		string path,
+		bool alignTop = false)
 	{
 		if (_overlay == null)
 			return;
@@ -605,7 +609,8 @@ public partial class TutorialManager : Node
 			targetControl.GetGlobalRect();
 
 		_overlay.PositionHintNear(
-			targetRect
+			targetRect,
+			alignTop
 		);
 	}
 
@@ -667,10 +672,10 @@ public partial class TutorialManager : Node
 					$"Hier siehst du, bei welchen Lichtverhältnissen du die Pflanze platzieren kannst.\n\n" +
 					$"Moos: {FormatLightLevels(moss)}",
 					new Rect2(
-						0.075f,
-						0.06f,
-						0.17f,
-						0.10f
+						0.055f,
+						0.047f,
+						0.19f,
+						0.115f
 					)
 				);
 				break;
@@ -681,10 +686,10 @@ public partial class TutorialManager : Node
 					$"So viele Wachstumsschritte braucht die Pflanze, bis sie ausgewachsen ist.\n\n" +
 					$"Moos: {moss.GrowthRounds} Schritte",
 					new Rect2(
-						0.78f,
-						0.06f,
-						0.14f,
-						0.10f
+						0.755f,
+						0.047f,
+						0.19f,
+						0.115f
 					)
 				);
 				break;
@@ -695,10 +700,10 @@ public partial class TutorialManager : Node
 					$"So viel Wasser verbraucht die Pflanze pro Runde.\n\n" +
 					$"Moos: {moss.WaterConsumption}",
 					new Rect2(
-						0.075f,
-						0.245f,
-						0.17f,
-						0.10f
+						0.127f,
+						0.252f,
+						0.20f,
+						0.115f
 					)
 				);
 				break;
@@ -709,10 +714,10 @@ public partial class TutorialManager : Node
 					$"So viel Wasser produziert die Pflanze, sobald sie ausgewachsen ist.\n\n" +
 					$"Moos: +{moss.WaterProduction}",
 					new Rect2(
-						0.075f,
-						0.355f,
-						0.17f,
-						0.10f
+						0.090f,
+						0.364f,
+						0.20f,
+						0.115f
 					)
 				);
 				break;
@@ -732,7 +737,7 @@ public partial class TutorialManager : Node
 					description,
 					new Rect2(
 						0.10f,
-						0.80f,
+						0.81f,
 						0.80f,
 						0.152f
 					)

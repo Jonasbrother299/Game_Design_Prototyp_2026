@@ -315,7 +315,7 @@ public partial class TutorialOverlay : Control
 		{
 			_cardNextButton.Text =
 				isLastPage
-					? "Karte spielen"
+					? "Verstanden"
 					: "Weiter";
 		}
 
@@ -394,7 +394,9 @@ public partial class TutorialOverlay : Control
 		PositionHintWindow();
 	}
 
-	public void PositionHintNear(Rect2 targetRect)
+	public void PositionHintNear(
+		Rect2 targetRect,
+		bool alignTop = false)
 	{
 		if (_window == null)
 			return;
@@ -442,10 +444,19 @@ public partial class TutorialOverlay : Control
 			return;
 		}
 
-		float y =
-			targetRect.Position.Y +
-			(targetRect.Size.Y - windowSize.Y) *
-			0.5f;
+		float y;
+
+		if (alignTop)
+		{
+			y = targetRect.Position.Y -4.0f;
+		}
+		else
+		{
+			y =
+				targetRect.Position.Y +
+				(targetRect.Size.Y - windowSize.Y) *
+				0.5f;
+		}
 
 		x = Mathf.Clamp(
 			x,
@@ -458,11 +469,16 @@ public partial class TutorialOverlay : Control
 			)
 		);
 
+		float minimumY =
+			alignTop
+				? 0.0f
+				: HintTopMargin;
+
 		y = Mathf.Clamp(
 			y,
-			HintTopMargin,
+			minimumY,
 			Mathf.Max(
-				HintTopMargin,
+				minimumY,
 				viewportSize.Y -
 				windowSize.Y -
 				HintBottomMargin

@@ -12,7 +12,7 @@ public partial class LoadingScreen : Control
 	private static readonly string[] LoadingTips =
 	{
 		"Mit Escape pausierst du das Spiel.",
-		"Mit der Schaufel holst du Pflanzen in Stufe 1 als Karte zurück.",
+		"Mit der Schaufel holst du falsch platzierte Pflanzen als Karte zurück.",
 		"Im Lexikon stehen die Werte und Effekte entdeckter Karten.",
 		"Blau zeigt die Wasserproduktion, Rot den Wasserverbrauch.",
 		"Moos sammelt Wasser, sobald es ausgewachsen ist.",
