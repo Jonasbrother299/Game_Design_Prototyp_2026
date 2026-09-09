@@ -40,4 +40,4 @@ theme/custom_font="res://assets/ui/fonts/lora/Lora-Regular.otf"
 
 [rendering]
 
-rendering_device/driver.windows="d3d12"
+rendering_device/driver.windows="vulkan"
