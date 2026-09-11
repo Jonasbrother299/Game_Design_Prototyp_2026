@@ -7,6 +7,7 @@ public partial class MainMenu : Control
 	private static string _pendingStartError = "";
 
 	private Button _playButton;
+	private Button _tutorialButton;
 	private Button _achievementsButton;
 	private Button _encyclopediaButton;
 	private Button _settingsButton;
@@ -23,6 +24,7 @@ public partial class MainMenu : Control
 	public override void _Ready()
 	{
 		_playButton = GetNodeOrNull<Button>("%PlayButton");
+		_tutorialButton = GetNodeOrNull<Button>("%TutorialButton");
 		_achievementsButton = GetNodeOrNull<Button>("%AchievementsButton");
 		_encyclopediaButton = GetNodeOrNull<Button>("%EncyclopediaButton");
 		_settingsButton = GetNodeOrNull<Button>("%SettingsButton");
@@ -45,6 +47,7 @@ public partial class MainMenu : Control
 		UpdateAudioShortcuts();
 
 		_playButton.Pressed += StartNewGame;
+		_tutorialButton.Pressed += StartTutorial;
 		_achievementsButton.Pressed += OpenAchievements;
 		_encyclopediaButton.Pressed += OpenEncyclopedia;
 		_settingsButton.Pressed += OpenSettings;
@@ -74,6 +77,8 @@ public partial class MainMenu : Control
 			_soundToggle.Toggled -= OnSoundMuteToggled;
 		if (_playButton != null)
 			_playButton.Pressed -= StartNewGame;
+		if (_tutorialButton != null)
+			_tutorialButton.Pressed -= StartTutorial;
 		if (_achievementsButton != null)
 			_achievementsButton.Pressed -= OpenAchievements;
 		if (_encyclopediaButton != null)
@@ -142,7 +147,8 @@ public partial class MainMenu : Control
 
 	private bool AreRequiredNodesAvailable()
 	{
-		if (_playButton != null && _achievementsButton != null && _encyclopediaButton != null &&
+		if (_playButton != null && _tutorialButton != null &&
+			_achievementsButton != null && _encyclopediaButton != null &&
 			_settingsButton != null && _quitButton != null &&
 			_errorLabel != null && _achievementMenu != null && _settingsMenu != null &&
 			_encyclopediaMenu != null)
@@ -165,6 +171,21 @@ public partial class MainMenu : Control
 			return;
 		}
 
+		ChangeToGameScene(targetScene);
+	}
+
+	private void StartTutorial()
+	{
+		string targetScene = ResourceLoader.Exists(LoadingScenePath)
+			? LoadingScenePath
+			: GameScenePath;
+		if (!ResourceLoader.Exists(targetScene))
+		{
+			ShowError($"Die Zielszene fehlt: {targetScene}");
+			return;
+		}
+
+		GameManager.ReplayTutorialOnNextStart();
 		ChangeToGameScene(targetScene);
 	}
 
@@ -274,6 +295,7 @@ public partial class MainMenu : Control
 	private void SetMenuButtonsDisabled(bool disabled)
 	{
 		_playButton.Disabled = disabled;
+		_tutorialButton.Disabled = disabled;
 		_achievementsButton.Disabled = disabled;
 		_encyclopediaButton.Disabled = disabled;
 		_settingsButton.Disabled = disabled;

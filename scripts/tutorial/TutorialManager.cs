@@ -56,6 +56,8 @@ public partial class TutorialManager : Node
 
 	private bool _isFinished;
 
+	private const float EndTurnHintVerticalOffset = 5.0f;
+
 	public void Start(
 		TutorialOverlay overlay,
 		BoardManager boardManager,
@@ -334,7 +336,10 @@ public partial class TutorialManager : Node
 				"UI/CanvasLayer/GameHub/EndTurnButton";
 
 			HighlightNode(path);
-			PositionHintNearNode(path);
+			PositionHintNearNode(
+				path,
+				verticalOffset: EndTurnHintVerticalOffset
+			);
 		}
 	}
 
@@ -441,7 +446,10 @@ public partial class TutorialManager : Node
 					"UI/CanvasLayer/GameHub/EndTurnButton";
 
 				HighlightNode(path);
-				PositionHintNearNode(path);
+				PositionHintNearNode(
+					path,
+					verticalOffset: EndTurnHintVerticalOffset
+				);
 
 				break;
 			}
@@ -589,7 +597,8 @@ public partial class TutorialManager : Node
 
 	private void PositionHintNearNode(
 		string path,
-		bool alignTop = false)
+		bool alignTop = false,
+		float verticalOffset = 0.0f)
 	{
 		if (_overlay == null)
 			return;
@@ -610,7 +619,8 @@ public partial class TutorialManager : Node
 
 		_overlay.PositionHintNear(
 			targetRect,
-			alignTop
+			alignTop,
+			verticalOffset
 		);
 	}
 

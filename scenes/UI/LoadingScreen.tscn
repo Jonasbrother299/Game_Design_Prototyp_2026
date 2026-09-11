@@ -6,7 +6,7 @@
 
 [sub_resource type="Gradient" id="BackgroundGradient"]
 offsets = PackedFloat32Array(0, 0.3, 0.7, 1)
-colors = PackedColorArray(0.22745, 0.23529, 0.05098, 1, 0.2, 0.20784, 0.04314, 1, 0.11765, 0.12157, 0.01961, 1, 0.07059, 0.07451, 0.00392, 1)
+colors = PackedColorArray(0.36, 0.50, 0.25, 1, 0.30, 0.44, 0.20, 1, 0.22, 0.34, 0.15, 1, 0.15, 0.25, 0.10, 1)
 
 [sub_resource type="GradientTexture2D" id="BackgroundTexture"]
 gradient = SubResource("BackgroundGradient")
@@ -86,7 +86,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.98, 0.98, 0.95, 1)
 theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 72
+theme_override_font_sizes/font_size = 56
 text = "Mit Escape pausierst du das Spiel."
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -2,6 +2,8 @@ using Godot;
 
 public partial class EndTurnButtonUI : Button
 {
+	[Export] public bool IsCalendarDisplay = true;
+
 	[ExportGroup("Button Feedback")]
 	[Export] public Color NormalColor = Colors.White;
 	[Export] public Color HoverColor = new Color(1.0f, 0.96f, 0.78f);
@@ -42,26 +44,33 @@ public partial class EndTurnButtonUI : Button
 
 	public override void _Ready()
 	{
-		_currentDayLeftLabel = GetNodeOrNull<Label>("CurrentPage/DayLeft");
-		_currentDayRightLabel = GetNodeOrNull<Label>("CurrentPage/DayRight");
-		_turnManager = GetNodeOrNull<TurnManager>(
-			"../../../../TurnManager") ??
-			GetTree().CurrentScene?.GetNodeOrNull<TurnManager>("TurnManager");
-
-		if (_turnManager != null)
+		if (IsCalendarDisplay)
 		{
-			_turnManager.EndTurnRequested += OnEndTurnRequested;
-			_turnManager.TurnStarted += OnTurnStarted;
-			_displayedRound = Mathf.Max(
-				_turnManager.State?.CurrentRound ?? 1,
-				1);
-		}
+			_currentDayLeftLabel = GetNodeOrNull<Label>("CurrentPage/DayLeft");
+			_currentDayRightLabel = GetNodeOrNull<Label>("CurrentPage/DayRight");
+			_turnManager = GetNodeOrNull<TurnManager>(
+				"../../../../TurnManager") ??
+				GetTree().CurrentScene?.GetNodeOrNull<TurnManager>("TurnManager");
 
-		SetDayLabels(
-			_currentDayLeftLabel,
-			_currentDayRightLabel,
-			_displayedRound);
-		TooltipText = $"Tag {_displayedRound}: Runde beenden";
+			if (_turnManager != null)
+			{
+				_turnManager.EndTurnRequested += OnEndTurnRequested;
+				_turnManager.TurnStarted += OnTurnStarted;
+				_displayedRound = Mathf.Max(
+					_turnManager.State?.CurrentRound ?? 1,
+					1);
+			}
+
+			SetDayLabels(
+				_currentDayLeftLabel,
+				_currentDayRightLabel,
+				_displayedRound);
+			TooltipText = $"Tag {_displayedRound}";
+		}
+		else
+		{
+			TooltipText = "";
+		}
 
 		MouseEntered += OnMouseEntered;
 		MouseExited += OnMouseExited;
@@ -69,7 +78,11 @@ public partial class EndTurnButtonUI : Button
 		ButtonUp += OnButtonUp;
 		Resized += UpdatePivot;
 
-		MouseDefaultCursorShape = CursorShape.PointingHand;
+		MouseDefaultCursorShape =
+			IsCalendarDisplay
+				? CursorShape.Arrow
+				: CursorShape.PointingHand;
+
 		_lastDisabledState = Disabled;
 		UpdatePivot();
 		ApplyCurrentState(false);
@@ -162,7 +175,7 @@ public partial class EndTurnButtonUI : Button
 		{
 			_displayedRound = nextRound;
 			_confirmedRound = -1;
-			TooltipText = $"Tag {_displayedRound}: Runde beenden";
+			TooltipText = $"Tag {_displayedRound}";
 			return;
 		}
 
@@ -227,7 +240,7 @@ public partial class EndTurnButtonUI : Button
 		{
 			_isFlipAnimating = false;
 			_confirmedRound = -1;
-			TooltipText = $"Tag {_displayedRound}: Runde beenden";
+			TooltipText = $"Tag {_displayedRound}";
 		}));
 	}
 
@@ -280,6 +293,9 @@ public partial class EndTurnButtonUI : Button
 
 	private void ApplyCurrentState(bool animated)
 	{
+		if (IsCalendarDisplay)
+			return;
+
 		Color targetColor;
 		Vector2 targetScale;
 

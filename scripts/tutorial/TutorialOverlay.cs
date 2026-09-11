@@ -396,7 +396,8 @@ public partial class TutorialOverlay : Control
 
 	public void PositionHintNear(
 		Rect2 targetRect,
-		bool alignTop = false)
+		bool alignTop = false,
+		float finalVerticalOffset = 0.0f)
 	{
 		if (_window == null)
 			return;
@@ -486,7 +487,7 @@ public partial class TutorialOverlay : Control
 		);
 
 		_window.Position =
-			new Vector2(x, y);
+			new Vector2(x, y + finalVerticalOffset);
 	}
 
 	private void MoveWindowToModalContainer()

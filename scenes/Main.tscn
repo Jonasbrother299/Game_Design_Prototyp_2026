@@ -16,7 +16,9 @@
 [ext_resource type="PackedScene" path="res://scenes/UI/PauseMenu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" uid="uid://dbsnedk2icmha" path="res://scenes/UI/Water.tscn" id="11_water"]
 [ext_resource type="PackedScene" path="res://scenes/UI/RoundCalendarButton.tscn" id="12_end_turn"]
+[ext_resource type="Script" path="res://scripts/UI/EndTurnButtonUI.cs" id="13_end_turn_button"]
 [ext_resource type="Texture2D" uid="uid://daj2h3i4jrih2" path="res://assets/ui/button/discard_hand.png" id="14_discard_hand"]
+[ext_resource type="FontFile" path="res://assets/ui/fonts/lora/Lora-Bold.otf" id="15_end_turn_font"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EndGameScreen.tscn" id="16_end_game"]
 [ext_resource type="Script" uid="uid://lqtarq7rn540" path="res://scripts/effects/DroughtWorldEffect.cs" id="17_drought_effect"]
 [ext_resource type="Resource" uid="uid://d28g8w7xp712f" path="res://data/balance/game_balance.tres" id="20_balance"]
@@ -42,7 +44,7 @@
 [ext_resource type="Texture2D" uid="uid://cd176tbqocf50" path="res://assets/ui/icons/shovel.svg" id="39_shovel_icon"]
 [ext_resource type="Script" uid="uid://c6jdpmda8ql3l" path="res://scripts/effects/WindMapStreakEffect.cs" id="40_wind_streak_effect"]
 [ext_resource type="Script" uid="uid://cukh5cot8f4t5" path="res://scripts/effects/FishSchoolController.cs" id="41_fish_school"]
-[ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Test/48-fish3d/fish3D/fish/fbx/fish.fbx" id="42_fish_a"]
+[ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Test/48-fish3d/fish/fbx/fish.fbx" id="42_fish_a"]
 [ext_resource type="PackedScene" uid="uid://b2mvjnmyam56b" path="res://assets/models/Test/fish_3d_model_free_download_animated/scene.gltf" id="43_fish_b"]
 [ext_resource type="Script" uid="uid://l182y3fk7p6k" path="res://scripts/effects/FloatingWaterLeavesController.cs" id="44_water_leaves"]
 [ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/plants/StartingOak/LeafParticle.tres" id="45_leaf_mesh"]
@@ -150,6 +152,79 @@ shader_parameter/rain_ripple_brightness = 0.31
 shader_parameter/water_center = Vector2(0, 0)
 shader_parameter/water_radius = 29.0
 shader_parameter/edge_fade = 1.2
+
+[sub_resource type="StyleBoxFlat" id="StyleEndTurnNormal"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.91, 0.835, 0.665, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.38, 0.19, 0.105, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.08, 0.035, 0.015, 0.3)
+shadow_size = 5
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleEndTurnHover"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.96, 0.89, 0.72, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.38, 0.19, 0.105, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.08, 0.035, 0.015, 0.36)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleEndTurnPressed"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.78, 0.68, 0.52, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.38, 0.19, 0.105, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.08, 0.035, 0.015, 0.2)
+shadow_size = 3
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleEndTurnDisabled"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.66, 0.63, 0.55, 0.78)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.36, 0.31, 0.23, 0.7)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tooltip"]
 content_margin_left = 18.0
@@ -386,18 +461,53 @@ volume_db = -13.0
 [node name="WaterLabel" parent="UI/CanvasLayer/GameHub" unique_id=1513438614 instance=ExtResource("11_water")]
 layout_mode = 1
 
-[node name="EndTurnButton" parent="UI/CanvasLayer/GameHub" unique_id=629424259 instance=ExtResource("12_end_turn")]
+[node name="RoundDisplay" parent="UI/CanvasLayer/GameHub" instance=ExtResource("12_end_turn")]
+z_index = 11
+layout_mode = 0
+anchor_left = 0.0
+anchor_right = 0.0
+offset_left = 110.0
+offset_top = 39.0
+offset_right = 510.0
+offset_bottom = 151.0
+grow_horizontal = 0
+mouse_filter = 2
+scale = Vector2(0.72, 0.72)
+
+[node name="EndTurnButton" type="Button" parent="UI/CanvasLayer/GameHub" unique_id=629424259] 
 layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -424.0
-offset_top = -146.0
-offset_right = -24.0
-offset_bottom = -34.0
+offset_left = -410.0
+offset_top = -132.0
+offset_right = -40.0
+offset_bottom = -48.0
 grow_horizontal = 0
 grow_vertical = 0
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0.38, 0.19, 0.105, 1)
+theme_override_colors/font_hover_color = Color(0.32, 0.15, 0.08, 1)
+theme_override_colors/font_pressed_color = Color(0.28, 0.13, 0.07, 1)
+theme_override_colors/font_disabled_color = Color(0.32, 0.3, 0.26, 0.72)
+theme_override_fonts/font = ExtResource("15_end_turn_font")
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleEndTurnNormal")
+theme_override_styles/hover = SubResource("StyleEndTurnHover")
+theme_override_styles/pressed = SubResource("StyleEndTurnPressed")
+theme_override_styles/disabled = SubResource("StyleEndTurnDisabled")
+theme_override_styles/focus = SubResource("StyleEndTurnNormal")
+text = "Nächster Tag"
+script = ExtResource("13_end_turn_button")
+IsCalendarDisplay = false
+NormalColor = Color(1, 1, 1, 1)
+HoverColor = Color(1, 1, 1, 1)
+PressedColor = Color(1, 1, 1, 1)
+DisabledColor = Color(1, 1, 1, 1)
+HoverScale = 1.03
+PressedScale = 0.98
 
 [node name="DiscardHandButton" type="Button" parent="UI/CanvasLayer/GameHub" unique_id=13557766]
 layout_mode = 0
