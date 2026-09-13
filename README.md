@@ -7,6 +7,12 @@ Lichtbedingungen zusammenpassen.
 
 Das Projekt befindet sich in Entwicklung.
 
+## Anleitungen
+
+- [Spielanleitung: Regeln, Pflanzen, Wasser und Steuerung](docs/anleitungen/spielanleitung.md)
+- [Installation: Das Projekt unter Windows in Godot starten](docs/anleitungen/installation-godot.md)
+- [Separat: Einen Windows-Build in Godot exportieren](docs/anleitungen/windows-build.md)
+
 ## Spielprinzip
 
 - Spiele Moos, Blumen, Pilze und Birken als Karten auf passende Felder.
@@ -26,6 +32,7 @@ Voraussetzungen:
 
 - Godot 4.6.3 in der .NET-Version für C#
 - .NET 8 SDK
+- Blender für den Import der vorhandenen `.blend`-Dateien
 - Grafikunterstützung für den im Projekt verwendeten Forward+-Renderer
 
 1. Das Repository klonen oder herunterladen.
@@ -48,9 +55,10 @@ Die Projektkonfiguration verwendet `Godot.NET.Sdk/4.6.3` und für Desktop
 | Aktion | Bedienung |
 | --- | --- |
 | Karte platzieren | Karte mit der linken Maustaste auf ein gültiges Feld ziehen |
-| Kamera drehen | Freie Fläche mit der linken Maustaste ziehen |
+| Ansicht verschieben | Freie Fläche mit der linken Maustaste ziehen |
+| Kamera drehen | Rechte Maustaste gedrückt halten und seitlich ziehen |
 | Kamera zoomen | Mausrad |
-| Nächste Runde | Button „Nächster Tag“ |
+| Nächste Runde | Kalender „Tag“ unten rechts |
 | Pausenmenü | Escape |
 
 Weitere Optionen stehen unter **Einstellungen → Steuerung**.

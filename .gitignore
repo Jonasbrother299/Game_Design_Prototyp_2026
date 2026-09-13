@@ -16,6 +16,9 @@ obj/
 .export/
 export/
 builds/
+/*.exe
+/*.pck
+/data_*_windows_*/
 
 # Large files
 *.hdr

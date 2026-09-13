@@ -144,7 +144,7 @@ theme_override_constants/separation = 16
 [node name="OutcomeLabel" type="Label" parent="CenterContainer/ResultPanel/Content"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.46, 0.18, 1)
+theme_override_colors/font_color = Color(0.55, 0.58, 0.32, 1)
 theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 18
 text = "SIEG"
@@ -154,7 +154,7 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.46, 0.18, 1)
+theme_override_colors/font_color = Color(0.55, 0.58, 0.32, 1)
 theme_override_fonts/font = ExtResource("2_bold_font")
 theme_override_font_sizes/font_size = 44
 text = "Ökosystem gerettet"
@@ -226,6 +226,24 @@ horizontal_alignment = 2
 custom_minimum_size = Vector2(0, 6)
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="ContinueButton" type="Button" parent="CenterContainer/ResultPanel/Content"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_hover_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_pressed_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_colors/font_focus_color = Color(0.459, 0.263, 0.176, 1)
+theme_override_fonts/font = ExtResource("3_regular_font")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleButtonNormal")
+theme_override_styles/hover = SubResource("StyleButtonHover")
+theme_override_styles/pressed = SubResource("StyleButtonPressed")
+theme_override_styles/focus = SubResource("StyleButtonFocus")
+tooltip_text = "Diese Partie ohne weiteres Siegziel fortsetzen"
+text = "Weiterspielen"
 
 [node name="ViewBoardButton" type="Button" parent="CenterContainer/ResultPanel/Content"]
 unique_name_in_owner = true

@@ -2,6 +2,8 @@ using Godot;
 
 public static class MossVisualBuilder
 {
+	internal static readonly StringName GrowthTargetScaleMetadata =
+		"moss_growth_target_scale";
 	private static readonly StringName GrassBlockerGroup = "grass_blocker";
 	private static readonly string[] MossPartNames =
 	{
@@ -76,6 +78,7 @@ public static class MossVisualBuilder
 		float duration)
 	{
 		Vector3 targetScale = node.Scale;
+		node.SetMeta(GrowthTargetScaleMetadata, targetScale);
 		node.Scale = new Vector3(
 			targetScale.X * 0.55f,
 			targetScale.Y * 0.08f,

@@ -166,31 +166,6 @@ visible = false
 layout_mode = 2
 visible = false
 
-[node name="PageTabs" type="HBoxContainer" parent="MenuMargin/AchievementPanel/Content"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
-alignment = 1
-
-[node name="AchievementsTabButton" type="Button" parent="MenuMargin/AchievementPanel/Content/PageTabs"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 64)
-layout_mode = 2
-toggle_mode = true
-button_pressed = true
-theme_override_font_sizes/font_size = 32
-text = "Abzeichen"
-size_flags_horizontal = 3
-
-[node name="LeaderboardTabButton" type="Button" parent="MenuMargin/AchievementPanel/Content/PageTabs"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 64)
-layout_mode = 2
-toggle_mode = true
-theme_override_font_sizes/font_size = 32
-text = "Rangliste"
-size_flags_horizontal = 3
-
 [node name="AchievementPage" type="VBoxContainer" parent="MenuMargin/AchievementPanel/Content"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -285,88 +260,6 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.62, 0.17, 0.12, 1)
-theme_override_font_sizes/font_size = 22
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="LeaderboardPage" type="VBoxContainer" parent="MenuMargin/AchievementPanel/Content"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="LeaderboardPanel" type="PanelContainer" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("ProfileStyle")
-
-[node name="LeaderboardContent" type="VBoxContainer" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="LeaderboardHeader" type="HBoxContainer" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent"]
-layout_mode = 2
-
-[node name="LeaderboardTitle" type="Label" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent/LeaderboardHeader"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.27, 0.4, 0.18, 1)
-theme_override_font_sizes/font_size = 30
-text = "Entwickler-Rangliste"
-
-[node name="RefreshLeaderboardButton" type="Button" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent/LeaderboardHeader"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(250, 52)
-layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Aktualisieren"
-
-[node name="LeaderboardDescription" type="Label" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.34, 0.23, 0.14, 1)
-theme_override_font_sizes/font_size = 24
-text = "Verglichen werden Stufe, Erfahrung und abgeschlossene Partien."
-autowrap_mode = 3
-
-[node name="ProfileSyncRow" type="HBoxContainer" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="DeveloperNameInput" type="LineEdit" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent/ProfileSyncRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(420, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Entwicklername"
-max_length = 32
-
-[node name="SynchronizeButton" type="Button" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent/ProfileSyncRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(360, 52)
-layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Profil synchronisieren"
-
-[node name="LeaderboardSeparator" type="HSeparator" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent"]
-layout_mode = 2
-
-[node name="LeaderboardScroll" type="ScrollContainer" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent"]
-custom_minimum_size = Vector2(0, 0)
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="LeaderboardList" type="VBoxContainer" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent/LeaderboardScroll"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 10
-
-[node name="LeaderboardStatusLabel" type="Label" parent="MenuMargin/AchievementPanel/Content/LeaderboardPage/LeaderboardPanel/LeaderboardContent"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.34, 0.23, 0.14, 1)
 theme_override_font_sizes/font_size = 22
 horizontal_alignment = 1
 autowrap_mode = 2

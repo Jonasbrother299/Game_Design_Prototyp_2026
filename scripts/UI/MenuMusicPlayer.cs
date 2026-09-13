@@ -90,6 +90,8 @@ public partial class MenuMusicPlayer : PanelContainer
 		};
 
 		EnsureMusicBus();
+		// Den Player erst nach dem Anlegen des Musik-Busses zuordnen.
+		_audioPlayer.Bus = MusicBusName;
 		_previousButton.Pressed += PlayPreviousTrack;
 		_playPauseButton.Pressed += TogglePlayback;
 		_stopButton.Pressed += StopPlayback;

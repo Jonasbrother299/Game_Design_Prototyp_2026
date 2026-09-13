@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://ifs463km2wex"]
+[gd_scene load_steps=30 format=3 uid="uid://ifs463km2wex"]
 
 [ext_resource type="Script" uid="uid://dsiubbb3giavj" path="res://scripts/UI/MainMenu.cs" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/images/HomeScreen.png" id="2_background"]
@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" path="res://scenes/UI/SettingsMenu.tscn" id="4_settings"]
 [ext_resource type="PackedScene" path="res://scenes/UI/EncyclopediaMenu.tscn" id="5_encyclopedia"]
 [ext_resource type="FontFile" path="res://assets/ui/fonts/OhnoBlazefaceDemo-60Point.otf" id="6_title_font"]
-[ext_resource type="Script" path="res://scripts/UI/MenuCardMotion.cs" id="7_motion"]
 [ext_resource type="Texture2D" path="res://assets/ui/decor/ivy_corner.svg" id="8_ivy"]
 [ext_resource type="PackedScene" path="res://scenes/UI/AchievementMenu.tscn" id="9_achievements"]
 [ext_resource type="PackedScene" path="res://scenes/UI/MenuMusicPlayer.tscn" id="10_music_player"]
@@ -452,10 +451,6 @@ flip_v = true
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
-
-[node name="MenuCardMotion" type="Node" parent="."]
-script = ExtResource("7_motion")
-TargetPath = NodePath("../MenuMargin/MenuRow/MenuPanel/MenuContent")
 
 [node name="PlaytestVersion" type="Label" parent="."]
 layout_mode = 1

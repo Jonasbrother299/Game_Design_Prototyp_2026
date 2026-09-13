@@ -381,7 +381,7 @@ public partial class PlantInspectionController : CanvasLayer
 
 		Vector2[] centers =
 		{
-			new Vector2(-240.0f, -110.0f),
+			new Vector2(-200.0f, -90.0f),
 			new Vector2(0.0f, -188.0f),
 			new Vector2(252.0f, -38.0f)
 		};

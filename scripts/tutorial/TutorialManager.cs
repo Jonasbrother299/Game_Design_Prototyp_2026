@@ -767,7 +767,7 @@ public partial class TutorialManager : Node
 						"Sonne",
 
 					LightLevel.PartialShade =>
-						"Halbschatten",
+						"Schatten",
 
 					LightLevel.Shade =>
 						"Schatten",
@@ -776,7 +776,8 @@ public partial class TutorialManager : Node
 						lightLevel.ToString()
 				};
 
-			names.Add(name);
+			if (!names.Contains(name))
+				names.Add(name);
 		}
 
 		return string.Join(

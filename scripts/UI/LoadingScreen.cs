@@ -8,6 +8,7 @@ public partial class LoadingScreen : Control
 	private const float ResourceLoadProgressShare = 0.9f;
 	private const float ProgressCatchUpPerSecond = 3.0f;
 	private const float SceneFadeDuration = 0.55f;
+	private const int SceneRenderFramesBeforeReveal = 6;
 	private const float TipDisplayDuration = 6.0f;
 	private static readonly string[] LoadingTips =
 	{
@@ -223,10 +224,14 @@ public partial class LoadingScreen : Control
 			phaseStartedUsec);
 
 		phaseStartedUsec = LoadProfiler.BeginPhase(
-			"Erstes Frame der Spielwelt");
-		await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			"Erste gerenderte Bilder der Spielwelt");
+		for (int frame = 0; frame < SceneRenderFramesBeforeReveal; frame++)
+		{
+			await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+		}
 		LoadProfiler.EndPhase(
-			"Erstes Frame der Spielwelt",
+			"Erste gerenderte Bilder der Spielwelt",
 			phaseStartedUsec);
 
 		phaseStartedUsec = LoadProfiler.BeginPhase(

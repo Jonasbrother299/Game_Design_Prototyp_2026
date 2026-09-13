@@ -2111,7 +2111,8 @@ public partial class HexTile : Node3D
 
 	private List<GrassBlockerTriangle> CollectGrassBlockerTriangles(
 		Node excludedBranch,
-		float blockerMargin)
+		float blockerMargin,
+		bool useGrowthTargetScale = false)
 	{
 		List<GrassBlockerTriangle> triangles = new();
 		CollectGrassBlockerTriangles(
@@ -2120,7 +2121,8 @@ public partial class HexTile : Node3D
 			false,
 			blockerMargin,
 			excludedBranch,
-			triangles);
+			triangles,
+			useGrowthTargetScale);
 		return triangles;
 	}
 
@@ -2130,7 +2132,8 @@ public partial class HexTile : Node3D
 		bool isBaseBlockerBranch,
 		float blockerMargin,
 		Node excludedBranch,
-		List<GrassBlockerTriangle> triangles)
+		List<GrassBlockerTriangle> triangles,
+		bool useGrowthTargetScale = false)
 	{
 		if (node == excludedBranch)
 			return;
@@ -2150,8 +2153,9 @@ public partial class HexTile : Node3D
 			!collisionShape.Disabled &&
 			collisionShape.Shape is ConcavePolygonShape3D concaveShape)
 		{
-			Transform3D collisionToTile = GlobalTransform.AffineInverse() *
-				collisionShape.GlobalTransform;
+			Transform3D collisionToTile = useGrowthTargetScale
+				? GetMushroomBlockerTransform(collisionShape)
+				: GlobalTransform.AffineInverse() * collisionShape.GlobalTransform;
 			Vector3[] faces = concaveShape.GetFaces();
 
 			for (int index = 0; index + 2 < faces.Length; index += 3)
@@ -2183,8 +2187,33 @@ public partial class HexTile : Node3D
 				isBaseBlocker,
 				branchMargin,
 				excludedBranch,
-				triangles);
+				triangles,
+				useGrowthTargetScale);
 		}
+	}
+
+	private Transform3D GetMushroomBlockerTransform(Node3D collisionShape)
+	{
+		Transform3D collisionToWorld = Transform3D.Identity;
+		for (Node current = collisionShape;
+			current is Node3D node;
+			current = current.GetParent())
+		{
+			Transform3D localTransform = node.Transform;
+			if (node.HasMeta(MossVisualBuilder.GrowthTargetScaleMetadata))
+			{
+				Vector3 targetScale = node.GetMeta(
+					MossVisualBuilder.GrowthTargetScaleMetadata).AsVector3();
+				localTransform.Basis = new Basis(node.Quaternion) *
+					Basis.FromScale(targetScale);
+			}
+
+			collisionToWorld = localTransform * collisionToWorld;
+			if (node.TopLevel)
+				break;
+		}
+
+		return GlobalTransform.AffineInverse() * collisionToWorld;
 	}
 
 	public bool TryFindMushroomClusterPosition(
@@ -2205,7 +2234,30 @@ public partial class HexTile : Node3D
 
 		Node excludedBranch = avoidPlantVisuals ? null : _plantAnchor;
 		List<GrassBlockerTriangle> blockerTriangles =
-			CollectGrassBlockerTriangles(excludedBranch, 0.0f);
+			CollectGrassBlockerTriangles(
+				excludedBranch,
+				0.0f,
+				useGrowthTargetScale: true);
+
+		BoardManager boardManager = FindBoardManager();
+		if (boardManager?.BoardData != null)
+		{
+			foreach (HexTileData neighbor in boardManager.GetNeighborData(Coord))
+			{
+				HexTile neighborView = boardManager.GetTileView(neighbor.Coord);
+				if (neighborView == null)
+					continue;
+
+				CollectGrassBlockerTriangles(
+					neighborView,
+					false,
+					false,
+					0.0f,
+					null,
+					blockerTriangles,
+					useGrowthTargetScale: true);
+			}
+		}
 
 		foreach (Vector2 candidate in candidates)
 		{

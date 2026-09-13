@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://024p2uvn82q7"]
+
+[ext_resource type="PackedScene" uid="uid://b1bl4dnb0xr7a" path="res://assets/models/stylized_nature/Bush_Common.gltf" id="1_oam7v"]
+[ext_resource type="Material" uid="uid://cj70l86uo54lf" path="res://shaders/leaves/bush_shader.tres" id="2_bwy74"]
+
+[node name="Bush_Common2" unique_id=1886955332 instance=ExtResource("1_oam7v")]
+
+[node name="Bush_Common" parent="." index="0" unique_id=1259900514]
+material_override = ExtResource("2_bwy74")
