@@ -45,7 +45,7 @@ public partial class BoardManager : Node3D, ISerializationListener
 	};
 	private static readonly string[] DefaultOuterDetailScenePaths =
 	{
-		"res://assets/models/stylized_nature/Bush_Common.gltf",
+		"res://scenes/board/plants/bush_common_2.tscn",
 		"res://assets/models/stylized_nature/Bush_Common_Flowers.gltf",
 		"res://assets/models/stylized_nature/Flower_3_Group.gltf",
 		"res://assets/models/stylized_nature/Mushroom_Common.gltf"
