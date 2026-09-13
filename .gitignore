@@ -6,6 +6,9 @@
 # LUT import settings must be shared so Godot imports them as Texture3D.
 !assets/LUTs/*.png.import
 
+# Fish import settings and resource UIDs must survive a fresh clone.
+!assets/models/Fisch/**/*.import
+
 # C# / .NET build files
 bin/
 obj/
