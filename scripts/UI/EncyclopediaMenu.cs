@@ -521,13 +521,16 @@ public partial class EncyclopediaMenu : Control
 
 		foreach (LightLevel lightLevel in plant.AllowedLightLevels)
 		{
-			lightLevels.Add(lightLevel switch
+			string name = lightLevel switch
 			{
 				LightLevel.Sun => "Sonne",
-				LightLevel.PartialShade => "Halbschatten",
+				LightLevel.PartialShade => "Schatten",
 				LightLevel.Shade => "Schatten",
 				_ => lightLevel.ToString()
-			});
+			};
+
+			if (!lightLevels.Contains(name))
+				lightLevels.Add(name);
 		}
 
 		return string.Join(", ", lightLevels);

@@ -37,7 +37,3 @@ theme/custom_font="res://assets/ui/fonts/lora/Lora-Regular.otf"
 [physics]
 
 3d/physics_engine="Jolt Physics"
-
-[rendering]
-
-rendering_device/driver.windows="vulkan"
