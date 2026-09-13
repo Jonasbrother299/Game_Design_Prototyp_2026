@@ -12,7 +12,7 @@ public partial class SceneTransition : CanvasLayer
 	public event System.Action<string, string> SceneChangeFailed;
 
 	[Export] public float FadeDuration = 0.25f;
-	[Export] public int FramesBeforeReveal = 2;
+	[Export] public int FramesBeforeReveal = 6;
 
 	private ColorRect _cover;
 	private bool _isTransitioning;
@@ -73,8 +73,10 @@ public partial class SceneTransition : CanvasLayer
 		_cover.MouseFilter = Control.MouseFilterEnum.Stop;
 
 		await FadeCoverTo(1.0f);
+		await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
 
-		Error error = GetTree().ChangeSceneToFile(scenePath);
+		SceneTree tree = GetTree();
+		Error error = tree.ChangeSceneToFile(scenePath);
 		if (error != Error.Ok)
 		{
 			GD.PushError(
@@ -85,10 +87,12 @@ public partial class SceneTransition : CanvasLayer
 			return;
 		}
 
+		await ToSignal(tree, SceneTree.SignalName.SceneChanged);
 		int frameCount = Mathf.Max(1, FramesBeforeReveal);
 		for (int frame = 0; frame < frameCount; frame++)
 		{
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			await ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+			await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
 		}
 
 		await FadeCoverTo(0.0f);

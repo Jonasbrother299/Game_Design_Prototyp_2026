@@ -6,7 +6,7 @@ public partial class EndGameScreen : Control
 	private const string MainMenuScenePath = "res://scenes/UI/MainMenu.tscn";
 
 	[ExportGroup("Colors")]
-	[Export] public Color VictoryColor = new Color(0.78f, 0.86f, 0.47f);
+	[Export] public Color VictoryColor = new Color(0.55f, 0.58f, 0.32f);
 	[Export] public Color DefeatColor = new Color(0.84f, 0.48f, 0.34f);
 
 	private PanelContainer _resultPanel;
@@ -17,6 +17,7 @@ public partial class EndGameScreen : Control
 	private Label _waterValue;
 	private Control _dimmer;
 	private Control _centerContainer;
+	private Button _continueButton;
 	private Button _viewBoardButton;
 	private Button _restoreResultButton;
 	private Button _restartButton;
@@ -40,11 +41,13 @@ public partial class EndGameScreen : Control
 		_waterValue = GetNode<Label>("%WaterValue");
 		_dimmer = GetNode<Control>("Dimmer");
 		_centerContainer = GetNode<Control>("CenterContainer");
+		_continueButton = GetNode<Button>("%ContinueButton");
 		_viewBoardButton = GetNode<Button>("%ViewBoardButton");
 		_restoreResultButton = GetNode<Button>("%RestoreResultButton");
 		_restartButton = GetNode<Button>("%RestartButton");
 		_mainMenuButton = GetNode<Button>("%MainMenuButton");
 
+		_continueButton.Pressed += ContinueGame;
 		_viewBoardButton.Pressed += ShowBoard;
 		_restoreResultButton.Pressed += ShowResultPanel;
 		_restartButton.Pressed += RestartGame;
@@ -74,6 +77,9 @@ public partial class EndGameScreen : Control
 	{
 		if (_turnManager != null && IsInstanceValid(_turnManager))
 			_turnManager.GameEnded -= ShowResult;
+
+		if (_continueButton != null)
+			_continueButton.Pressed -= ContinueGame;
 
 		if (_viewBoardButton != null)
 			_viewBoardButton.Pressed -= ShowBoard;
@@ -129,7 +135,7 @@ public partial class EndGameScreen : Control
 		if (_isInspectingBoard)
 			ShowResultPanel();
 		else
-			_restartButton.GrabFocus();
+			(_continueButton.Visible ? _continueButton : _restartButton).GrabFocus();
 
 		GetViewport().SetInputAsHandled();
 	}
@@ -151,6 +157,7 @@ public partial class EndGameScreen : Control
 			: "Der Wasservorrat ist auf 0 gefallen. Das Ökosystem konnte die Eiche nicht versorgen.";
 		_roundValue.Text = state.CurrentRound.ToString();
 		_waterValue.Text = $"{state.Water} / {targetWater}";
+		_continueButton.Visible = hasWon;
 		_viewBoardButton.Visible = !hasWon;
 
 		Color accentColor = hasWon ? VictoryColor : DefeatColor;
@@ -160,6 +167,32 @@ public partial class EndGameScreen : Control
 		GetTree().Paused = true;
 		ShowResultPanel();
 		CallDeferred(nameof(AnimateIn));
+	}
+
+	private void ContinueGame()
+	{
+		if (!Visible || _turnManager?.State?.HasWon != true)
+			return;
+
+		GameManager gameManager = GetTree().CurrentScene?.GetNodeOrNull<GameManager>(
+			"GameManager");
+		if (gameManager?.ContinueAfterVictory() != true)
+			return;
+
+		if (_entranceTween != null && _entranceTween.IsValid())
+			_entranceTween.Kill();
+
+		_isInspectingBoard = false;
+		_restoreResultButton.Hide();
+		Hide();
+
+		if (_cameraRig != null)
+		{
+			_cameraRig.ProcessMode = _cameraRigProcessMode;
+			_cameraRig.SetInteractionEnabled(true);
+		}
+
+		GetTree().Paused = false;
 	}
 
 	private void ShowBoard()
@@ -197,7 +230,7 @@ public partial class EndGameScreen : Control
 			_cameraRig.ProcessMode = ProcessModeEnum.Always;
 		}
 
-		_restartButton.GrabFocus();
+		(_continueButton.Visible ? _continueButton : _restartButton).GrabFocus();
 	}
 
 	private void ApplyAccentColor(Color accentColor)

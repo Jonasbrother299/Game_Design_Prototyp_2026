@@ -101,6 +101,22 @@ public partial class TurnManager : Node
 		TurnStarted?.Invoke(State.CurrentRound);
 	}
 
+	public bool ContinueAfterVictory()
+	{
+		if (State == null || _boardManager == null || !State.HasWon ||
+			State.HasLost || State.IsContinuingAfterVictory)
+		{
+			return false;
+		}
+
+		State.IsContinuingAfterVictory = true;
+		State.HasWon = false;
+		DrawCardsUntilTargetHandSize(updateMissedRounds: true);
+		State.CurrentRound++;
+		StartTurn();
+		return true;
+	}
+
 	public void EndTurn()
 	{
 		if (State == null || State.IsGameOver || _boardManager == null)

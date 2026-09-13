@@ -127,7 +127,7 @@ public static class AchievementCatalog
 			{
 				Id = "storm_chronicler",
 				DisplayName = "Sturmchronist",
-				Description = "Verliere 15 Pflanzen in einer Runde.",
+				Description = "Verliere 10 Pflanzen in einer Runde.",
 				BadgeTier = AchievementBadgeTier.Copper,
 				ExperienceReward = 150
 			}
@@ -229,7 +229,7 @@ public static class AchievementCatalog
 	{
 		foreach (SpecialStatisticsEvent entry in specialEvents)
 		{
-			if (entry.EventTypeId == MassPlantDeathEventId && entry.Value >= 15)
+			if (entry.EventTypeId == MassPlantDeathEventId && entry.Value >= 10)
 				return true;
 		}
 

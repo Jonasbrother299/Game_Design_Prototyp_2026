@@ -11,6 +11,7 @@ public class GameState
 
 	public bool HasWon { get; set; } = false;
 	public bool HasLost { get; set; } = false;
+	public bool IsContinuingAfterVictory { get; internal set; } = false;
 
 	public List<CardData> HandCards { get; private set; } = new();
 	public List<CardData> DrawPile { get; private set; } = new();
@@ -41,7 +42,7 @@ public class GameState
 		if (Water >= config.WinWaterLimit)
 		{
 			Water = config.WinWaterLimit;
-			HasWon = true;
+			HasWon = !IsContinuingAfterVictory;
 		}
 	}
 }

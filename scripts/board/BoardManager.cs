@@ -26,12 +26,6 @@ public partial class BoardManager : Node3D, ISerializationListener
 		"res://scenes/board/tiles/HexTile2.tscn",
 		"res://scenes/board/tiles/HexTile3.tscn"
 	};
-	private const string DefaultSide1StonePath =
-		"res://assets/models/Hextilestones/Hextilestone_side1.glb";
-	private const string DefaultSide2StonePath =
-		"res://assets/models/Hextilestones/Hextilestone_side2.glb";
-	private const string DefaultCornerStonePath =
-		"res://assets/models/Hextilestones/Hextilestone_corner.glb";
 	private static readonly string[] DefaultBorderRockScenePaths =
 	{
 		"res://scenes/board/tiles/rocks/rock_1.tscn",
@@ -46,7 +40,7 @@ public partial class BoardManager : Node3D, ISerializationListener
 	private static readonly string[] DefaultOuterDetailScenePaths =
 	{
 		"res://scenes/board/plants/bush_common_2.tscn",
-		"res://assets/models/stylized_nature/Bush_Common_Flowers.gltf",
+		"res://scenes/board/plants/bush_common_flowers.tscn",
 		"res://assets/models/stylized_nature/Flower_3_Group.gltf",
 		"res://assets/models/stylized_nature/Mushroom_Common.gltf"
 	};
@@ -443,6 +437,7 @@ public partial class BoardManager : Node3D, ISerializationListener
 	{
 		public bool CanBatch = true;
 		public OuterRingVisualGroup VisualGroup;
+		public float PlanarRadius;
 		public readonly List<StoneMeshTemplate> Meshes = new();
 		public readonly List<Transform3D> Instances = new();
 	}
@@ -703,9 +698,6 @@ public partial class BoardManager : Node3D, ISerializationListener
 
 	private void SetupStoneBorderScenes()
 	{
-		Side1StoneScene ??= GD.Load<PackedScene>(DefaultSide1StonePath);
-		Side2StoneScene ??= GD.Load<PackedScene>(DefaultSide2StonePath);
-		CornerStoneScene ??= GD.Load<PackedScene>(DefaultCornerStonePath);
 		SetupSceneList(
 			BorderRockScenes,
 			DefaultBorderRockScenePaths,
@@ -2467,8 +2459,6 @@ public partial class BoardManager : Node3D, ISerializationListener
 			.Scaled(vegetationScale);
 		Transform3D vegetationTransform = decorativeTileTransform *
 			new Transform3D(vegetationBasis, localPosition);
-		if (!IsOuterVegetationPositionAllowed(vegetationTransform.Origin))
-			return;
 
 		Vector3 sectorPosition = vegetationTransform.Origin - _boardWorldCenter;
 		float sectorAngle = Mathf.PosMod(
@@ -2484,6 +2474,18 @@ public partial class BoardManager : Node3D, ISerializationListener
 			scene,
 			sector,
 			visualGroup);
+		bool isBush = visualGroup == OuterRingVisualGroup.Bush ||
+			visualGroup == OuterRingVisualGroup.FloweringBush;
+		// Der Blattshader verschiebt Blätter um bis zu 0,2 je Achse.
+		float shoreClearance = isBush
+			? (batch.PlanarRadius + 0.3f) * uniformScale
+			: 0.0f;
+		if (!IsOuterVegetationPositionAllowed(
+			vegetationTransform.Origin,
+			shoreClearance,
+			innerRadius,
+			outerRadius))
+			return;
 
 		if (batch.CanBatch)
 		{
@@ -2514,8 +2516,60 @@ public partial class BoardManager : Node3D, ISerializationListener
 			FrustumCullMargin);
 	}
 
-	private bool IsOuterVegetationPositionAllowed(Vector3 position)
+	private bool IsOuterVegetationPositionAllowed(
+		Vector3 position,
+		float shoreClearance,
+		int innerRadius,
+		int outerRadius)
 	{
+		// Die tatsächliche Position nach dem Zufallsversatz muss auf Land liegen.
+		float hexSize = Mathf.Max(HexSize, 0.1f);
+		Vector3 rawPosition = position + _boardWorldCenter;
+		float fractionalQ = rawPosition.X / (hexSize * 1.5f);
+		float fractionalR = rawPosition.Z / (hexSize * Mathf.Sqrt(3.0f)) -
+			fractionalQ * 0.5f;
+		float fractionalS = -fractionalQ - fractionalR;
+		int q = Mathf.RoundToInt(fractionalQ);
+		int r = Mathf.RoundToInt(fractionalR);
+		int s = Mathf.RoundToInt(fractionalS);
+		float qError = Mathf.Abs(q - fractionalQ);
+		float rError = Mathf.Abs(r - fractionalR);
+		float sError = Mathf.Abs(s - fractionalS);
+		if (qError > rError && qError > sError)
+			q = -r - s;
+		else if (rError > sError)
+			r = -q - s;
+
+		HexCoord positionCoord = new HexCoord(q, r);
+		if (GetHexDistance(positionCoord) > outerRadius ||
+			IsDecorativeWaterCell(positionCoord, innerRadius, outerRadius))
+			return false;
+
+		if (shoreClearance > 0.0f)
+		{
+			// Auch die Buschkrone samt Windbewegung bleibt über Land.
+			// Der Umkreis jedes Wasserfelds schließt seine Ecken ein.
+			float waterClearance = shoreClearance + hexSize;
+			float waterClearanceSquared = waterClearance * waterClearance;
+			int searchRadius = Mathf.CeilToInt(
+				(shoreClearance + 2.0f * hexSize) / (1.5f * hexSize));
+			for (int waterQ = q - searchRadius; waterQ <= q + searchRadius; waterQ++)
+			{
+				for (int waterR = r - searchRadius; waterR <= r + searchRadius; waterR++)
+				{
+					HexCoord waterCoord = new HexCoord(waterQ, waterR);
+					if (GetHexDistance(waterCoord) <= outerRadius &&
+						!IsDecorativeWaterCell(waterCoord, innerRadius, outerRadius))
+						continue;
+
+					if (PlanarDistanceSquared(
+						position,
+						HexToWorld(waterCoord, hexSize)) < waterClearanceSquared)
+						return false;
+				}
+			}
+		}
+
 		float minimumSpacing = Mathf.Max(OuterVegetationMinimumSpacing, 0.0f);
 		float minimumSpacingSquared = minimumSpacing * minimumSpacing;
 		foreach (Vector3 existingPosition in _outerVegetationPositions)
@@ -2636,6 +2690,9 @@ public partial class BoardManager : Node3D, ISerializationListener
 
 		if (resourcePath.EndsWith(
 			"/Bush_Common.gltf",
+			System.StringComparison.OrdinalIgnoreCase) ||
+			resourcePath.EndsWith(
+			"/bush_common_2.tscn",
 			System.StringComparison.OrdinalIgnoreCase))
 		{
 			return OuterRingVisualGroup.Bush;
@@ -2643,6 +2700,9 @@ public partial class BoardManager : Node3D, ISerializationListener
 
 		if (resourcePath.EndsWith(
 			"/Bush_Common_Flowers.gltf",
+			System.StringComparison.OrdinalIgnoreCase) ||
+			resourcePath.EndsWith(
+			"/bush_common_flowers.tscn",
 			System.StringComparison.OrdinalIgnoreCase))
 		{
 			return OuterRingVisualGroup.FloweringBush;
@@ -2696,6 +2756,15 @@ public partial class BoardManager : Node3D, ISerializationListener
 
 		if (node is MeshInstance3D meshInstance && meshInstance.Mesh != null)
 		{
+			Aabb bounds = meshInstance.Mesh.GetAabb();
+			for (int cornerIndex = 0; cornerIndex < 8; cornerIndex++)
+			{
+				Vector3 corner = localTransform * bounds.GetEndpoint(cornerIndex);
+				batch.PlanarRadius = Mathf.Max(
+					batch.PlanarRadius,
+					new Vector2(corner.X, corner.Z).Length());
+			}
+
 			batch.Meshes.Add(new StoneMeshTemplate
 			{
 				Mesh = CreateBatchMesh(meshInstance),

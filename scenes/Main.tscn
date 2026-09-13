@@ -44,8 +44,8 @@
 [ext_resource type="Texture2D" uid="uid://cd176tbqocf50" path="res://assets/ui/icons/shovel.svg" id="39_shovel_icon"]
 [ext_resource type="Script" uid="uid://c6jdpmda8ql3l" path="res://scripts/effects/WindMapStreakEffect.cs" id="40_wind_streak_effect"]
 [ext_resource type="Script" uid="uid://cukh5cot8f4t5" path="res://scripts/effects/FishSchoolController.cs" id="41_fish_school"]
-[ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Test/48-fish3d/fish3D/fish/fbx/fish.fbx" id="42_fish_a"]
-[ext_resource type="PackedScene" uid="uid://b2mvjnmyam56b" path="res://assets/models/Test/fish_3d_model_free_download_animated/scene.gltf" id="43_fish_b"]
+[ext_resource type="PackedScene" path="res://scenes/environment/FishModelA.tscn" id="42_fish_a"]
+[ext_resource type="PackedScene" uid="uid://b2mvjnmyam56b" path="res://assets/models/Fisch/Fisch2/scene.gltf" id="43_fish_b"]
 [ext_resource type="Script" uid="uid://l182y3fk7p6k" path="res://scripts/effects/FloatingWaterLeavesController.cs" id="44_water_leaves"]
 [ext_resource type="ArrayMesh" uid="uid://c1a1xghsw27ku" path="res://assets/models/plants/StartingOak/LeafParticle.tres" id="45_leaf_mesh"]
 [ext_resource type="Script" uid="uid://c43ieqr6rfnkr" path="res://scripts/UI/PlantInspectionController.cs" id="46_plant_inspection"]
@@ -300,6 +300,10 @@ environment = SubResource("Environment_bjd11")
 camera_attributes = SubResource("CameraAttributesPractical_rarhs")
 compositor = SubResource("Compositor_vcsgt")
 script = ExtResource("17_drought_effect")
+DroughtSaturation = 0.82
+HeatSaturation = 0.92
+RainSaturation = 0.92
+HeavyRainSaturation = 0.84
 
 [node name="WindMapStreakEffect" type="Node3D" parent="." unique_id=872006172]
 script = ExtResource("40_wind_streak_effect")

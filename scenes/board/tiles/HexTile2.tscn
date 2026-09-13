@@ -2,11 +2,11 @@
 
 [ext_resource type="Script" uid="uid://dswtovmxx7vpi" path="res://scripts/board/HexTile.cs" id="1_hex_tile"]
 [ext_resource type="PackedScene" uid="uid://d0xff4i6qrd7n" path="res://assets/models/tiles/tile2.fbx" id="1_t8xsb"]
-[ext_resource type="Texture2D" uid="uid://byayhff0f60wk" path="res://assets/models/tiles/textures/tile2/tile2_Ground_AlbedoTransparency.png" id="3_hkvas"]
+[ext_resource type="Texture2D" uid="uid://bv7x4kodqti7c" path="res://assets/models/tiles/textures/tile2/tile2_Ground_AlbedoTransparency.png" id="3_hkvas"]
 [ext_resource type="Texture2D" uid="uid://dyg6s1oke0li1" path="res://assets/models/tiles/textures/tile2/tile2_Ground_Normal.png" id="3_r20yo"]
 [ext_resource type="PackedScene" uid="uid://bko5hk8hy4eg2" path="res://assets/models/tiles/textures/tile2/tile2_grass.fbx" id="4_ymots"]
 [ext_resource type="Shader" uid="uid://duky11px7nkj0" path="res://shaders/anime-grass.gdshader" id="5_cxgp3"]
-[ext_resource type="PackedScene" uid="uid://dg4e32onl4ubw" path="res://assets/models/plants/grass/grass.fbx" id="9_057v8"]
+[ext_resource type="PackedScene" uid="uid://dmfripbc5xbaq" path="res://assets/models/plants/grass/grass.fbx" id="9_057v8"]
 [ext_resource type="Texture2D" uid="uid://dxslg4tew3fmu" path="res://shaders/leaves/windnoise.tres" id="13_d4kb3"]
 [ext_resource type="Texture2D" uid="uid://b1uhljqahla82" path="res://assets/models/plants/grass/grass_DefaultMaterial_AlbedoTransparency.png" id="14_grass"]
 [ext_resource type="Script" uid="uid://dnvos40aifygh" path="res://scripts/visuals/PlantPlacementWindIndicator.cs" id="placement_wind_indicator"]

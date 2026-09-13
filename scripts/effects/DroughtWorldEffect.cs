@@ -50,7 +50,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	public float DroughtContrast = 1.08f;
 
 	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
-	public float DroughtSaturation = 0.82f;
+	public float DroughtSaturation = 0.70f;
 
 	[ExportGroup("Drought Heat Waves")]
 	[Export] public bool EnableDroughtHeatWaves = true;
@@ -103,7 +103,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	public float HeatContrast = 1.03f;
 
 	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
-	public float HeatSaturation = 0.92f;
+	public float HeatSaturation = 0.75f;
 
 	[Export(PropertyHint.Range, "0.0,1.0,0.01")]
 	public float HeatDayHeatWaveIntensity = 0.28f;
@@ -123,7 +123,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	public float RainContrast = 1.02f;
 
 	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
-	public float RainSaturation = 0.92f;
+	public float RainSaturation = 0.75f;
 
 	[ExportGroup("Heavy Rain Look")]
 	[Export] public Color HeavyRainBackgroundColor =
@@ -140,7 +140,7 @@ public partial class DroughtWorldEffect : WorldEnvironment
 	public float HeavyRainContrast = 1.04f;
 
 	[Export(PropertyHint.Range, "0.0,1.5,0.01")]
-	public float HeavyRainSaturation = 0.84f;
+	public float HeavyRainSaturation = 0.70f;
 
 	[ExportGroup("Night Look")]
 	[Export] public Color NightBackgroundColor =

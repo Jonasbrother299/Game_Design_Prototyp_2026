@@ -12,7 +12,7 @@ public partial class GameManager : Node
 	}
 
 	private const float PointerClickThreshold = 6.0f;
-	private const int MassPlantDeathThreshold = 15;
+	private const int MassPlantDeathThreshold = 10;
 	private static TutorialStartMode _tutorialStartMode;
 
 	public event Action<HexTile> TileInformationRequested;
@@ -392,6 +392,15 @@ public partial class GameManager : Node
 		_cameraRig.ConfigureBoardContext(_boardManager, _mainTreeTile);
 	}
 
+	public bool ContinueAfterVictory()
+	{
+		if (_turnManager?.ContinueAfterVictory() != true)
+			return false;
+
+		RefreshGameInterfaces();
+		return true;
+	}
+
 	private void RefreshGameInterfaces()
 	{
 		ConnectCardHand();
@@ -446,7 +455,8 @@ public partial class GameManager : Node
 		CancelShovelDrag();
 		UpdateShovelButtonState();
 
-		if (state == null || _hasRecordedCompletedGame)
+		if (state == null || _hasRecordedCompletedGame ||
+			state.IsContinuingAfterVictory)
 			return;
 
 		if (TryRecordStatistics(
