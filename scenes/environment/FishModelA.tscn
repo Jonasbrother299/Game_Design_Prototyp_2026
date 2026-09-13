@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
-[ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Test/48-fish3d/fish3D/fish/fbx/fish.fbx" id="1_fish"]
-[ext_resource type="Texture2D" uid="uid://dgjlp5rxyhjsa" path="res://assets/models/Test/48-fish3d/fish3D/fish/Texture/fish.png" id="2_texture"]
+[ext_resource type="PackedScene" uid="uid://cs3vrmcg43lkt" path="res://assets/models/Fisch/Fisch1/fish3D/fish/fbx/fish.fbx" id="1_fish"]
+[ext_resource type="Texture2D" uid="uid://dtx5g7uq5klxq" path="res://assets/models/Fisch/Fisch1/fish3D/fish/fbx/fish_0.png" id="2_texture"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fish"]
 transparency = 2
