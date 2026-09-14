@@ -10,6 +10,7 @@ public static class MushroomVisualBuilder
 	private const int MinimumMatureModelCount = 4;
 	private const int MinimumNeighborModelCount = 2;
 	private const float NeighborClusterGroundHeight = 0.11f;
+	private const string MatureModelCountMetadata = "mushroom_mature_model_count";
 
 	private static readonly Vector3[] ClusterOffsets =
 	{
@@ -67,10 +68,8 @@ public static class MushroomVisualBuilder
 		};
 		root.AddChild(cluster);
 
-		int matureModelCount = GetMatureModelCount(tileCoord);
-		int visibleModelCount = GetVisibleModelCount(
-			plant,
-			matureModelCount);
+		Transform3D[] savedLayout = tile.MushroomModelLayout;
+		int matureModelCount = savedLayout?.Length ?? GetMatureModelCount(tileCoord);
 		List<Node3D> mushroomModels = AddMushroomModels(
 			cluster,
 			plant?.Definition?.PlantScene,
@@ -82,21 +81,47 @@ public static class MushroomVisualBuilder
 			cluster.Position.X,
 			cluster.Position.Z);
 
-		if (!PlaceClusterClearOfBlockers(
-			cluster,
-			tile,
-			tileCoord,
-			preferredPosition,
-			31u,
-			avoidPlantVisuals: false))
+		if (savedLayout != null)
 		{
-			cluster.Visible = false;
-			GD.PushWarning(
-				$"{tile.Name}: Pilze konnten nicht außerhalb der Steine platziert werden.");
+			cluster.Transform = tile.MushroomClusterLayout;
+			for (int index = 0; index < mushroomModels.Count; index++)
+				mushroomModels[index].Transform = savedLayout[index];
+		}
+		else
+		{
+			// Plan every growth stage once, at the original model size.
+			bool wasPlaced = PlaceClusterClearOfBlockers(
+				cluster, tile, tileCoord, preferredPosition, 31u,
+				avoidPlantVisuals: false);
+			if (!wasPlaced)
+			{
+				wasPlaced = PlaceModelsIndividually(
+					cluster, mushroomModels, tile, tileCoord, preferredPosition, 47u,
+					avoidPlantVisuals: false, minimumModelCount: 1);
+			}
+
+			if (wasPlaced)
+			{
+				matureModelCount = mushroomModels.Count;
+				tile.MushroomClusterLayout = cluster.Transform;
+				tile.MushroomModelLayout = new Transform3D[matureModelCount];
+				for (int index = 0; index < matureModelCount; index++)
+				{
+					mushroomModels[index].Name = $"MushroomModel_{index + 1}";
+					tile.MushroomModelLayout[index] = mushroomModels[index].Transform;
+				}
+			}
+			else
+			{
+				cluster.Visible = false;
+				GD.PushWarning(
+					$"{tile.Name}: Kein freier Platz für ein Pilzmodell außerhalb der Steine gefunden.");
+			}
 		}
 
+		root.SetMeta(MatureModelCountMetadata, matureModelCount);
+		int visibleModelCount = GetVisibleModelCount(plant, matureModelCount);
 		RemoveModelsAfter(mushroomModels, visibleModelCount);
-
 		return root;
 	}
 
@@ -116,7 +141,8 @@ public static class MushroomVisualBuilder
 		int stageCount = Mathf.Max(
 			plant.Definition?.GrowthStageCount ?? 2,
 			2);
-		int matureModelCount = GetMatureModelCount(tileCoord);
+		int matureModelCount = (int)visualRoot.GetMeta(
+			MatureModelCountMetadata, GetMatureModelCount(tileCoord));
 		int startIndex = previousStage <= 0
 			? 0
 			: GetVisibleModelCountForStage(
@@ -236,7 +262,7 @@ public static class MushroomVisualBuilder
 
 		bool wasPlaced =
 			mushroomModels.Count >= MinimumNeighborModelCount &&
-			PlaceNeighborModelsIndividually(
+			PlaceModelsIndividually(
 				cluster,
 				mushroomModels,
 				tile,
@@ -253,13 +279,15 @@ public static class MushroomVisualBuilder
 		return root;
 	}
 
-	private static bool PlaceNeighborModelsIndividually(
+	private static bool PlaceModelsIndividually(
 		Node3D cluster,
-		IReadOnlyList<Node3D> mushroomModels,
+		List<Node3D> mushroomModels,
 		HexTile tile,
 		HexCoord tileCoord,
 		Vector2 preferredPosition,
-		uint candidateSalt)
+		uint candidateSalt,
+		bool avoidPlantVisuals = true,
+		int minimumModelCount = MinimumNeighborModelCount)
 	{
 		cluster.Position = new Vector3(
 			0.0f,
@@ -309,19 +337,24 @@ public static class MushroomVisualBuilder
 			List<Vector2> candidates = BuildPlacementCandidates(
 				tileCoord,
 				modelPreferredPosition,
-				candidateSalt + (uint)modelIndex * 17u);
+				candidateSalt + (uint)modelIndex * 17u,
+				maxRadius: avoidPlantVisuals
+					? StonePlacementMaxRadius : tile.MushroomPlacementRadius,
+				candidateCount: avoidPlantVisuals ? StonePlacementCandidateCount : 192);
 			List<Vector2> clearCandidates = FilterCandidatesClearOfFootprints(
 				candidates,
 				footprintCenters,
 				footprintRadii,
 				occupiedCenters,
-				occupiedRadii);
+				occupiedRadii,
+				placementRadius: avoidPlantVisuals
+					? float.PositiveInfinity : tile.MushroomPlacementRadius);
 
 			if (!tile.TryFindMushroomClusterPosition(
 				clearCandidates,
 				footprintCenters,
 				footprintRadii,
-				avoidPlantVisuals: true,
+				avoidPlantVisuals,
 				out Vector2 clearPosition))
 			{
 				unplacedModels.Add(model);
@@ -344,11 +377,14 @@ public static class MushroomVisualBuilder
 			}
 		}
 
-		if (placedModelCount < MinimumNeighborModelCount)
+		if (placedModelCount < minimumModelCount)
 			return false;
 
 		foreach (Node3D model in unplacedModels)
+		{
+			mushroomModels.Remove(model);
 			model.Free();
+		}
 
 		return true;
 	}
@@ -358,7 +394,8 @@ public static class MushroomVisualBuilder
 		IReadOnlyList<Vector2> footprintCenters,
 		IReadOnlyList<float> footprintRadii,
 		IReadOnlyList<Vector2> occupiedCenters,
-		IReadOnlyList<float> occupiedRadii)
+		IReadOnlyList<float> occupiedRadii,
+		float placementRadius = float.PositiveInfinity)
 	{
 		List<Vector2> clearCandidates = new(candidates.Count);
 
@@ -373,6 +410,12 @@ public static class MushroomVisualBuilder
 			{
 				Vector2 footprintPosition =
 					candidate + footprintCenters[footprintIndex];
+				if (footprintPosition.Length() + footprintRadii[footprintIndex] >
+					placementRadius)
+				{
+					overlapsPlacedModel = true;
+					break;
+				}
 
 				for (int occupiedIndex = 0;
 					occupiedIndex < occupiedCenters.Count;
@@ -460,18 +503,20 @@ public static class MushroomVisualBuilder
 	private static List<Vector2> BuildPlacementCandidates(
 		HexCoord tileCoord,
 		Vector2 preferredPosition,
-		uint candidateSalt)
+		uint candidateSalt,
+		float maxRadius = StonePlacementMaxRadius,
+		int candidateCount = StonePlacementCandidateCount)
 	{
-		List<Vector2> candidates = new(StonePlacementCandidateCount + 1)
+		List<Vector2> candidates = new(candidateCount + 1)
 		{
 			preferredPosition
 		};
 		float angleOffset = GetTileRandom(tileCoord, candidateSalt) * Mathf.Tau;
 
-		for (int index = 0; index < StonePlacementCandidateCount; index++)
+		for (int index = 0; index < candidateCount; index++)
 		{
-			float progress = (index + 1.0f) / StonePlacementCandidateCount;
-			float radius = Mathf.Sqrt(progress) * StonePlacementMaxRadius;
+			float progress = (index + 1.0f) / candidateCount;
+			float radius = Mathf.Sqrt(progress) * maxRadius;
 			float angle = angleOffset + index * GoldenAngle;
 			candidates.Add(new Vector2(
 				Mathf.Cos(angle),

@@ -55,6 +55,10 @@ public partial class HexTile : Node3D
 	private static readonly StringName FoliageColor2Parameter =
 		"foliage_colour2";
 	private PlantInstance _renderedPlant;
+	internal Transform3D[] MushroomModelLayout { get; set; }
+	internal Transform3D MushroomClusterLayout { get; set; } = Transform3D.Identity;
+	internal float MushroomPlacementRadius =>
+		_tileVisualScale * Mathf.Sqrt(3.0f) * 0.5f - 0.025f;
 	private int _renderedGrowthStage = -1;
 	private bool _renderedAsDead;
 	private int _renderedDeadBlockedRounds = -1;
@@ -2499,6 +2503,9 @@ public partial class HexTile : Node3D
 			previousVisual.GetParent()?.RemoveChild(previousVisual);
 			previousVisual.QueueFree();
 		}
+
+		if (!ReferenceEquals(_renderedPlant, visualPlant))
+			MushroomModelLayout = null;
 
 		_renderedPlant = visualPlant;
 		_renderedGrowthStage = growthStage;
